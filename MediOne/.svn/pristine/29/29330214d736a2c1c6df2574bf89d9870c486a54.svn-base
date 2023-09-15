@@ -1,0 +1,14 @@
+package kr.or.ddit.newfile.service;
+
+import java.util.List;
+
+import kr.or.ddit.newfile.vo.NewFileVO;
+
+public interface NewFileService {
+
+	public List<NewFileVO> retrieveNewFile(String fileTitle);
+	public NewFileVO  retrievNewFileTitle(String newFileId);
+	public List<NewFileVO> retrieveNewFileList();
+	public boolean createNewFile(NewFileVO fileVO);
+	
+}

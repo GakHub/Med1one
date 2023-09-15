@@ -1,0 +1,79 @@
+package kr.or.ddit.medical.hospital.controller;
+
+import javax.inject.Inject;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.medical.hospital.service.HospitalService;
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.hospital.vo.SckbdVO;
+
+@Controller
+@RequestMapping("/hospital/")
+public class HospitalInsertController {
+	
+	@Inject
+	private HospitalService service;
+	
+	// 병동 - 환자관리 투약 입력
+	@GetMapping("medicineInsert.do")
+	public String medicineInsert() {
+		return "hospital/hospitalization";
+	}
+	
+	// 병동-환자관리 식이 입력
+	@GetMapping("dietInsert.do")
+	public String dietInsert() {
+		return "hospital/hospitalization";
+	}
+	
+	// 병동-환자관리 바이탈 입력
+	@GetMapping("vitalInsert.do")
+	public String vitalInsert() {
+		return "hospital/hospitalization";
+	}
+	
+	// 병동-환자관리 IO 입력
+	@GetMapping("IOInsert.do")
+	public String IOInsert() {
+		return "hospital/hospitalization";
+	}
+	
+	//입원대기 환자 입원처리(병동, 병실 배정)
+	@GetMapping(value="hsplzIn.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean hsptlzIn(
+		@RequestParam("recCode") String recCode
+		, @RequestParam("hsptlzTotal") int hsptlzTotal
+		, @RequestParam("docEmpNo") String docEmpNo
+		, @RequestParam("patntCode") String patntCode
+		, @RequestParam("sckbdNo") int sckbdNo
+		, @RequestParam("sckbdRo") String sckbdRo
+		, @RequestParam("hspodCode") String hspodCode
+	) {
+		HospitalizationVO hsptlz = new HospitalizationVO();
+		hsptlz.setRecCode(recCode);
+		hsptlz.setHsptlzTotal(hsptlzTotal);
+		hsptlz.setSckbdNo(sckbdNo);
+		hsptlz.setSckbdRo(sckbdRo);
+		hsptlz.setDocEmpNo(docEmpNo);
+		hsptlz.setPatntCode(patntCode);
+		hsptlz.setHspodCode(hspodCode);
+		
+		SckbdVO sckbd = new SckbdVO();
+		sckbd.setSckbdNo(sckbdNo);
+		sckbd.setSckbdRo(sckbdRo);
+		
+		boolean hspIn = service.createHsptlzIn(hsptlz);
+		boolean patntStat = service.createHspPatnt(recCode);
+		boolean sckbdStat = service.modifySckBD(sckbd);
+		
+		return (hspIn==true) && (patntStat==true) && (sckbdStat==true);
+		
+	}
+}

@@ -1,0 +1,66 @@
+package kr.or.ddit.medical.patient.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+import kr.or.ddit.medical.nurse.vo.ReservationVO;
+import kr.or.ddit.medical.patient.dao.PatientDao;
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+@Service
+public class PatientServiceImpl implements PatientService {
+
+	@Inject
+	private PatientDao patntDao;
+
+	@Override
+	public List<PatntStatVO> retrievePatntStat(String fcltyCode) {
+		return patntDao.selectPatntStat(fcltyCode);
+	}
+
+	@Override
+	public boolean createtPatntStat(PatntStatVO patntStat) {
+		int count = patntDao.insertPatntStat(patntStat);
+		return count > 1;
+	}
+
+	@Override
+	public List<PatntStatVO> retrievePatntStatAll() {
+		return patntDao.selectPatntStatAll();
+	}
+
+	/**
+	 * 환자 예약 등록
+	 */
+	@Override
+	public boolean createReservation(ReservationVO reserVo) {
+		int count = patntDao.insertReservation(reserVo);
+		return count > 1;
+	}
+
+	
+	/**
+	 * 관리자 통계용(월별 환자수)
+	 */
+	@Override
+	public List<PatntStatVO> retrieveMonthPatntCount() {
+		return patntDao.selectMonthPatntCount();
+	}
+
+	/**
+	 * 관리자 통계용(연도별 총 환자수)
+	 */
+	@Override
+	public List<PatntStatVO> retrieveYearPatntCount() {
+		return patntDao.selectYearPatntCount();
+	}
+
+	@Override
+	public List<PatntStatVO> retrievePatntStatWaitAll() {
+		return patntDao.selectPatntStatWaitAll();
+	}
+
+	
+}

@@ -1,0 +1,28 @@
+
+package kr.or.ddit.notice.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.employee.vo.PaginationInfo;
+import kr.or.ddit.notice.vo.NoticeBoardVO;
+
+@Mapper
+public interface NoticeDao {
+
+	public int insertBoard(NoticeBoardVO board);
+	
+	public long selectTotalRecord(PaginationInfo<NoticeBoardVO> paging);
+	public List<NoticeBoardVO> selectBoardList(PaginationInfo<NoticeBoardVO> paging);
+	
+//	public List<NoticeBoardVO> selectNoticeList();
+	
+	public NoticeBoardVO selectBoard(String noticeCode);
+	public int updateBoard(NoticeBoardVO board);
+	public int deleteBoard(String board);
+	public int updateNoticeBoardReadcount(String noticeCode);
+	
+	
+	
+}

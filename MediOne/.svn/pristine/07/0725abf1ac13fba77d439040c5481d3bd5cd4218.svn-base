@@ -1,0 +1,5 @@
+package kr.or.ddit.Free.service;
+
+public interface CommentService {
+
+}

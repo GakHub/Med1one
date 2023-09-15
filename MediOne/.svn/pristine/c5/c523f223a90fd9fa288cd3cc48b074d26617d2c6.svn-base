@@ -1,0 +1,89 @@
+package kr.or.ddit.medical.receive.service;
+
+import java.util.List;
+
+import kr.or.ddit.medical.clinc.vo.PresDocVO;
+import kr.or.ddit.medical.examinate.vo.MdexmnVO;
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.receive.vo.ReceiveVO;
+import kr.or.ddit.medical.vo.ReceptionVO;
+
+public interface ReceiveService {
+	
+	/**
+	 * 외래진료 수납대기인 환자리스트 조회
+	 * @return
+	 */
+	public List<PresDocVO> retrievePatientList();
+	
+	/**
+	 * 검진 수납대기인 환자리스트 조회
+	 * @return
+	 */
+	public List<MdexmnVO> retrieveMdexList();
+	
+	/**
+	 * 병동 수납대기인 환자리스트 조회
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveHospitalList();
+	
+	/**
+	 * 선택한 환자의 처방내역. 검사. 소견
+	 * @return
+	 */
+	public List<PresDocVO> retrievePatientClinicOrder(String recCode);
+	
+	/**
+	 * 입원 환자의 내역
+	 * @param recCode
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveHospitalClinicOrder(String recCode);
+	
+	/**
+	 * 검진 환자의 내역
+	 * @param recCode
+	 * @return
+	 */
+	public List<MdexmnVO> retrieveMdexClinicOrder(String recCode);
+	
+	/**
+	 * 수납 insert
+	 * @param receive
+	 * @return
+	 */
+	public boolean createReceive(ReceiveVO receive);
+	
+	/**
+	 * 영수증 창에 금액 정보 조회
+	 * @param recCode
+	 * @return
+	 */
+	public List<ReceptionVO> retrieveReceiveAmount(String recCode);
+
+	
+	
+	/**
+	 * 통계용 매출액
+	 */
+	public List<ReceiveVO> retrieveTotalAmount();
+	
+	/**
+	 * 환자의 제증명 확인 - 진료확인서 
+	 * @return
+	 */
+	public List<ReceptionVO> retrieveDocument(String recCode);
+	
+	/**
+	 * 외래진료 수납대기인 환자 검색
+	 * @return
+	 */
+	public List<PresDocVO> searchPatientList(String patntName);
+	
+	/**
+	 * 외래진료 수납대기인 환자 검색 (날짜)
+	 * @return
+	 */
+	public List<PresDocVO> searchPatientDate(String recDate);
+}

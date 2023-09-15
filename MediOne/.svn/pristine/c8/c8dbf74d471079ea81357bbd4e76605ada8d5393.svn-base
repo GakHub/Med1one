@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.patient.dao.PatientDao">
+
+
+<!-- 	상태 코드 005(대기) 환자 조회 -->
+	<select id="selectPatntStat" resultType="PatntStatVO">
+		WITH CTE AS (
+		    SELECT
+		        P.patnt_nm ,
+		        P.patnt_code,
+		        R.rec_code,
+		        S.stat_code,
+		        S.stat_time,
+		        S.fclty_code,
+		        ROW_NUMBER() OVER (PARTITION BY R.rec_code ORDER BY S.stat_time DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.patnt_code = R.patnt_code
+		        INNER JOIN PATNT_STAT S ON S.rec_code = R.rec_code
+		)
+		SELECT
+		    patnt_nm "recep.patnt.patntNm",
+		    patnt_code,
+		    rec_code,
+		    stat_code,
+		    stat_time,
+		    fclty_code
+		FROM
+		    CTE
+		WHERE
+		    RN = 1
+		ORDER BY
+		    rec_code
+	</select>
+	
+	
+<!-- 	환자 상태 변경 -->
+	<insert id="insertPatntStat" parameterType="PatntStatVO" >
+		insert into patnt_stat (stat_code, rec_code, fclty_code, stat_time)
+		values( 
+		#{statCode,jdbcType=VARCHAR}
+		, #{recCode,jdbcType=VARCHAR}
+		, #{fcltyCode,jdbcType=VARCHAR}
+		, SYSDATE
+		
+		
+		
+		)
+	</insert>
+
+
+</mapper>

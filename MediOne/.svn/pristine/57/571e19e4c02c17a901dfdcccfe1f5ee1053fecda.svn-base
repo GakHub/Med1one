@@ -1,0 +1,40 @@
+package kr.or.ddit.employee.controller;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import kr.or.ddit.employee.service.EmployeeService;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.employee.vo.EmployeeVOWrapper;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Controller
+@RequestMapping("/mypage/")
+public class MypageController {
+
+	private final EmployeeService service;
+	
+	@GetMapping("mypage.do")
+	public String mypage(
+		Model model
+		, Authentication authentication
+	) {
+		String empName = authentication.getName();
+		EmployeeVOWrapper wrapper = (EmployeeVOWrapper)authentication.getPrincipal();
+		
+		EmployeeVO detail = service.retrieveEmployee(wrapper.getRealUser().getEmpNo());
+		model.addAttribute("employee", detail);
+		return "mypage/mypage";
+	}
+	
+	@GetMapping("mypageUpdate.do")
+	public String mypageUpdate(@RequestParam(name="who") String empNo) {
+		return "mypage/mypageForm";
+	}
+	
+}

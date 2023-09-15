@@ -1,0 +1,207 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+   pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+
+
+
+<div id="ihealth-layout" class="theme-tradewind">
+   <!-- main body area -->
+   <div class="main px-lg-4 px-md-4">
+      <!-- Body: Body -->
+      <div class="body d-flex py-3">
+
+         <div class="container-xxl">
+            <!-- 1행 3열 카드 시작 -->
+            <div class="row g-3 mb-3">
+               <div class="col-md-4 col-lg-4"
+                  style="width: 48%; margin-right: 1%;">
+                  <div class="card">
+                     <div
+                        class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                        <h6 class="mb-0 fw-bold">진료 대기실</h6>
+                     </div>
+                     <div class="card-body">
+                        <div id="#">
+                           <table class="table table-border">
+                              <thead>
+                                 <tr>
+                                    <td>환자 이름</td>
+                                    <td>상태변경</td>
+                                    <td>상태코드</td>
+                                    <td>현재위치시각</td>
+                                    <td>접수코드</td>
+                                    <td>시설코드(진료실 대기)</td>
+                                    <td></td>
+                                 </tr>
+                              </thead>
+                              <tbody id="patntWait">
+                                 
+                              </tbody>
+                           </table>
+
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="col-md-4 col-lg-4"
+                  style="width: 48%; margin-right: 1%;">
+                  <div class="card">
+                     <div
+                        class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                        <h6 class="mb-0 fw-bold">진료실</h6>
+                     </div>
+                     <div class="card-body">
+                        <div >
+                           <table class="table table-border">
+                              <thead>
+                                 <tr>
+                                    <td>환자 이름</td>
+                                    <td>상태변경</td>
+                                    <td>상태코드</td>
+                                    <td>현재위치시각</td>
+                                    <td>접수코드</td>
+                                    <td>시설코드(진료실 대기)</td>
+                                    <td></td>
+                                 </tr>
+                              </thead>
+                              <tbody id="patntRoom">
+                                 
+                              </tbody>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+         </div>
+      </div>
+   </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+
+
+$(document).ready(function() {
+    ATable();
+    BTable();
+});
+
+
+
+//진료 대기 환자
+function ATable() {
+	
+    $.ajax({
+        url			: '${pageContext.request.contextPath}/patient/clinicRetrieve.do',
+        method		: 'GET',
+        dataType	: 'json',
+        success: function(data) {
+            // 서버로부터 받아온 데이터를 이용하여 테이블 내용을 갱신
+            console.log("clinicRetrieve.do : ", data);
+            
+            var tbody = $('#patntWait');
+            
+            tbody.empty(); // 기존 내용 비우기
+
+            $.each(data, function(index, list) {
+                if (list.statCode === '005') {
+                    var row = $('<tr>');
+                    row.append('<td>' + list.recep.patnt.patntNm + '</td>');
+                    row.append('<td><select><option value="">상태선택</option><option value="006">진료중</option></select></td>');
+                    row.append('<td>' + list.statCode + '</td>');
+                    row.append('<td>' + list.statTime + '</td>');
+                    row.append('<td>' + list.recCode + '</td>');
+                    row.append('<td>' + list.fcltyCode + '</td>');
+                    row.append('<td><button type="button" id="saveBtn" data-recCode = ' + list.recCode + ' data-fcltyCode = ' + list.fcltyCode +' >저장</button></td>');
+                    //onclick으로 바꾸기
+                    tbody.append(row);
+                }
+            });
+        },
+        error: function(xhr, textStatus, error) {
+        	
+//             alert("실패");
+        }
+    });
+}
+
+
+//진료중 환자
+function BTable() {
+	
+    $.ajax({
+        url			: '${pageContext.request.contextPath}/patient/clinicRetrieve.do',
+        method		: 'GET',
+        dataType	: 'json',
+        success: function(data) {
+            // 서버로부터 받아온 데이터를 이용하여 테이블 내용을 갱신
+            console.log("clinicRetrieve.do : ", data);
+            
+            var tbody = $('#patntRoom');
+            
+            tbody.empty(); // 기존 내용 비우기
+
+            $.each(data, function(index, list) {
+                if (list.statCode === '006') {
+                    var row = $('<tr>');
+                    row.append('<td>' + list.recep.patnt.patntNm + '</td>');
+                    row.append('<td><select><option value="">상태선택</option><option value="006">진료중</option></select></td>');
+                    row.append('<td>' + list.statCode + '</td>');
+                    row.append('<td>' + list.statTime + '</td>');
+                    row.append('<td>' + list.recCode + '</td>');
+                    row.append('<td>' + list.fcltyCode + '</td>');
+                    row.append('<td><button type="button">저장</button></td>');
+                    tbody.append(row);
+                }
+            });
+        },
+        error: function(xhr, textStatus, error) {
+        	
+            alert("실패");
+        }
+    });
+}
+
+
+$(document).ready(function() {
+    
+	$(document).on("click", "#saveBtn", function() {
+        var recCode = $(this).data("recCode"); 
+        var fcltyCode = $(this).data("fcltyCode"); 
+        
+        var selectedStatus = $(this).closest("tr").find("select").val();
+        
+       console.log("recCode : ", recCode);
+       
+        $.ajax({
+            url: '${pageContext.request.contextPath}/patient/patientInsert.do', 
+            method: "GET", 
+            data: {
+                recCode: recCode,
+                fcltyCode: fcltyCode,
+                statCode: selectedStatus 
+            },
+            dataType: "json",
+            success: function(response) {
+                alert("성공");
+                
+                
+            },
+            error: function(xhr, status, error) {
+            	
+                alert("실패");
+            }
+        });
+    });
+});
+
+
+
+
+</script>

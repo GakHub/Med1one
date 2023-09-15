@@ -1,0 +1,174 @@
+package kr.or.ddit.sales.controller;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import kr.or.ddit.Free.service.FreeService;
+import kr.or.ddit.Free.vo.FreeBoardVO;
+import kr.or.ddit.employee.service.EmployeeService;
+import kr.or.ddit.employee.vo.EmployeeVO;
+
+@Controller
+@RequestMapping("/sales")
+public class SalesMainController {
+
+	
+	@Inject
+	private FreeService freeService;
+	
+	@Inject
+	private EmployeeService empService;
+	
+	@RequestMapping("salesMain.do")
+	public void salesMain( 
+			
+			Model model
+	) {
+		List<FreeBoardVO> empFreeList = freeService.selectStatFreeBoard();
+		List<EmployeeVO> deptEmpList = empService.retrieveDeptEmp(); //부서별 직원수
+		List<EmployeeVO> JobEmpList = empService.retrieveJobEmp(); //직군별 직원수
+		
+		
+		// Calculate total of freeEmpCount
+	    int totalFreeEmpCount = 0;
+	    for (FreeBoardVO board : empFreeList) {
+	        totalFreeEmpCount += Integer.parseInt(board.getFreeEmpCount());
+	    }
+	    
+	    int totalEmpCount = 0;
+	    for (EmployeeVO emp : deptEmpList) {
+	        totalEmpCount += emp.getEmpCount();
+	    }
+	    
+	    int totalDeptCount = deptEmpList.size();
+	
+	    
+	    model.addAttribute("totalFreeEmpCount", totalFreeEmpCount);
+		model.addAttribute("empFreeList",empFreeList);
+		model.addAttribute("deptEmpList",deptEmpList);
+		model.addAttribute("JobEmpList",JobEmpList);
+		model.addAttribute("totalEmpCount",totalEmpCount);
+		model.addAttribute("totalDeptCount",totalDeptCount);
+		
+		
+		 
+	}
+	
+	
+	@RequestMapping("downloadExcel.do")
+	public void downloadExcel(HttpServletResponse response) throws IOException {
+	    List<FreeBoardVO> empFreeList = freeService.selectStatFreeBoard();
+
+	    Workbook workbook = new XSSFWorkbook(); // Use XSSFWorkbook for .xlsx format
+	    Sheet sheet = workbook.createSheet("EmpFreeList");
+
+	    // Create header row
+	    Row headerRow = sheet.createRow(0);
+	    headerRow.createCell(0).setCellValue("작성ID");
+	    headerRow.createCell(1).setCellValue("작성글수");
+
+	    // Create data rows
+	    int rowNum = 1;
+	    int totalFreeEmpCount = 0;
+	    for (FreeBoardVO data : empFreeList) {
+	        Row dataRow = sheet.createRow(rowNum++);
+	        dataRow.createCell(0).setCellValue(data.getEmpNo());
+	        int freeEmpCount = Integer.parseInt(data.getFreeEmpCount());
+	        dataRow.createCell(1).setCellValue(freeEmpCount);
+
+	        // ... Add additional columns if needed
+
+	        totalFreeEmpCount += freeEmpCount;
+	    }
+
+	    // Add the '합계' row
+	    Row totalRow = sheet.createRow(rowNum);
+	    totalRow.createCell(0).setCellValue("합계");
+	    totalRow.createCell(1).setCellValue(totalFreeEmpCount);
+
+	    // Set content type and headers for Excel download
+	    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	    response.setHeader("Content-Disposition", "attachment; filename=EmpFreeList.xlsx");
+
+	    // Write Excel data to response
+	    workbook.write(response.getOutputStream());
+	    workbook.close();
+	}
+	
+	
+	@RequestMapping(value = "uploadExcel.do", method = RequestMethod.POST)
+	public String uploadExcel(@RequestParam("file") MultipartFile file, Model model) {
+	    List<FreeBoardVO> excelDataList = new ArrayList<>();
+	
+
+	    try {
+	        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+	        Sheet sheet = workbook.getSheetAt(0); // Assuming the data is in the first sheet
+
+	      
+	     // Start from the second row (index 1)
+	        for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+	        	
+	            Row row = sheet.getRow(rowIndex);
+	            if (row == null) {
+	                // Handle null row if needed
+	                continue;
+	            }
+	            
+	            /*for (Row row : sheet) {
+	        	*/
+	        	
+	            FreeBoardVO data = new FreeBoardVO();
+
+	            Cell empNoCell = row.getCell(0);
+	            if (empNoCell != null) {
+	                if (empNoCell.getCellType() == CellType.NUMERIC) {
+	                    data.setEmpNo(String.valueOf((int) empNoCell.getNumericCellValue()));
+	                } else if (empNoCell.getCellType() == CellType.STRING) {
+	                    data.setEmpNo(empNoCell.getStringCellValue());
+	                }
+	            }
+
+	            Cell freeEmpCountCell = row.getCell(1);
+	            if (freeEmpCountCell != null) {
+	                if (freeEmpCountCell.getCellType() == CellType.NUMERIC) {
+	                    data.setFreeEmpCount(String.valueOf((int) freeEmpCountCell.getNumericCellValue()));
+	                } else if (freeEmpCountCell.getCellType() == CellType.STRING) {
+	                    data.setFreeEmpCount(freeEmpCountCell.getStringCellValue());
+	                }
+	            }
+
+	            // ... Set additional data properties if needed
+
+	            excelDataList.add(data);
+	        }
+
+	        workbook.close();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        // Handle the exception appropriately
+	    }
+	    
+	    model.addAttribute("excelDataList", excelDataList);
+	    return "sales/salesUpload"; // Assuming you have a JSP view named "uploadedDataView.jsp"
+	}
+
+
+}

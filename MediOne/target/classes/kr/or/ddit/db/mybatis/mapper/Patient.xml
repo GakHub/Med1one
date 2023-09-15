@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.patient.dao.PatientDao">
+
+
+<!-- 	시설별 환자 조회 -->
+	<select id="selectPatntStat" resultType="PatntStatVO" parameterType="string">
+		WITH CTE AS (
+		    SELECT
+		        P.patnt_nm ,
+		        P.patnt_code,
+		        R.rec_code,
+		        S.stat_code,
+		        S.stat_time,
+		        S.fclty_code,
+		        ROW_NUMBER() OVER (PARTITION BY R.rec_code ORDER BY S.stat_time DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.patnt_code = R.patnt_code
+		        INNER JOIN PATNT_STAT S ON S.rec_code = R.rec_code
+		)
+		SELECT
+		    patnt_nm "recep.patnt.patntNm",
+		    patnt_code "recep.patnt.patntCode",
+		    rec_code,
+		    stat_code,
+		    stat_time,
+		    fclty_code
+		FROM
+		    CTE
+		WHERE
+		    RN = 1 AND FCLTY_CODE = #{fcltyCode}
+		ORDER BY
+		    rec_code
+	</select>
+	
+<!-- 	검진코드 가진 환자 상태 전부.. -->
+	<select id="selectPatntStatAll" resultType="PatntStatVO">
+		WITH CTE AS (
+		    SELECT
+		        P.patnt_nm ,
+		        P.patnt_code,
+		        R.rec_code,
+		        S.stat_code,
+		        S.stat_time,
+		        S.fclty_code,
+		        M.mdexmn_code,
+		        ROW_NUMBER() OVER (PARTITION BY R.rec_code ORDER BY S.stat_time DESC) AS RN
+		    FROM
+		    	MDEXMN M
+		    	INNER JOIN RECEPTION R ON (M.REC_CODE = R.REC_CODE)
+		        INNER JOIN PATIENT P ON P.patnt_code = R.patnt_code
+		        INNER JOIN PATNT_STAT S ON S.rec_code = R.rec_code
+		)
+		SELECT
+		    patnt_nm "recep.patnt.patntNm",
+		    patnt_code "recep.patnt.patntCode",
+		    rec_code,
+		    stat_code,
+		    stat_time,
+		    fclty_code,
+		    mdexmn_code "recep.mdexmn.mdexmnCode"
+		FROM
+		    CTE
+		WHERE
+		    RN = 1
+		ORDER BY
+		    rec_code
+	</select>
+	
+<!-- 	대기 환자 전부 -->
+	<select id="selectPatntStatWaitAll" resultType="PatntStatVO">
+		WITH CTE AS (
+		    SELECT
+		        P.patnt_nm ,
+		        P.patnt_code,
+		        R.rec_code,
+		        S.stat_code,
+		        S.stat_time,
+		        S.fclty_code,
+		        ROW_NUMBER() OVER (PARTITION BY R.rec_code ORDER BY S.stat_time DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.patnt_code = R.patnt_code
+		        INNER JOIN PATNT_STAT S ON S.rec_code = R.rec_code
+		)
+		SELECT
+		    patnt_nm "recep.patnt.patntNm",
+		    patnt_code "recep.patnt.patntCode",
+		    rec_code,
+		    stat_code,
+		    stat_time,
+		    fclty_code
+		FROM
+		    CTE
+		WHERE
+		    RN = 1
+		ORDER BY
+		    STAT_CODE ASC
+	</select>
+	
+	
+<!-- 	환자 상태 변경 -->
+	<insert id="insertPatntStat" parameterType="PatntStatVO" >
+		insert into patnt_stat (stat_code, rec_code, fclty_code, stat_time)
+		values( 
+		#{statCode,jdbcType=VARCHAR}
+		, #{recCode,jdbcType=VARCHAR}
+		, #{fcltyCode,jdbcType=VARCHAR}
+		, SYSDATE		
+		)
+	</insert>
+
+ <!-- 환자 예약 등록 -->
+	 <insert id="insertReservation" parameterType="ReservationVO">
+    	<selectKey order="BEFORE" resultType="String" keyProperty="resveNum">
+        	SELECT 'RSVT' || LPAD(RESVE_NUM_SEQ.NEXTVAL, 3, '0') FROM DUAL
+    	</selectKey>
+    
+        INSERT INTO RESERVATION (
+              RESVE_NUM
+            , RESVE_DATE
+            , RESVE_TIME
+            , RESVE_ENDTIME
+            , RESVE_REGIST
+            , PATNT_CODE
+            , FCLTY_CODE
+            , PATNT_NM
+        ) VALUES (
+              
+			  #{resveNum,jdbcType=VARCHAR}
+			, #{resveDate,jdbcType=VARCHAR}
+			, #{resveTime,jdbcType=VARCHAR}
+			, #{resveEndtime,jdbcType=VARCHAR}
+			, SYSDATE
+			, #{patntCode,jdbcType=VARCHAR}
+			, #{fcltyCode,jdbcType=VARCHAR}
+			, #{patntNm,jdbcType=VARCHAR}
+        )
+    </insert>
+
+<!-- 관리자 통계용 : 월별 환자수 조회 -->
+	<select id="selectMonthPatntCount" resultType="PatntStatVO">
+	SELECT
+    	EXTRACT(YEAR FROM STAT_TIME) AS YEAR,
+    	EXTRACT(MONTH FROM STAT_TIME) AS MONTH,
+    	COUNT(*) AS MONTHCOUNT
+	FROM
+    	PATNT_STAT
+	GROUP BY
+    	EXTRACT(YEAR FROM STAT_TIME),
+    	EXTRACT(MONTH FROM STAT_TIME)
+	ORDER BY YEAR, MONTH
+	</select>
+
+
+
+
+<!-- 관리자 통계용 : 연도별 총 환자수 조회 -->
+	<select id="selectYearPatntCount" resultType="PatntStatVO">
+	SELECT
+		EXTRACT(YEAR FROM STAT_TIME) AS YEAR,
+		COUNT(*) AS YEARCOUNT
+	FROM
+		PATNT_STAT
+	GROUP BY
+		EXTRACT(YEAR FROM STAT_TIME)
+	ORDER BY YEAR
+	</select>
+	
+
+
+</mapper>

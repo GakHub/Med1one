@@ -1,0 +1,43 @@
+package kr.or.ddit.medical.clinc.vo;
+
+import java.time.LocalDateTime;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 진료처방내역
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = {"presCode", "mediCode", "docEmpNo"})
+public class PresDocVO {
+	@NotBlank
+	private String presCode;	//처방오더코드
+	@NotBlank
+	private String mediCode;	//약품코드
+	@NotBlank
+	private String docEmpNo;	//의사사번
+	@NotNull
+	@Min(0)
+	private int presdocAmt;		//금액(주사)
+	@NotBlank
+	private String presMAmt;	//1일투여량
+	@NotBlank
+	private Integer presMCo;	//1일투여횟수
+	private String diet;		//식이
+	@NotNull
+	@Min(0)
+	private int mediDay;		//투약일수
+	@DateTimeFormat(iso = ISO.DATE_TIME)
+	private LocalDateTime presDate;	 //처방일시 sysdate
+	private String presSeparate;	 //처방구분 -> 입원환자? not null이면 입원환자 null이면 진료환자
+}

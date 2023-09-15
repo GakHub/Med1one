@@ -1,0 +1,560 @@
+
+<script>
+	/*     keyfrom : 시작 시간, keyto : 종료 시간, text :일정내용, bg : 배경색, days: 요일
+	 <option value="K">CT실</option>sunday
+	 <option value="L">MRI실</option>moday
+	 <option value="O">임상병리검사실</option>'tuesday',
+	 <option value="M">초음파실</option>, 'wednesday'
+	 <option value="N">내시경실</option>'thursday
+	 <option value="H">일반검사실</option>friday
+	 <option value="H">비고</option>saturday
+
+	 <option value="A">호흡기내과</option>sunday
+	 <option value="B">소화기내과</option>monday
+	 <option value="F">내분비내과</option>tuesday
+	 <option value="D">심장내과</option>wednesday
+	 <option value="E">감염내과</option>thursday
+	 <option value="C">영상의학과</option>friday
+	 <option value="G">종합검진센터</option>saturday
+
+	 .bg-red {
+	 background: #eb5a46b8;
+	 color: #8e3224;
+	 border: 2px solid #b95344
+	 }
+
+	 .bg-blue {
+	 background: #08b7d29e;
+	 color: #104a53;
+	 border: 2px solid #157786
+	 }
+
+	 .bg-purple {
+	 background: #a251bfb8;
+	 color: #633673;
+	 border: 2px solid #a24cc1
+	 }
+
+	 .bg-yellow {
+	 background: #f0d50794;
+	 color: #847927;
+	 border: 2px solid #e1c700
+	 }
+
+	 .bg-green {
+	 background: #61bd4fa1;
+	 color: #3c882d;
+	 border: 2px solid #61bd4f
+	 }
+	 [{"resveNum":"RSVT003","resveDate":"20230810","resveTime":"11:00","resveEndtime":"12:00",
+	 "resveRegist":[2023,8,21],"patntCode":"PNT0008","fcltyCode":"K","patntNm":"김민수님(PNT0008)",
+	 "birth":"8909051","patntTelno":"01012345678","fcltyNm":"sunday","docEmpNm":null,"docEmpNo":null}]
+
+	 */
+	
+
+	// 전체조회페이지에서 날짜/진료실 검색 시 날짜 파라미터 변형(2023-08-00 =>20230800)
+	$("#allSearchForm").submit(function() {
+		var selectedDate = $("#resveDate").val(); // 선택된 날짜 가져오기 (YYYY-MM-DD 형식)
+
+		// 날짜 형식 변환 (YYYYMMDD 형식으로)
+		var formattedDate = selectedDate.replace(/-/g, '');
+		cosole.log(formattedDate);
+
+		// 변환된 날짜를 파라미터에 설정
+		$("#resveDate").val(formattedDate);
+	});
+
+	//페이징
+	$('#patient-table').addClass('nowrap').dataTable({
+		responsive : true,
+		columnDefs : [ {
+			targets : [ -1, -3 ],
+			className : 'dt-body-right'
+		} ]
+	});
+
+	$('#myProjectTable').addClass('nowrap').dataTable({
+		responsive : true,
+		columnDefs : [ {
+			targets : [ -1, -3 ],
+			className : 'dt-body-right'
+		} ]
+	});
+
+	$('#myProjectTable2').addClass('nowrap').dataTable({
+		responsive : true,
+		columnDefs : [ {
+			targets : [ -1, -3 ],
+			className : 'dt-body-right'
+		} ]
+	});
+
+	//페이징 end
+
+	//(첫번째탭) 전체조회탭에서 환자선택시 상세조회 테이블
+	$(document)
+			.on(
+					"click",
+					".rezBtn",
+					function() {
+
+						var patntCode = $(this).data("time");
+						console.log(patntCode);
+
+						$
+								.getJSON(
+										"<c:url value='/rez/rezPatntInfo.do' />",
+										{
+											patntCode : patntCode
+										})
+								.done(
+										function(resp) {
+											console.log(resp);
+											var info = resp;
+											var tbody = $(".patientInfo");
+											tbody.empty();
+											if (resp.length > 0) {
+												$(resp)
+														.each(
+																function(idx,
+																		info) {
+																	let tr = $(
+																			"<tr>")
+																			.append(
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntNm),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntCode),
+																					$(
+																							"<td>")
+																							.html(
+																									info.birth),
+																					$(
+																							"<td>")
+																							.html(
+																									info.gen),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntTelno),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patEmail),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntnRegist),
+																					$(
+																							"<td>")
+																							.html(
+																									info.resveDate),
+																					$(
+																							"<td>")
+																							.html(
+																									info.docEmpNm
+																											+ " ("
+																											+ info.fcltyNm
+																											+ ")"),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntAdd1),
+																					$(
+																							"<td>")
+																							.html(
+																									info.heght
+																											+ "cm/"
+																											+ info.weight
+																											+ "kg"));
+																	tbody
+																			.append(tr);
+																});
+											} else {
+												tbody
+														.append($("<tr>")
+																.html(
+																		$(
+																				"<td colspan='11'>")
+																				.html(
+																						"환자 정보가 존재하지 않습니다.")));
+											}
+										});
+					});
+
+	//(두번째탭) 진료실 전체예약리스트 조회 
+
+	// 외래조회 데이터 로드 함수
+	$
+			.getJSON("<c:url value='/rez/clinicRezList.do' />")
+			.done(
+					function(resp) {
+
+						console.log(resp);
+
+						var info = resp;
+						var tbody = $("#clinicRezList");
+						tbody.empty();
+
+						if (resp.length > 0) {
+							$(resp)
+									.each(
+											function(idx, info) {
+
+												// info.resveTime을 네 자리 문자열로 받아서 시간 형식으로 변경
+												var formattedTime = info.resveTime
+														.substr(0, 2)
+														+ ":"
+														+ info.resveTime
+																.substr(2, 2);
+												var formattedEndtime = info.resveTime
+														.substr(0, 2)
+														+ ":"
+														+ info.resveEndtime
+																.substr(2, 2);
+
+												let tr = $("<tr>")
+														.append(
+																$("<td>")
+																		.html(
+																				info.resveNum),
+																$("<td>")
+																		.html(
+																				$(
+																						"<button class='btn-success clinicRezBtn'></button>")
+																						.attr(
+																								"data-pcode",
+																								info.patntCode)
+																						.text(
+																								info.patntNm)
+																						.click(
+																								function() {
+																									var patntCode = $(
+																											this)
+																											.data(
+																													"pcode");
+
+																								})),
+																$("<td>")
+																		.html(
+																				info.patntTelno),
+																$("<td>")
+																		.html(
+																				info.birth),
+																$("<td>")
+																		.html(
+																				info.fcltyNm),
+																$("<td>")
+																		.html(
+																				info.reseveDate),
+																$("<td>")
+																		.html(
+																				formattedTime),
+																$("<td>")
+																		.html(
+																				formattedEndtime),
+																$("<td>")
+																		.html(
+																				info.docEmpNm));
+												tbody.append(tr);
+											});
+						} else {
+							tbody.append($("<tr>").html(
+									$("<td colspan='9'>").html(
+											"예약 정보가 존재하지 않습니다.")));
+						}
+					});
+
+	//(세번째탭) 검사실 전체예약리스트 조회 
+	// 외래조회 데이터 로드 함수
+	$
+			.getJSON("<c:url value='/rez/examRezList.do' />")
+			.done(
+					function(resp) {
+
+						console.log(resp);
+
+						var info = resp;
+						var tbody = $("#examRezList");
+						tbody.empty();
+
+						if (resp.length > 0) {
+							$(resp)
+									.each(
+											function(idx, info) {
+
+												// info.resveTime을 네 자리 문자열로 받아서 시간 형식으로 변경
+												var formattedTime1 = info.resveTime
+														.substr(0, 2)
+														+ ":"
+														+ info.resveTime
+																.substr(2, 2);
+												var formattedEndtime2 = info.resveTime
+														.substr(0, 2)
+														+ ":"
+														+ info.resveEndtime
+																.substr(2, 2);
+
+												let tr = $("<tr>")
+														.append(
+																$("<td>")
+																		.html(
+																				info.resveNum),
+																$("<td>")
+																		.html(
+																				$(
+																						"<button class='btn-success examRezBtn'></button>")
+																						.attr(
+																								"data-ecode",
+																								info.patntCode)
+																						.text(
+																								info.patntNm)
+																						.click(
+																								function() {
+																									var patntCode = $(
+																											this)
+																											.data(
+																													"ecode");
+																								})),
+																$("<td>")
+																		.html(
+																				info.patntTelno),
+																$("<td>")
+																		.html(
+																				info.birth),
+																$("<td>")
+																		.html(
+																				info.fcltyNm),
+																$("<td>")
+																		.html(
+																				info.reseveDate),
+																$("<td>")
+																		.html(
+																				formattedTime1),
+																$("<td>")
+																		.html(
+																				formattedEndtime2),
+																$("<td>")
+																		.html(
+																				info.docEmpNm));
+												tbody.append(tr);
+											});
+						} else {
+							tbody.append($("<tr>").html(
+									$("<td colspan='9'>").html(
+											"예약 정보가 존재하지 않습니다.")));
+						}
+					});
+
+	//클리닉 환자선택시 상세조회 테이블
+	$(document)
+			.on(
+					"click",
+					".clinicRezBtn",
+					function() {
+						var patntCode = $(this).data("pcode");
+
+						console.log(patntCode);
+
+						$
+								.getJSON(
+										"<c:url value='/rez/rezPatntInfo.do' />",
+										{
+											patntCode : patntCode
+										})
+								.done(
+										function(resp) {
+
+											console.log(resp);
+
+											var info = resp;
+											var tbody = $(".clinicPatientInfo");
+
+											tbody.empty();
+
+											if (resp.length > 0) {
+												$(resp)
+														.each(
+																function(idx,
+																		info) {
+																	let tr = $(
+																			"<tr>")
+																			.append(
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntNm),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntCode),
+																					$(
+																							"<td>")
+																							.html(
+																									info.birth),
+																					$(
+																							"<td>")
+																							.html(
+																									info.gen),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntTelno),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patEmail),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntnRegist),
+																					$(
+																							"<td>")
+																							.html(
+																									info.resveDate),
+																					$(
+																							"<td>")
+																							.html(
+																									info.docEmpNm
+																											+ " ("
+																											+ info.fcltyNm
+																											+ ")"),
+																					$(
+																							"<td>")
+																							.html(
+																									info.patntAdd1),
+																					$(
+																							"<td>")
+																							.html(
+																									info.heght
+																											+ "cm/"
+																											+ info.weight
+																											+ "kg"));
+																	tbody
+																			.append(tr);
+																});
+											} else {
+												tbody
+														.append($("<tr>")
+																.html(
+																		$(
+																				"<td colspan='11'>")
+																				.html(
+																						"환자 정보가 존재하지 않습니다.")));
+
+											}
+										});
+
+						// 검사예약조회에서 환자 검색
+						$(document)
+								.on(
+										"click",
+										".examRezBtn",
+										function() {
+											var patntCode = $(this).data(
+													"ecode");
+
+											console.log(patntCode);
+
+											$
+													.getJSON(
+															"<c:url value='/rez/rezPatntInfo.do' />",
+															{
+																patntCode : patntCode
+															})
+													.done(
+															function(resp) {
+
+																console
+																		.log(resp);
+
+																var info = resp;
+																var tbody = $(".examPatientInfo");
+
+																tbody.empty();
+
+																if (resp.length > 0) {
+																	$(resp)
+																			.each(
+																					function(
+																							idx,
+																							info) {
+																						let tr = $(
+																								"<tr>")
+																								.append(
+																										$(
+																												"<td>")
+																												.html(
+																														info.patntNm),
+																										$(
+																												"<td>")
+																												.html(
+																														info.patntCode),
+																										$(
+																												"<td>")
+																												.html(
+																														info.birth),
+																										$(
+																												"<td>")
+																												.html(
+																														info.gen),
+																										$(
+																												"<td>")
+																												.html(
+																														info.patntTelno),
+																										$(
+																												"<td>")
+																												.html(
+																														info.patEmail),
+																										$(
+																												"<td>")
+																												.html(
+																														info.patntnRegist),
+																										$(
+																												"<td>")
+																												.html(
+																														info.resveDate),
+																										$(
+																												"<td>")
+																												.html(
+																														info.docEmpNm
+																																+ " ("
+																																+ info.fcltyNm
+																																+ ")"),
+																										$(
+																												"<td>")
+																												.html(
+																														info.patntAdd1),
+																										$(
+																												"<td>")
+																												.html(
+																														info.heght
+																																+ "cm/"
+																																+ info.weight
+																																+ "kg"));
+																						tbody
+																								.append(tr);
+																					});
+																} else {
+																	tbody
+																			.append($(
+																					"<tr>")
+																					.html(
+																							$(
+																									"<td colspan='11'>")
+																									.html(
+																											"환자 정보가 존재하지 않습니다.")));
+
+																}
+															});
+
+										});
+
+					});
+});
+</script>

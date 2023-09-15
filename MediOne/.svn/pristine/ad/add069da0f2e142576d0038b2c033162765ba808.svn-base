@@ -1,0 +1,97 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form" %>
+
+    <h4>사용 승인신청서</h4>
+
+<div>
+<form:form method="post" modelAttribute="auth" enctype="multipart/form-data">
+	<table id="mypageFrom" class="table table-bordered">
+		<tr>
+			<th rowspan="7">
+			사진
+<!-- 			<img src="..." class="img-thumbnail" alt="..."> -->
+<!-- 			<td> -->
+<!-- 			<input type="file" name="Image" accept="image/*"/> -->
+<%-- 			<form:errors path="Img" class="error"/> --%>
+<!-- 			</td> -->
+			</th>
+		</tr>
+		<tr>
+			<th>사번</th>
+			<td>
+
+			</td>
+		</tr>
+		<tr>
+			<th>성명</th>
+			<td>
+
+			</td>
+		</tr>
+		<tr>
+			<th>주민번호</th>
+			<td>
+
+			</td>
+		</tr>
+		<tr>
+			<th>핸드폰번호</th>
+			<td colspan="2">
+
+			</td>
+		</tr>
+		<tr>
+			<th>이메일</th>
+			<td colspan="2">
+
+			</td>
+		</tr>
+		
+		<!-- list로 출력하기 -->
+		<tr>
+			<th>담당과</th>
+			<td>
+
+			</td>
+		</tr>
+		
+		<!-- list로 출력하기 -->
+		<tr>
+			<th>입사일</th>
+			<td colspan="2">
+
+			</td>
+		</tr>
+		<!-- api -->
+		<tr>
+			<th>우편번호</th>
+			<td colspan="2">
+<%-- 			<form:input path="empZipcode" class="form-control" type="text"/> --%>
+<%--             <form:errors path="empZipcode" class="error" /> --%>
+			</td>
+		</tr>
+		<tr>
+			<th>주소</th>
+			<td colspan="2">
+<%-- 			<form:input path="empAddr1" class="form-control" type="text"/> --%>
+<%--             <form:errors path="empAddr1" class="error" /> --%>
+			</td>
+		</tr>
+		<tr>
+			<th>상세주소</th>
+			<td colspan="2">
+<%-- 			<form:input path="empAddr2" class="form-control" type="text"/> --%>
+<%--             <form:errors path="empAddr2" class="error" /> --%>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="4" style="text-align: right;">
+				<input type="submit" class="btn btn-primary" value="승인제출"/>
+			</td>
+		</tr>
+	</table>
+</form:form>
+</div>
+    

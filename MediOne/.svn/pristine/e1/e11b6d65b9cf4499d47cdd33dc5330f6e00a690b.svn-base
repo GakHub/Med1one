@@ -1,0 +1,20 @@
+package kr.or.ddit.stat.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.stat.dao.StatDao;
+
+@Service
+public class StatServiceImpl implements StatService {
+
+	StatDao statDAO;
+	
+	@Override
+	public List<EmployeeVO> retrieveDeptEmp() {
+		return statDAO.selectDeptEmp();
+	}
+
+}

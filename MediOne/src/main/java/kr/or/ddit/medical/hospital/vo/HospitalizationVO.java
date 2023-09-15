@@ -1,0 +1,89 @@
+package kr.or.ddit.medical.hospital.vo;
+
+import java.time.LocalDate;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import kr.or.ddit.employee.vo.CommonCodeVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.medical.clinc.vo.ClinicVO;
+import kr.or.ddit.medical.clinc.vo.DiseaseVO;
+import kr.or.ddit.medical.clinc.vo.HsptlzOrderVO;
+import kr.or.ddit.medical.clinc.vo.InspRsltVO;
+import kr.or.ddit.medical.clinc.vo.MedicineVO;
+import kr.or.ddit.medical.clinc.vo.PresDocVO;
+import kr.or.ddit.medical.vo.PatientVO;
+import kr.or.ddit.medical.vo.PatntStatVO;
+import kr.or.ddit.medical.vo.ReceptionVO;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 입원 VO
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "hsptlzCode")
+public class HospitalizationVO {
+	@NotBlank
+	private String hsptlzCode; //입원코드 (시퀀스)
+	@NotBlank
+	private String hsptlzIn; //입원날짜 ex)230801
+	private String hsptlzOut; //퇴원예정날짜 ex)230803
+	@NotNull
+	@Min(1)
+	private int hsptlzTotal; //재원일수
+	@NotBlank
+	private String recCode; //접수코드 
+	@NotBlank
+	private String hspodCode; //입원오더코드
+	@JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd")
+	private LocalDate hsptlzOutDate; //퇴원일
+	@NotBlank
+	private String sckbdRo; //호실
+	@NotBlank
+	private int sckbdNo; //침상번호
+	@NotBlank
+	private String docEmpNo; //의사사번
+	
+	
+	private SckbdVO sckbd;
+
+	private String patntCode; //환자코드
+	
+	private PatientVO patnt; // 환자 
+	private CommonCodeVO com;
+	private ReceptionVO re;
+	
+	
+	
+	private DiseaseVO dss;
+	
+	//통계용
+
+	private String month;
+
+	private String year; 
+	
+	private int monthCount;//월별환자수
+	
+	
+	private HsptlzOrderVO order; // 오더 - 식이떄매 
+	
+	private ClinicVO clinic; // 처방 - 약
+	
+	private PatntStatVO stat; // 상태
+	
+	private PresDocVO presdoc;
+	
+	private MedicineVO medicine; // 약 이름 
+	
+	private EmployeeVO emp;
+	
+	private InspRsltVO inrt;
+}

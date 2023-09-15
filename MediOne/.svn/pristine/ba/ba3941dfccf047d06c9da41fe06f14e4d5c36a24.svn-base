@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:c="http://www.springframework.org/schema/c"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:mvc="http://www.springframework.org/schema/mvc"
+   xmlns:p="http://www.springframework.org/schema/p"
+   xmlns:util="http://www.springframework.org/schema/util"
+   xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+      http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+   
+   <!-- 하위컨텍스트를 자동으로 bean등록 (annotation 사용했을때) -->
+   <context:component-scan base-package="kr.or.ddit" use-default-filters="false">
+      <context:include-filter type="annotation" 
+      expression="org.springframework.stereotype.Controller"/> <!-- 컨트롤러 배제해야함 -->
+      <context:include-filter type="annotation" 
+      expression="org.springframework.web.bind.annotation.ControllerAdvice"/> 
+   </context:component-scan>
+   
+<!--    RequestMappingHandlerMapping : @Controller/@RequestMapping을 트레이싱해서 컨트롤러 정보를 수집함. -->
+<!--                         하나의 요청을 처리할 컨트롤러를 검색 -->
+<!--    RequestMappingHandlerAdapter : @RequestMapping으로 등록된 컨트롤러(핸들러 메소드)를 실행함. -->
+<!--    ViewResolverComposite : 등록된 ViewResolver들이 설정된 order에 따라 동작하도록 제어함. -->
+   <mvc:annotation-driven></mvc:annotation-driven>
+   
+   <!-- view resolver - 3개 -->
+   <!-- 제일마지막에 읽어져야함 -->
+   <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+      p:prefix="/WEB-INF/views/" 
+      p:suffix=".jsp"
+   />
+   <!-- 우선순위 마지막은 p:order생략(자동으로 가장큰값됨) 다 못찾으면 InternalResoure어쩌구 실행 -->
+   
+   <!-- logicalviewName을 definition으로 연결 -> tilescontext를 실행?할수 있는 객체-->
+   <bean class="org.springframework.web.servlet.view.tiles3.TilesConfigurer" 
+      p:definitions="/WEB-INF/tiles/*-definitions.xml"
+   />
+   <bean class="org.springframework.web.servlet.view.tiles3.TilesViewResolver" 
+      p:order="1"
+   />
+
+   <!-- json형태에서 date타입들 배열으로 나오는거 문자열로 뚱땅뚱땅 고치기 ~ -->
+   <util:constant id="disableFeature" static-field="com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS" />
+   
+   <bean id="jackson2ObjectMapper" class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean" >
+      <property name="featuresToDisable">
+         <array>
+            <ref bean="disableFeature"/>
+         </array>
+      </property>
+   </bean>
+   
+   <!-- p:order는 우선순위 -->
+   <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView" 
+      p:objectMapper-ref="jackson2ObjectMapper"
+   />
+   
+   <bean id="downloadView" class="kr.or.ddit.File.view.AtchDownloadView"/>
+   
+  
+   <bean class="org.springframework.web.servlet.view.BeanNameViewResolver" 
+      p:order="2"
+   />
+   
+   <!-- 정적자원 Handler를 추가 = controller / req의 주소가 필요함  -->
+   <mvc:resources location="/resources/" mapping="/resources/**" cache-period="0"/>
+   <mvc:resources location="file:///M:/resources/images/" mapping="/resources/images/**"/>
+<!--    <mvc:resources location="file://M:/resources/images/" mapping="/resources/images/**"/> -->
+   
+   <!-- 타일즈에 일치하는게 없으면 jsonView가  -->
+   
+   
+   <!-- 제어권 필요 - 우선순위 -->
+   
+   <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource" 
+		p:basenames="kr/or/ddit/msg/Messages"
+	/>
+	
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver" 
+		p:cookiePath="/"
+		p:cookieName="langCookie"
+		p:cookieMaxAge="#{60*60*24*7}"
+	/>
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/**"/>
+			<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" 
+				p:paramName="lang"
+			/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+   
+</beans>

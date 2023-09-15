@@ -1,0 +1,34 @@
+package kr.or.ddit.medical.patient.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+@Mapper
+public interface PatientDao {
+
+	public List<PatntStatVO> selectPatntStat(String fcltyCode); //대기 환자 부서별 조회
+	
+	public int insertPatntStat(PatntStatVO patntStat); //환자 상태 변경
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}

@@ -1,0 +1,277 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+   pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form" %>
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+<style>
+
+/* .logform-size{ */
+/* height: 800px; */
+
+/* } */
+
+/* 입력 폼 */
+.mb-2{
+margin-left: -48px;
+margin-bottom: 0.1rem!important;
+}
+
+.form-control-lg{
+width: 114.5%;
+}
+
+.authForm-size {
+	height: 600px;
+	
+}
+
+.totalDiv {
+	background-color: rgba(255, 255, 255);
+	height: 80vh;
+	margin-top:-26px;
+	display:flex;
+	padding-right: 50px;
+	width: 88.4%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+}
+
+.secondary-color{
+	color: darkorange;
+	}
+	
+	 body {
+ background-image: url("<%=request.getContextPath()%>/resources/images/hospitalGround.jpg");
+ background-size: cover; /* 이미지를 컨테이너에 맞게 크기 조절 */
+ background-repeat: no-repeat; /* 이미지 반복 안 함 */
+	
+}
+
+
+
+#authForm {
+max-width: 26.3rem; margin-right: 10px; border-radius: 10px; height: 96%;
+}
+
+</style>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<title>:: Med1 One :: Authorization Request</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<!-- Favicon-->
+<!-- project css file  -->
+<link rel="stylesheet"
+	href="${pageContext.request.contextPath}/resources/dist/assets/css/ihealth.style.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+</head>
+
+<body>
+
+	<div id="ihealth-layout" class="theme-tradewind">
+
+		<!-- main body area -->
+		<div class="main p-2 py-3 p-xl-5">
+
+			<!-- Body: Body -->
+			<div class="body d-flex p-0 p-xl-5">
+			<div class="totalDiv"> 
+				<div class="container-xxl" style="max-width: 1757px;">
+
+					<div class="row g-0">
+						<div
+							class="col-lg-6 d-none d-lg-flex justify-content-center align-items-center rounded-lg auth-h100" >
+							<div style="max-width: 25rem;">
+								<div class="mb-5"></div>
+								<!-- Image block -->
+					
+								<div class="">
+									<img
+										src="${pageContext.request.contextPath}/resources/images/logo.png"
+										alt="login-img" style="margin-bottom: 78px; margin-left: 21px;
+}">
+								</div>
+								 <div class="">
+                                <img src="${pageContext.request.contextPath}/resources/dist/assets/images/login-img.svg" alt="login-img" style="margin-top: 40px;
+    margin-bottom: 40px;">
+                            </div>
+							</div>
+						</div>
+
+						<div
+							class="col-lg-6 d-flex justify-content-center align-items-center border-0 rounded-lg auth-h100">
+							<div id="authForm"
+								class="w-100 p-3 p-md-5 card border-0 bg-dark text-light"
+								 >
+								<!-- Form -->
+																    
+                                <div class="col-12 text-center mb-5" style="margin-top:8px;" >
+									<h1 class="fw-bold mb-0 color-900 text-center">MED1ONE</h1>
+									<span>시스템 사용 신청</span>
+								</div>
+								
+								<form:form method="post" modelAttribute="auth" enctype="multipart/form-data" name="authForm"  
+									action="${pageContext.request.contextPath }/auth/authSignup.do"
+									class="row g-1 p-3 p-md-4 form-background logform-size" >
+									
+									
+									
+									<div class="col-6" style="width: 100%; margin-bottom: 15px;">
+										<div class="mb-2" style="">
+											<form:label path="empNo" class="form-label">사번</form:label>
+											<form:input id="empNo" path="empNo" type="text" class="form-control form-control-lg" style="width: 114.5%;"/>
+											<form:errors path="empNo" class="error" />
+										
+										
+										</div>
+									</div>
+									
+									<div class="col-6" style="width: 100%; margin-bottom: 15px;">
+										<div class="mb-2">
+											<form:label path="empNm" class="form-label">이름</form:label>
+											<form:input id="empNm" path="empNm" type="text" class="form-control form-control-lg" style="width: 114.5%;"/>
+											<form:errors path="empNm" class="error"/>
+										</div>
+									</div>
+		
+						    
+									<div class="col-6" style="width: 100%; margin-bottom: 15px;">
+										<div class="mb-2">
+											<form:label path="empIdentino" class="form-label">주민등록번호</form:label>
+											<form:input id="empIdentino" path="empIdentino" type="password" class="form-control form-control-lg" style="width: 114.5%;" placeholder="950516-0000000"/>
+											<form:errors path="empIdentino" class="error" />
+										</div>
+									</div>
+									
+
+									<div class="col-12" style="margin-bottom: 15px;">
+								    <div class="mb-2">
+								        <label class="form-label">부서</label>
+								        <form:select id="deptCode" path="deptCode" class="form-select-sm">
+								            <form:option value="" label="부서선택" />
+								            <form:option value="PM" label="호흡기내과" />
+								            <form:option value="GI" label="소화기내과" />
+								            <form:option value="DR" label="영상의학과" />
+								            <form:option value="HT" label="심장내과" />
+								            <form:option value="IF" label="감염내과" />
+								            <form:option value="ME" label="내분비내과" />
+								            <form:option value="TC" label="종합검진센터" />
+								            <form:option value="NS" label="병동간호과" />
+								            <form:option value="NC" label="특수간호과" />
+								            <form:option value="NR" label="일반간호과" />
+								            <form:option value="CP" label="임상병리과" />
+								            <form:option value="RD" label="방사선과" />
+								            <form:option value="AD" label="원무과" />
+								            <form:option value="GA" label="총무과" />
+								            <form:option value="MG" label="관리과" />
+								            <form:option value="PL" label="병원장" />
+								        </form:select>
+									    </div>
+									</div>
+									
+									
+
+									<div class="col-12" style="margin-bottom: 5px;">
+										<div class="mb-2">
+											<form:label path="boFiles" class="form-label">프로필사진 등록</form:label>
+											<form:input path="boFiles" type="file" class="form-control form-control-lg" style="width: 114.5%;" />
+											<form:errors path="boFiles" class="error"/>
+										</div>
+									</div>
+
+
+										<div class="col-12" style="margin-bottom: 5px;">
+										    <div class="mb-2">
+										        <div class="form-check">
+										            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" name="thirdPartyConsent">
+										            <label class="form-check-label" for="flexCheckDefault"> 개인정보 제 3자 제공동의 
+										            </label>
+										        </div>
+										    </div>
+										</div>
+									<div class="col-12 text-center mt-4">
+									    <span>계정이 있으신가요 ?<a
+									        href="${pageContext.request.contextPath}/login/loginForm.jsp"
+									        title="Sign in">로그인 하러 가기</a></span>
+									</div>
+
+									<div class="col-12 text-center mt-4" style="margin-bottom: 15px;">
+									    <input type="submit" class="btn btn-lg btn-block btn-light lift text-uppercase fw-bold mb-0"  value="등록">
+									    <button type="button" id="rstInsert" class="btn btn-secondary">click</button>
+									</div>
+									
+									
+								</form:form>
+								<!-- End Form -->
+							</div>
+						</div>
+					</div>
+					<!-- End Row -->
+
+				</div>
+			</div>
+	</div>
+		</div>
+
+	</div>
+
+	<!-- Jquery Core Js -->
+	<script
+		src="${pageContext.request.contextPath}/resources/dist/assets/bundles/libscripts.bundle.js"></script>
+	<script>
+    /* 중복된 사번 알림 창 */
+    var isDuplicate = "${duplicateEmpNo}";
+    if (isDuplicate) {
+    	Swal.fire("이미 승인완료 된 사번입니다. 로그인을 해주세요");
+        window.location.href = "${pageContext.request.contextPath}/login/loginForm.jsp";
+    }
+    
+    /* 제 3자 제공동의 체크 여부 확인 */
+    document.addEventListener('DOMContentLoaded', function() {
+        var consentCheckbox = document.getElementById('flexCheckDefault');
+        var submitButton = document.querySelector('input[type="submit"]');
+
+        
+        consentCheckbox.addEventListener('change', function() {
+            if (consentCheckbox.checked) {
+                submitButton.disabled = false; // 동의 체크되면 버튼 활성화
+            } else {
+                submitButton.disabled = true; // 동의 체크 안되면 버튼 비활성화
+            }
+        });
+
+        var authForm = document.getElementById('authForm');
+        authForm.addEventListener('submit', function(event) {
+            if (!consentCheckbox.checked) {
+                event.preventDefault(); // 동의 체크가 안 되었을 때 폼 제출 차단
+                Swal.fire({
+                    icon: 'warning',
+                    title: '개인정보 제 3자 제공 동의에 체크해주세요.',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                	
+                });
+                
+            }
+        });
+    });
+    
+
+$("#rstInsert").on("click", function(){
+	$("#empNo").val("TCP0054");
+	$("#empNm").val("풍우람");
+	$("#empIdentino").val("990112-1402179");
+	$("#deptCode").val("CP");
+});
+
+</script>
+	
+</body>
+</html>

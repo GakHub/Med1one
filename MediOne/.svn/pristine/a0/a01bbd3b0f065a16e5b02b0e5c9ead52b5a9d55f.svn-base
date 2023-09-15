@@ -1,0 +1,45 @@
+package kr.or.ddit.medical.receive.controller;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.medical.receive.service.ReceiveService;
+import kr.or.ddit.medical.vo.PatntStatVO;
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequestMapping("/receive")
+@RequiredArgsConstructor
+public class ReceiveController {
+
+	@Inject
+	private final ReceiveService service;
+
+	// 수납 jsp 접근
+	@GetMapping("receiveSearch.do")
+	public String receiveSearch() {
+		return "administ/receive";
+	}
+
+	// 수납영수증 jsp 접근
+	@GetMapping("receiveBillView.do")
+	public String receiveBillView() {
+		return "administ/pop/receiveBill";
+	}
+
+	// 환자 조회 (진료중, 진료대기중)
+	@GetMapping(value = "receivePatientView.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<PatntStatVO> patientView() {
+		List<PatntStatVO> patient = service.retrievePatientList();
+		return patient;
+	}
+
+}

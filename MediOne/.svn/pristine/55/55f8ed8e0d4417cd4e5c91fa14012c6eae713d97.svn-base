@@ -1,0 +1,86 @@
+package kr.or.ddit.medical.nurse.controller;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+
+import javax.inject.Inject;
+
+import org.springframework.http.MediaType;
+
+import org.springframework.http.MediaType;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
+import org.springframework.web.bind.annotation.ResponseBody;
+import kr.or.ddit.medical.nurse.service.NurseService;
+import kr.or.ddit.medical.nurse.vo.DoctorDtlVO;
+import kr.or.ddit.medical.nurse.vo.DoctorSchdulVO;
+import kr.or.ddit.medical.nurse.vo.NurseDtlVO;
+import kr.or.ddit.medical.nurse.vo.NurseSchdulVO;
+import kr.or.ddit.medical.nurse.vo.wrapper.DoctorSchdulVOWrapper;
+import kr.or.ddit.medical.nurse.vo.wrapper.FullcalenderEvent;
+import kr.or.ddit.medical.nurse.vo.wrapper.NurseSchdulVOWrapper;
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequestMapping("/nurse/")
+public class ScheduleRetrieveController {
+	
+	@Inject
+	private NurseService service;
+
+	// 근무일정 - 의사
+	@GetMapping(value = "docScheduleList.do", produces = MediaType.TEXT_HTML_VALUE)
+	public String docScheduleList() {	
+		return "nurse/schedule";
+	}
+	
+	// 근무일정 - 의사
+	@GetMapping(value = "docScheduleList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<FullcalenderEvent<DoctorDtlVO>> docScheduleListDataSource() {
+		List<DoctorDtlVO> doctorList = service.retrieveDoctorList();
+		return doctorList.stream().map(DoctorSchdulVOWrapper::new).collect(Collectors.toList());
+	}
+	
+	// 근무일정 - 간호사
+	@GetMapping(value = "nurScheduleList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<FullcalenderEvent<NurseDtlVO>> nurScheduleListDataSource() {
+		List<NurseDtlVO> nurseList = service.retrieveNurseList();
+		return nurseList.stream().map(NurseSchdulVOWrapper::new).collect(Collectors.toList());
+		
+		
+		
+	}
+	
+	
+	// 근무일정 - 부서별 의사
+		@GetMapping(value = "docDeptScheduleList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+		@ResponseBody
+		public List<FullcalenderEvent<DoctorDtlVO>> docScheduleListDataSource(@RequestParam("fcltyCodeDoc") String fcltyCode) {
+			List<DoctorDtlVO> doctorList = service.retrieveDoctorDeptList(fcltyCode);
+			return doctorList.stream().map(DoctorSchdulVOWrapper::new).collect(Collectors.toList());
+		}
+		
+		// 근무일정 - 부서별 간호사
+		@GetMapping(value = "nurDeptScheduleList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+		@ResponseBody
+		public List<FullcalenderEvent<NurseDtlVO>> nurScheduleListDataSource(@RequestParam("fcltyCodeNur") String fcltyCode) {
+			List<NurseDtlVO> nurseList = service.retrieveNurseDeptList(fcltyCode);
+			return nurseList.stream().map(NurseSchdulVOWrapper::new).collect(Collectors.toList());
+			
+			
+			
+		}
+}

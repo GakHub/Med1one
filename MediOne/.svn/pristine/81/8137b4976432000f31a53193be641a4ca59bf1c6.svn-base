@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.newfile.dao.NewFileDAO">
+
+	<sql id="searchFrag">
+	<where>
+			<if	test="simpleCondition neq null and simpleCondition.searchWord neq null and not simpleCondition.searchWord.isEmpty()">
+				<choose>
+					<when test="simpleCondition.searchType eq 'empNo'">
+						INSTR(EMP_NO, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'fileTitle'">
+						INSTR(FILE_TITLE, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'content'">
+						INSTR(FILE_COL1, #{simpleCondition.searchWord}) > 0
+					</when>
+					<otherwise> <!-- 전체옵션을 줬을 때 -->
+						INSTR(EMP_NO, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(FILE_TITLE, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(FILE_COL1, #{simpleCondition.searchWord}) > 0
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</sql>
+
+	<select id="selectNewFileTitle" parameterType="String" resultType="NewFileVO">
+         SELECT *
+         FROM NEW_FILE
+		 WHERE NEW_FILE_ID = #{newFileId}
+	</select>
+
+	<select id="selectNewFile" parameterType="String" resultType="NewFileVO">
+         SELECT *
+         FROM NEW_FILE
+		 WHERE FILE_TITLE = #{FileTitle}
+	</select>
+
+	<select id="selectNewFileList"  resultType="NewFileVO">
+        SELECT *
+        FROM NEW_FILE
+	</select>
+	
+	
+
+	<insert id="insertNewFile" parameterType="NewFileVO">
+		<selectKey order="BEFORE" keyProperty="newFileId" resultType="String">
+         SELECT NEW_FILE_ID_SEQ.NEXTVAL FROM DUAL
+      </selectKey>
+	INSERT INTO NEW_FILE (
+		FILE_TITLE,
+		FILE_COL1,
+		FILE_COL2,
+		FILE_COL3,
+		FILE_COL4,
+		FILE_COL5,
+		FILE_COL6,
+		FILE_COL7,
+		FILE_COL8,
+		FILE_COL9,
+		FILE_COL10,
+		FILE_COL11,
+		EMP_NO,
+		NEW_FILE_ID
+		
+	) VALUES (
+	  #{fileTitle,jdbcType=VARCHAR}
+	, #{fileCol1,jdbcType=VARCHAR}
+	, #{fileCol2,jdbcType=VARCHAR}
+	, #{fileCol3,jdbcType=VARCHAR}
+	, #{fileCol4,jdbcType=VARCHAR}
+	, #{fileCol5,jdbcType=VARCHAR}
+	, #{fileCol6,jdbcType=VARCHAR}
+	, #{fileCol7,jdbcType=VARCHAR}
+	, #{fileCol8,jdbcType=VARCHAR}
+	, #{fileCol9,jdbcType=VARCHAR}
+	, #{fileCol10,jdbcType=VARCHAR}
+	, #{fileCol11,jdbcType=VARCHAR}
+	, #{empNo,jdbcType=VARCHAR}
+	, #{newFileId,jdbcType=VARCHAR}
+	)
+	</insert>
+
+</mapper>
+
+
+
+
+

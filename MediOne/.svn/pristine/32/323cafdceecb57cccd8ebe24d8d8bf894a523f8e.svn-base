@@ -1,0 +1,817 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+   pageEncoding="UTF-8" buffer="8kb"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+
+<!-- 주소 api -->
+<script
+   src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<!--     plugin css file  -->
+<%--     <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css"> --%>
+<link rel="stylesheet"
+   href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+
+
+<style>
+.top-color {
+  border-top: 3px solid #6aab9c; 
+}
+/* 민트색 버튼 스타일 */
+.mint-btn {
+   margin-left: 10px;
+   display: inline-block;
+   font-weight: 500;
+   line-height: 1.5;
+   text-align: center;
+   vertical-align: middle;
+   cursor: pointer;
+   color: #fff; /* 텍스트 색상 */
+   background-color: #6aab9c; /* 배경색 */
+   border-color: #6aab9c; /* 테두리 색상 */
+   user-select: none;
+   padding: 0.375rem 0.75rem;
+   font-size: 1.2em;
+   border-radius: 0.25rem;
+   float: right; /* 버튼을 오른쪽으로 부유(floating)시킴 */
+}
+
+#overflow {
+   width: 600px;
+   height: 50px;
+   /*     background-color:skyblue; */
+   overflow-y: scroll;
+   
+}
+
+#overflow::-webkit-scrollbar {
+   display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+#overflow2 {
+   width: 400px;
+   height: 300px;
+   /*     background-color:skyblue; */
+   overflow-y: scroll;
+   
+}
+
+#overflow2::-webkit-scrollbar {
+   display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+#btn {
+    text-align: right;
+    margin-right:5%;
+}
+
+#submitButton {
+    float: right;
+    margin-right:3%;
+}
+
+.form-select-sm{
+   display:inline-block;
+}
+
+td{
+   background-color:white;
+}
+
+</style>
+<body>
+   <!--전체  -->
+      <!-- <div id="ihealth-layout" class="theme-tradewind">  -->
+   <!-- main body area -->
+   <!-- <div class="main px-lg-4 px-md-4" > -->
+      <!-- Body: Body -->
+      <div class="body d-flex py-3" >
+
+         <div class="container-xxl" > 
+            <!-- 1행 3열 카드 시작 -->
+            <div class="row g-3 mb-3" style="height: 100vh; margin-left: -150px; margin-right: -170px;">
+
+               <!-- 세로로 길게 배치된 card1 -->
+
+               <!-- 환자 접수 시작 -->
+               <div class="col-md-4 col-lg-4"
+                  style="width: 32%; height: 95%; ">
+                  <div class="card top-color"  style="height: 90%; margin-right:5%;">
+                     <div
+                        class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0" style="height:0px;">
+                        <h6 class="mb-0 fw-bold">환자 접수</h6>
+                        
+                     </div>
+                     <div id="btn">
+                        <button type="button" class="btn btn-primary"
+                           data-bs-toggle="modal" data-bs-target=""
+                           onclick="window.open('http://localhost/MediOne/administ/patientInsert.do','window_name','width=780,height=700,location=no,status=no,scrollbars=yes');">등록</button>
+                        <button type="button" class="btn btn-primary"
+                           data-bs-toggle="modal" data-bs-target="#exampleModalXl1">조회</button>
+                     </div>
+                     <div class="card-body" style="margin-top: -15px;">
+
+                        <form method="post" id="receptionForm">
+                           <table id="patientFrom" class="table table-border">
+
+                              <tr>
+                                 <th>성명</th>
+                                 <td><input type="text" id="patntNm" class="form-control" />
+                                    <input type="hidden" name="patntCode" id="patntCode" /></td>
+                              </tr>
+                              <tr>
+                                 <th>주민번호</th>
+                                 <td><input type="text" id="patntIdentino"
+                                    class="form-control" /></td>
+                              </tr>
+                              <tr>
+                                 <th>전화번호</th>
+                                 <td><input type="text" id="patntTelno"
+                                    class="form-control" /></td>
+                              </tr>
+                              <tr>
+                                 <th>우편번호</th>
+                                 <td><input type="text" id="patntZipcode"
+                                    class="form-control" /></td>
+                              </tr>
+                              <tr>
+                                 <th>주소</th>
+                                 <td><input type="text" id="patntAddr1"
+                                    class="form-control" /></td>
+                              </tr>
+                              <tr>
+                                 <th>상세주소</th>
+                                 <td><input type="text" id="patntAddr2"
+                                    class="form-control" /></td>
+                              </tr>
+                              <tr>
+                                 <th>키</th>
+                                 <td><input type="text" id="height" class="form-control" />
+                                 </td>
+                              </tr>
+                              <tr>
+                                 <th>몸무게</th>
+                                 <td><input type="text" id="weight" class="form-control" />
+                                 </td>
+                              </tr>
+                              <tr>
+                                 <th>성별</th>
+                                 <td><input type="text" id="gen" class="form-control" />
+                                 </td>
+                              </tr>
+                              <tr>
+                                 <th>이메일</th>
+                                 <td><input type="text" id="patEmail"
+                                    class="form-control" /></td>
+                              </tr>
+                              <tr>
+                                 <th>증상</th>
+                                 <td><input type="text" name="symptom"
+                                    class="form-control" /></td>
+                              </tr>
+
+                           </table>
+                              <button class="btn btn-primary" type="submit" value="접수" id="submitButton" style="margin-top:-15px;">접수</button>
+                        </form>
+                     </div>
+                  </div>
+               </div>
+               <!-- 환자 접수 끝 -->
+
+
+               <!-- 나머지 카드들 (2행부터) -->
+
+               <div class="col-md-8 col-lg-8"
+                  style="display: flex; flex-direction: column;">
+
+                  <!-- 2행 1열 카드 시작 -->
+                  <div class="row g-3 mb-3" style="flex: 1; display: flex;">
+                     <!-- 접수 한 사람들 -->
+                     <div class="col-md-4 col-lg-4"
+                        style="width: 50%; margin-right: 1%; flex-grow: 1;">
+                        <div class="card h-100 top-color">
+                           <div
+                              class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0" >
+                              <h6 class="mb-0 fw-bold" >대기 환자 목록</h6>
+                           </div>
+                           <div class="card-body" id="overflow" style="margin-left:20px; width: 95%;  background-color:white; " >
+                              <table id="stateTable"
+                                 class="table table-hover align-middle mb-0"
+                                 style="width: 110%; height: 200px;">
+                                 <thead style=" top: 0; background-color: white;">
+                                    <tr>
+                                       <th style="width: 100px;">환자 이름</th>
+                                       <th>접수코드</th>
+                                       <th style="width: 200px;">증상</td>
+                                       <th>나이</th>
+                                       <th>성별</th>
+                                       <th>부서</th>
+                                       <th>상태</th>
+                                       <th></th>
+                                    </tr>
+                                 </thead>
+                                 <tbody id="tbody" >
+
+                                 </tbody>
+                              </table>
+                           </div>
+                        </div>
+                     </div>
+                     <!-- 접수 한 사람들 끝  -->
+
+
+                     <!-- 진료 리스트 끝 -->
+                  </div>
+                  <!-- 2행 1열 카드 종료 -->
+
+                  <!-- 2행 2열 카드 시작 -->
+                  <div class="row g-3 mb-3" style="flex: 1; display: flex;">
+
+                     <!-- 진료실1 시작 -->
+                     <div class="col-md-4 col-lg-4"
+                        style="width: 30%; height: 74%; margin-right: 1%; flex-grow: 1;">
+                        <div class="card h-100 top-color" >
+                           <div
+                              class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                              <select id="dept1" class="form-select" style='width: 45%;'>
+                                 <option value="B">소화기내과</option>
+                                 <option value="A">호흡기내과</option>
+                                 <option value="D">심장내과</option>
+                              </select>
+                           </div>
+                           <div class="card-body" id="overflow2" style=" margin-top:-5%;">
+                              <table class="table table-hover align-middle mb-0" >
+                                 <thead style=" top: 0; background-color: white;">
+                                    <tr >
+                                       <td>환자 이름</td>
+                                       <td>접수코드</td>
+                                       <td>증상</td>
+                                       <td>상태</td>
+                                    </tr>
+                                 </thead>
+                                 <tbody id="table1">
+                                 </tbody>
+                              </table>
+
+                           </div>
+                        </div>
+                     </div>
+                     <!-- 진료실 끝 -->
+
+                     <!-- 진료실2 시작 -->
+                     <div class="col-md-4 col-lg-4"
+                        style="width: 30%; height: 74%; margin-right: 1%; flex-grow: 1;">
+                        <div class="card h-100 top-color">
+                           <div
+                              class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                              <select id="dept2" class="form-select" style='width: 45%'>
+                                 <option value="C">영상의학과</option>
+                                 <option value="E">감염내과</option>
+                                 <option value="F">내분비내과</option>
+                              </select>
+                           </div>
+                           <div class="card-body" id="overflow2" style=" margin-top:-5%;">
+                              <table class="table table-hover align-middle mb-0">
+                                 <thead style="top: 0; background-color: white;">
+                                    <tr>
+                                       <td>환자 이름</td>
+                                       <td>접수코드</td>
+                                       <td>증상</td>
+                                       <td>상태</td>
+                                    </tr>
+                                 </thead>
+                                 <tbody id="table2">
+                                 </tbody>
+                              </table>
+
+                           </div>
+                        </div>
+                     </div>
+                     <!-- 진료실 끝 -->
+
+                     <!-- 진료실3 시작 -->
+                     <div class="col-md-4 col-lg-4"
+                        style="width: 30%; height: 74%; margin-right: 1%; flex-grow: 1;">
+                        <div class="card h-100 top-color" >
+                           <div
+                              class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                              <select id="dept3" class="form-select" style='width: 45%'>
+                                 <option value="G">건강검진센터</option>
+                              </select>
+                           </div>
+                           <div class="card-body" id="overflow2">
+                              <table class="table table-hover align-middle mb-0">
+                                 <thead >
+                                    <tr>
+                                       <td>환자 이름</td>
+                                       <td>접수코드</td>
+                                       <td>증상</td>
+                                       <td>상태</td>
+                                    </tr>
+                                 </thead>
+                                 <tbody id="table3">
+                                 </tbody>
+                              </table>
+
+                           </div>
+                        </div>
+                     </div>
+                     <!-- 진료실 끝 -->
+
+                  </div>
+
+                  <!-- 2행 3열 카드 종료 -->
+               </div>
+            </div>
+            <!-- 1행 3열 카드 종료 -->
+         </div>
+      </div>
+
+
+   <!-- 검색 Modal -->
+   <div class="modal fade" id="exampleModalXl1" tabindex="-1"
+      aria-labelledby="exampleModalXlLabel" style="display: none;"
+      aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+         <div class="modal-content">
+
+            <div class="modal-body">
+
+               <!-- 환자 검색 시작 -->
+
+               <div class="col-md-12 col-lg-6"
+                  style="width: 100%; margin-right: 1px">
+                  <div class="card mb-3">
+                     <div
+                        class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0"
+                        style="height: 0px;">
+                        <h6 class="mb-0 fw-bold">환자 정보</h6>
+                     </div>
+                     <div class="card-body">
+
+                        <ul class="nav nav-tabs mb-3" id="myTab2" role="tablist">
+                           <li class="nav-item" role="presentation">Search: <input
+                              type="search" class="form-control" id="searchForm"
+                              placeholder="" aria-controls="myDataTable" />
+                           </li>
+                        </ul>
+
+                        <!-- 환자 -->
+                        <div class="tab-pane" id="tab6" role="tabpanel"
+                           aria-labelledby="tab6-tab">
+                           <table class="table table-hover align-middle mb-0"
+                              style="height: 100px;">
+                              <thead>
+                                 <tr>
+                                    <th id="patntCode">환자 코드</th>
+                                    <th id="patntNm">환자명</th>
+                                    <th id="patntIdentino">주민번호</th>
+                                    <th id="patntTelno">전화번호</th>
+                                    <th id="patntAddr1">주소</th>
+                                    <th id="patntAddr2">상세주소</th>
+                                    <th id="patntZipcode">우편번호</th>
+                                    <th id="height">키</th>
+                                    <th id="weight">몸무게</th>
+                                    <th id="gen">성별</th>
+                                    <th id="patEmail">이메일</th>
+                                 </tr>
+                              </thead>
+                              <tbody id="myProjectTable3">
+                              </tbody>
+                           </table>
+                        </div>
+                        <!-- 환자 end -->
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary"
+                  data-bs-dismiss="modal">Close</button>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <!-- 등록 Modal -->
+   <div class="modal fade" id="exampleModalLive" tabindex="-1">
+      <div class="modal-dialog">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="exampleModalLiveLabel">Modal title</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <p>Woohoo, you're reading this text in a modal!</p>
+            </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary"
+                  data-bs-dismiss="modal">Close</button>
+               <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+         </div>
+      </div>
+   </div>
+   </div>
+</body>
+
+
+
+<!-- Plugin Js -->
+<script
+   src="<%=request.getContextPath()%>/resources/dist/assets/bundles/apexcharts.bundle.js"></script>
+<script
+   src="<%=request.getContextPath()%>/resources/dist/assets/plugin/jqueryuicalandar/jquery-ui.min.js"></script>
+<script
+   src="<%=request.getContextPath()%>/resources/dist/assets/plugin/owlcarousel/owl.carousel.js"></script>
+<script
+   src="<%=request.getContextPath()%>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+
+<!-- Jquery Page Js -->
+<script src="<%=request.getContextPath()%>/resources/js/template.js"></script>
+<script src="<%=request.getContextPath()%>/resources/js/page/index.js"></script>
+<script>
+
+$('#myDataTable').addClass('nowrap').dataTable({
+   responsive : true,
+   columnDefs : [ {
+      targets : [ -1, -3 ],
+      className : 'dt-body-right'
+   } ]
+});
+
+$('#myDataTable2').addClass('nowrap').dataTable({
+   responsive : true,
+   columnDefs : [ {
+      targets : [ -1, -3 ],
+      className : 'dt-body-right'
+   } ]
+});
+
+var recCode = '';
+var fcltyCode = '';
+var statCode = '';
+
+let dept1Select = 'B';
+let dept2Select = 'C';
+let dept3Select = 'G';
+
+
+$(document).ready(function(){
+   $(dept1).trigger('change');
+   $(dept2).trigger('change');
+   $(dept3).trigger('change');
+   
+   
+}); 
+
+//dept1 부서 선택
+$(dept1).on("change", function(event) {
+   let dept1Select = $(this).val();
+   
+   deptList1(dept1Select);
+   
+   
+});
+
+// dept2 부서 선택
+$(dept2).on("change", function(event) {
+   let dept2Select = $(this).val();
+   
+   deptList2(dept2Select);
+   
+   
+});
+
+// dept3 부서 선택
+$(dept3).on("change", function(event) {
+   let dept3Select = $(this).val();
+   deptList3(dept3Select);
+   
+
+   
+});
+
+// dept1
+ function deptList1(dept1Select) {
+   $.getJSON("<c:url value='/administ/patientDept.do'/>", {deptSelect:dept1Select}).done(function(resp){
+      let tbody = $("#table1");
+      tbody.empty();
+      
+      if(resp.length > 0) {
+         $(resp).each(function(idx, list) {
+            let tr = $("<tr>").append(
+                 $("<td>").html(list.recep.patnt.patntNm)      
+               , $("<td>").html(list.recCode)      
+               , $("<td>").html(list.recep.symptom)      
+               , $("<td>").html(list.statCode)      
+            );
+            tbody.append(tr);
+            
+            
+         });
+      } else {
+         tbody.append(
+            $("<tr>").html(
+               $("<td colspan='4'>").html("해당 환자가 존재하지 않습니다.")      
+            )      
+         );
+      }
+   });
+} 
+
+// dept2
+function deptList2(dept2Select) {
+   $.getJSON("<c:url value='/administ/patientDept.do'/>", {deptSelect:dept2Select}).done(function(resp) {
+      let tbody = $("#table2");
+      tbody.empty();
+      
+      if(resp.length > 0) {
+         $(resp).each(function(idx, list) {
+            let tr = $("<tr>").append(
+               $("<td>").html(list.recep.patnt.patntNm)
+               , $("<td>").html(list.recCode)
+               , $("<td>").html(list.recep.symptom)
+               , $("<td>").html(list.statCode)
+            );
+            tbody.append(tr);
+            
+            
+         });
+      } else {
+         tbody.append(
+            $("<tr>").html(
+               $("<td colspan='4'>").html("해당 환자가 존재하지 않습니다.")      
+            )      
+         );
+      }
+   });
+}
+
+// dept3
+function deptList3(dept3Select) {
+   $.getJSON("<c:url value='/administ/patientDept.do'/>", {deptSelect:dept3Select}).done(function(resp) {
+      let tbody = $("#table3");
+      tbody.empty();
+      
+      if(resp.length > 0) {
+         $(resp).each(function(idx, list) {
+            let tr = $("<tr>").append(
+               $("<td>").html(list.recep.patnt.patntNm)
+               , $("<td>").html(list.recCode)
+               , $("<td>").html(list.recep.symptom)
+               , $("<td>").html(list.statCode)
+            );
+            tbody.append(tr);
+         
+         });
+      } else {
+         tbody.append(
+            $("<tr>").html(
+               $("<td colspan='4'>").html("해당 환자가 존재하지 않습니다.")      
+            )      
+         );
+      }
+   });
+}
+
+$(document).ready(function() {
+    // 등록 INSERT 함수(부서 배정)
+    function patientIn() {
+        $(document).on("click", "input:button[name='patientIn']", function() {
+            var currentRow = $(this).closest('tr');
+            var recCode = currentRow.find('td:eq(1)').text();
+            var fcltyCode = currentRow.find('select').val();
+           
+            console.log(fcltyCode);
+            
+            var urlValue = "<c:url value='/administ/patientInsertStat.do'/>";
+            var deptListFunction;
+            
+            if (fcltyCode === "G") {
+                // option이 G인 경우
+                urlValue = "<c:url value='/administ/checkupInsertStat.do'/>";
+                deptListFunction = function() {
+                    deptList3(dept3Select);
+                };
+            } else {
+                // option이 G가 아닌 경우
+                deptListFunction = function() {
+                    deptList1(dept1Select);
+                    deptList2(dept2Select);
+                };
+            }
+            
+            $.getJSON(urlValue, {
+                recCode: recCode,
+                fcltyCode: fcltyCode
+            }).done(function(resp) {
+                deptListFunction();
+                reloadPatientView(); // 환자 등록 후 환자 상태 다시 조회
+                alert("진료실로 배정하였습니다");
+            });
+        });
+    }
+    
+    // patientIn 함수 호출
+    patientIn();
+});
+
+
+
+//환자 모든 상태 조회
+function reloadPatientView() {
+$.getJSON("<c:url value='/administ/clinicRetrieve.do' />").done(function(resp){
+   let tbody = $('#tbody');
+   
+   
+   if (resp.length > 0) {
+      $(resp).each(function(idx, patient){
+         let select = $("<select>").addClass("form-select form-select-sm").css("width", "115px").css("font-size", "14px");
+            let option = $("<option>").attr("value", "선택").text("선택");
+            let option1 = $("<option>").attr("value", "A").text("호흡기내과");
+            let option2 = $("<option>").attr("value", "B").text("소화기내과");
+            let option3 = $("<option>").attr("value", "C").text("영상의학과");
+            let option4 = $("<option>").attr("value", "D").text("심장내과");
+            let option5 = $("<option>").attr("value", "E").text("감염내과");
+            let option6 = $("<option>").attr("value", "F").text("내분비내과");
+            let option7 = $("<option>").attr("value", "G").text("건강검진센터");
+            
+            select.append(option, option1, option2, option3, option4, option5, option6, option7);
+            
+         if(patient.statCode === '002') {
+            let tr = $("<tr>").append(
+               $("<td>").html(patient.recep.patnt.patntNm)
+               , $("<td>").html(patient.recCode)
+               , $("<td>").html(patient.recep.symptom)
+               , $("<td>").html(patient.recep.patnt.patntIdentino)
+               , $("<td>").html(patient.recep.patnt.gen)
+               , select
+//                , $("<span>").css("color", "black").text("배정 대기")
+            , $("<td>").append($("<span>").css("font-size", "12px").addClass("badge bg-warning").text("배정대기"))
+               , $("<td>").append($("<input>").addClass("btn btn-outline-success").attr("type","button").attr("value","등록").attr("name","patientIn"))
+               
+            );
+            tbody.prepend(tr);
+      
+         }else if(patient.statCode === '005') {
+            let tr = $("<tr>").append(
+                  $("<td>").html(patient.recep.patnt.patntNm)
+                  , $("<td>").html(patient.recCode)
+                  , $("<td>").html(patient.recep.symptom)
+                  , $("<td>").html(patient.recep.patnt.patntIdentino)
+                    , $("<td>").html(patient.recep.patnt.gen)
+                  , select
+//                   , $("<span>").css("color", "red").text("진료 대기")
+                  , $("<td>").append($("<span>").css("font-size", "12px").addClass("badge bg-primary").text("대기중"))
+                  , $("<td>").append($("<input>").addClass("btn btn-outline-success").attr("type","button").attr("value","등록").attr("name","patientIn"))
+               );
+            tbody.prepend(tr);
+            
+         }else if(patient.statCode === '006'){
+            let tr = $("<tr>").append(
+                     $("<td>").html(patient.recep.patnt.patntNm)
+                     , $("<td>").html(patient.recCode)
+                     , $("<td>").html(patient.recep.symptom)
+                     , $("<td>").html(patient.recep.patnt.patntIdentino)
+                       , $("<td>").html(patient.recep.patnt.gen)
+                     , select
+                     , $("<td>").append($("<span>").css("font-size", "12px").addClass("badge bg-danger").text("진료중"))
+                     , $("<td>").append($("<input>").addClass("btn btn-outline-success").attr("type","button").attr("value","등록").attr("name","patientIn"))
+                  );
+               tbody.prepend(tr);
+         }else if(patient.statCode === '007') {
+            let tr = $("<tr>").append(
+                  $("<td>").html(patient.recep.patnt.patntNm)
+                  , $("<td>").html(patient.recCode)
+                  , $("<td>").html(patient.recep.symptom)
+                  , $("<td>").html(patient.recep.patnt.patntIdentino)
+                  , $("<td>").html(patient.recep.patnt.gen)
+                  , select
+                  , $("<td>").append($("<span>").css("font-size", "12px").addClass("badge bg-danger").text("검진대기"))
+                  , $("<td>").append($("<input>").addClass("btn btn-outline-success").attr("type","button").attr("value","등록").attr("name","patientIn"))
+               ); 
+            tbody.append(tr);
+         }
+      });
+   } else {
+       tbody.append(
+                  $("<tr>").html(
+                      $("<td colspan='4'>").html("해당 환자가 존재하지 않습니다.")
+                  )
+              );
+   }
+   // 전역변수에 저장할 데이터
+   recCode = recCode;
+   fcltyCode = fcltyCode;
+   statCode = statCode;
+   
+  
+}); 
+}
+reloadPatientView();
+
+
+
+   
+   // 검색창
+   let searchForm = $("#searchForm").on("change",function(event) {
+         let what = $(this).val();
+         $.getJSON("<c:url value='/administ/patientSearch.do' />",{what : what}).done(function(resp) {
+                  let tbody = $("#myProjectTable3");
+                  tbody.empty();
+                  if (resp.length > 0) {
+                     $(resp).each(function(idx,patientList) {
+                        let tr = $("<tr>").append($("<td>").html(patientList.patntCode),
+                               $("<td>").html(patientList.patntNm),
+                               $("<td>").html(patientList.patntIdentino),
+                               $("<td>").html(patientList.patntTelno),
+                               $("<td>").html(patientList.patntAddr1),
+                               $("<td>").html(patientList.patntAddr2),
+                               $("<td>").html(patientList.patntZipcode),
+                               $("<td>").html(patientList.height),
+                               $("<td>").html(patientList.weight),
+                               $("<td>").html(patientList.gen),
+                               $("<td>").html(patientList.patEmail));
+                              tbody.append(tr);
+                           });
+                        } else {tbody.append($("<tr>").html($("<td colsapn='11'>").html("해당 환자가 존재하지 않습니다.")));
+                              }
+                           });
+                        });
+
+   // 검색 창에서 사람 누르면 input 태그에 들어가는 코드
+   $(document).ready(function() {
+      // 환자 정보 테이블에서 행 클릭 이벤트 처리
+      $('#myProjectTable3').on('click', 'tr', function() {
+         // 클릭한 행에서 데이터를 읽어옴
+         var patntCode = $(this).find('td:eq(0)').text();
+         var patntNm = $(this).find('td:eq(1)').text();
+         var patntIdentino = $(this).find('td:eq(2)').text();
+         var patntTelno = $(this).find('td:eq(3)').text();
+         var patntAddr1 = $(this).find('td:eq(4)').text();
+         var patntAddr2 = $(this).find('td:eq(5)').text();
+         var patntZipcode = $(this).find('td:eq(6)').text();
+         var height = $(this).find('td:eq(7)').text();
+         var weight = $(this).find('td:eq(8)').text();
+         var gen = $(this).find('td:eq(9)').text();
+         var patEmail = $(this).find('td:eq(10)').text();
+
+         // form input 태그에 값을 할당
+         $('#patntCode').val(patntCode);
+         $('#patntNm').val(patntNm);
+         $('#patntIdentino').val(patntIdentino);
+         $('#patntTelno').val(patntTelno);
+         $('#patntAddr1').val(patntAddr1);
+         $('#patntAddr2').val(patntAddr2);
+         $('#patntZipcode').val(patntZipcode);
+         $('#height').val(height);
+         $('#weight').val(weight);
+         $('#gen').val(gen);
+         $('#patEmail').val(patEmail);
+
+      });
+
+   });
+   
+   //주소 API
+   $('#addrBtn').on('click', function() {
+      //daum 주소 api로 검색하여 긁어온 코드
+      new daum.Postcode(
+         {
+            oncomplete : function(data) {
+            // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
+
+            // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
+            // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
+            var roadAddr = data.roadAddress; // 도로명 주소 변수
+            var extraRoadAddr = ''; // 참고 항목 변수
+
+            // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+            // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+            if (data.bname !== ''
+               && /[동|로|가]$/g.test(data.bname)) {
+               extraRoadAddr += data.bname;
+               }
+            // 건물명이 있고, 공동주택일 경우 추가한다.
+            if (data.buildingName !== ''
+                  && data.apartment === 'Y') {
+                  extraRoadAddr += (extraRoadAddr !== '' ? ', '
+                  + data.buildingName
+                  : data.buildingName);
+               }
+            // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+            if (extraRoadAddr !== '') {
+                  extraRoadAddr = ' ('
+                  + extraRoadAddr + ')';
+               }
+
+            // 우편번호와 주소 정보를 해당 필드에 넣는다.
+            document.getElementById('patntZipcode').value = data.zonecode;
+            document.getElementById("patntAddr1").value = roadAddr;
+            //document.getElementById("sample4_jibunAddress").value = data.jibunAddress;
+               }
+                  }).open();
+            });
+</script>
+</html>

@@ -1,0 +1,793 @@
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.util.Date"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.canvas{
+height: 500px;
+}
+
+.room col{
+
+background-color: white;
+}
+
+
+.label{
+
+background-color: white;
+}
+label{
+
+background-color: red;
+
+}
+
+</style>
+
+    <!-- main body area -->
+    <div class="main px-lg-4 px-md-4">
+        <!-- Body: Body -->
+        <div class="body d-flex py-3">
+            <div class="container-xxl">
+			
+                <div class="row g-3 mb-3 row-deck">
+                    <div class="col-lg-12 col-xl-6" style="width: 48%; margin-right: 1%; flex-grow: 1;">
+                        <div class="card">
+                            <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">병원통계
+   								 <%
+        							Date currentDate = new Date();
+        							SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        							String formattedDate = dateFormat.format(currentDate);
+   								 %>
+                                 	
+                                  <span style="font-size: 14px; color: grey;">(<%= formattedDate %> 기준)</span>
+                                </h6>
+                            </div>
+
+                            
+                            
+                            <div class="card-body">
+                                <div class="row g-3 row-deck">
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card" style="width:30%; margin-right: 5%; margin-bottom: 5%;">
+                                            <div class="card-body ">
+                                            
+                                                <i class="icofont-patient-file fs-3 color-lightblue"></i>
+                                                	<h6 class="mt-3 mb-0 fw-bold small-14">외래환자(금월)</h6>
+                                                &nbsp;<span class="text-danger" id="eightClinicCount"></span><span style="font-size: 13px; color: grey;">&nbsp;명</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card" style="width:30%; margin-right: 5%; margin-bottom: 5%;">
+                                            <div class="card-body ">
+                                                <i class="icofont-crutch fs-3 color-danger"></i>
+                                                <h6 class="mt-3 mb-0 fw-bold small-14">입원환자(금월)</h6>
+                                               &nbsp; <span class="text-danger" id="eightHospitalCount"></span><span style="font-size: 13px; color: grey;">&nbsp;명</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card" style="width:30%; margin-bottom: 5%;">
+                                            <div class="card-body ">
+                                                <i class="icofont-doctor fs-3 color-light-orange"></i>
+                                                <h6 class="mt-3 mb-0 fw-bold small-14">매출실적(2분기)</h6>
+                                                <span class="text-muted">16</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card" style="width:30%; margin-right: 5%; margin-bottom: 5%;">
+                                            <div class="card-body ">
+                                                <i class="icofont-king-monster fs-3 color-careys-pink"></i>
+                                                <h6 class="mt-3 mb-0 fw-bold small-14">직원수</h6>
+                                                <span class="text-muted">144</span> 
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card" style="width:30%; margin-right: 5%; margin-bottom: 5%;">
+                                            <div class="card-body ">
+                                                <i class="icofont-doctor-alt fs-3 color-lavender-purple"></i>
+                                                <h6 class="mt-3 mb-0 fw-bold small-14">의사</h6>
+                                                <span class="text-muted">200</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-sm-6">
+                                        <div class="card" style="width:30%; margin-bottom: 5%;">
+                                            <div class="card-body ">
+                                                <i class="icofont-nurse-alt fs-3 color-light-success"></i>
+                                                <h6 class="mt-3 mb-0 fw-bold small-14">간호사</h6>
+                                                <span class="text-muted">84</span> 
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- row -->
+                            </div> <!-- cardbody -->
+                        </div> <!-- card -->
+					 </div><!--col  -->
+                   
+					
+					
+					
+					
+					
+					<!-- 2행2열 -->
+                    <div class="col-lg-12 col-xl-6" style="width: 48%; flex-grow: 1;">
+                        <div class="card">
+						
+						
+                            <div class="card-header py-3 d-flex  bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">Hospital Room Booking Status</h6>
+                            </div>
+							
+							
+                            <div class="card-body">
+                                <div class="room_book">
+                                    <div class="row row-cols-2 row-cols-sm-4 row-cols-md-6 row-cols-lg-6 g-3">
+                                        <div class="room col">
+                                        <input type="checkbox" id="1A" checked/>
+                                        <label for="1A" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room A-101</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="1B" />
+                                        <label for="1B" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room B-102</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="1C" />
+                                        <label for="1C" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room C-103</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" disabled id="1D" />
+                                        <label for="1D" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Occupied</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="1E" />
+                                        <label for="1E" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room D-104</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="1F" checked/>
+                                        <label for="1F" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room E-105</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2A" />
+                                        <label for="2A" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room F-106</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2B" />
+                                        <label for="2B" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room G-107</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2C" checked/>
+                                        <label for="2C" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room H-108</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2D" />
+                                        <label for="2D" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room I-109</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2E" checked/>
+                                        <label for="2E" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room J-110</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2F" />
+                                        <label for="2F" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room K-111</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3A" checked/>
+                                        <label for="3A" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room L-112</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3B" />
+                                        <label for="3B" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room M-113</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3C" />
+                                        <label for="3C" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room N-114</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3D" />
+                                        <label for="3D" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room O-115</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3E" checked/>
+                                        <label for="3E" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room P-116</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3F" />
+                                        <label for="3F" class="label"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room Q-117</span></label>
+                                        </div>
+                                    </div>
+                                </div> <!-- roombook -->
+                            </div>  <!-- cardbody -->
+                        </div><!--card  -->
+                    </div> <!--col  -->
+                </div> <!-- row-->
+				<!--2행 2열  -->	
+                <div class="row g-3 mb-3">
+                    <div class="col-md-12 col-lg-12 col-xl-12">
+                        <div class="card">
+                            <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">분기별 총매출액</h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="apex-stacked-area">
+                                <canvas id="salesChart" class="canvas"></canvas>
+                                </div>
+                            </div>
+                        </div> <!--card  -->
+                    </div><!--col  -->
+                </div> <!--row  -->
+					
+
+
+
+<!--3행  -->
+ <div class="row g-3 mb-3 row-deck">
+                    <div class="col-lg-12 col-xl-6" style="width: 48%; margin-right: 1%; flex-grow: 1;">
+                        <div class="card">
+                            <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">직군별 직원수</h6>
+                            </div>
+                            <div class="card-body">
+                              <canvas id="donutChart"></canvas>
+                            </div> <!-- cardbody -->
+                        </div> <!-- card -->
+					 </div><!--col  -->
+                   
+					
+					
+					
+					
+					
+					<!-- 2행2열 -->
+                    <div class="col-lg-12 col-xl-6" style="width: 48%; flex-grow: 1;">
+                        <div class="card">
+						
+						
+                            <div class="card-header py-3 d-flex  bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">부서별 직원수</h6>
+                            </div>
+							
+							
+                            <div class="card-body">
+                            <canvas id="donutChart2"></canvas>
+                            </div>
+                          </div>
+                      </div>
+
+
+
+
+
+
+
+
+
+
+
+                 
+   	  </div><!--컨테이너  -->
+  	</div><!--메인바디  -->
+ </div><!--메인바디  -->
+
+
+
+
+
+<h6>진료과별 수익</h6>
+<button id="year2022" class="btn-success">2022년</button>
+<button id="year2023" class="btn-danger">2023년</button>
+<div>
+    <canvas id="deptChart"></canvas>
+</div>
+
+
+
+<h6>진료과별 환자수</h6>
+<button id="customer2022" class="btn-success">2022년</button>
+<button id="customer2023" class="btn-danger">2023년</button>
+<div>
+    <canvas id="customerChart"></canvas>
+</div>
+
+
+
+<div>
+    <canvas id="allSalesChart"></canvas>
+</div>
+
+
+
+
+<div>
+    <canvas id="monthCountChart"></canvas>
+</div>
+
+<div>
+    <canvas id="monthCountChart2"></canvas>
+</div>
+
+
+
+</div>
+<%--분기별 총 매출액 꺾은선 그래프 --%>
+<script>
+    $(document).ready(function() {
+        $.getJSON("<c:url value='/sales/salesChart.do' />").done(function(resp) {
+            var labels2022 = [];
+            var labels2023 = [];
+            var data2022 = [];
+            var data2023 = [];
+
+            $(resp).each(function(idx, chart) {
+                var year = chart.salesYear; // 수정: 'year' 대신 'chart.salesYear' 사용
+                var quarter = chart.quarter;
+                var salesData = chart.totalSalesAmount;
+
+                var label = quarter + "분기"; // 수정: 'salesYear' 대신 'year' 사용
+                
+             
+                
+                if (year === '2022') {
+                    data2022.push(salesData);
+                    labels2022.push(label);
+                } else if (year === '2023'
+                		) { 
+                    data2023.push(salesData);
+                    labels2023.push(label);
+                }
+            });
+
+            var ctx = document.getElementById("salesChart").getContext("2d");
+            var chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels2022, // 2022년 분기별 라벨 배열 사용
+                    datasets: [
+                        {
+                        	label: "2022",
+                            data: data2022,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1,
+                            fill: false
+                        },
+                        {
+                        	
+                             
+                         	label: "2023",
+                            data: data2023,
+                            borderColor:  'rgb(255, 99, 132)',
+                            tension: 0.1,
+                            fill: false
+                            
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: ""
+                            }
+                        },
+                        y: {
+                           
+                            display: true,
+                            title: {
+                                display: true,
+                                text: "매출액(단위:억원)"
+                            } ,
+                            ticks: {
+                                // 매출액 단위 세분화 및 눈금 간격 설정
+                                maxTicksLimit: 1000, // 눈금 간격 조절
+                                stepSize: 5000 // 스텝 크기 조정
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    });
+</script>
+ 
+<script>
+<%--부서별 매출액 막대 그래프
+--%>
+
+$(document).ready(function() {
+    var labels = [];
+    var datasets = [];
+
+    var ctx = document.getElementById('deptChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: "매출액(단위:억원)"
+                    },
+                    ticks: {
+                        stepSize: 5000
+                    }
+                }
+            }
+        }
+    });
+
+ // 기본으로 2023 버튼 클릭
+    loadData(2023);
+    
+    $("#year2022").click(function() {
+        loadData(2022);
+    });
+
+    $("#year2023").click(function() {
+        loadData(2023);
+    });
+
+    function loadData(selectedYear) {
+        $.getJSON("<c:url value='/sales/deptSalesChart.do' />").done(function(resp) {
+            labels = [];
+            datasets = [];
+
+            $(resp).each(function(idx, deptChart) {
+                var year = deptChart.salesYear;
+                var deptNm = deptChart.deptNm;
+                var quarter = deptChart.quarter;
+                var salesAmount = deptChart.totalSalesAmount;
+                var label = deptNm;
+
+                if (year === selectedYear.toString()) {
+                    var datasetIndex = quarter - 1; // 1분기는 인덱스 0, 2분기는 인덱스 1, ...
+
+                    if (!datasets[datasetIndex]) {
+                        datasets[datasetIndex] = {
+                            label: quarter + "분기",
+                            data: [],
+                            backgroundColor: getRandomColor(),
+                            borderColor: getRandomColor(),
+                            borderWidth: 1
+                        };
+                    }
+                    datasets[datasetIndex].data.push(salesAmount);
+
+                    if (!labels.includes(label)) {
+                        labels.push(label);
+                    }
+                }
+            });
+
+            myChart.data.labels = labels;
+            myChart.data.datasets = datasets;
+            myChart.update();
+        });
+    }
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+});
+  </script>
+
+
+<script>
+<%--부서별 환자수 막대 그래프
+--%>
+
+$(document).ready(function() {
+    var labels = [];
+    var datasets = [];
+
+    var ctx = document.getElementById('customerChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: "내원환자수(단위:명)"
+                    },
+                    ticks: {
+                        stepSize: 1000
+                    }
+                }
+            }
+        }
+    });
+ // 기본으로 2023 버튼 클릭
+    loadData(2023);
+
+    $("#customer2022").click(function() {
+        loadData(2022);
+    });
+
+    $("#customer2023").click(function() {
+        loadData(2023);
+    });
+
+    function loadData(selectedYear) {
+        $.getJSON("<c:url value='/sales/deptSalesChart.do' />").done(function(resp) {
+            labels = [];
+            datasets = [];
+
+            $(resp).each(function(idx, deptChart) {
+                var year = deptChart.salesYear;
+                var deptNm = deptChart.deptNm;
+                var quarter = deptChart.quarter;
+                var clinic = deptChart.clinicCustomer;
+                var hospital = deptChart.hospitalCustomer;
+                var label = deptNm;
+
+                if (year === selectedYear.toString()) {
+                    var datasetIndex = quarter - 1; // 1분기는 인덱스 0, 2분기는 인덱스 1, ...
+
+                    if (!datasets[datasetIndex]) {
+                        datasets[datasetIndex] = {
+                            label: quarter + "분기",
+                            data: [],
+                            backgroundColor: getRandomColor(),
+                            borderColor: getRandomColor(),
+                            borderWidth: 1
+                        };
+                    }
+                    datasets[datasetIndex].data.push(clinic);
+
+                    if (!labels.includes(label)) {
+                        labels.push(label);
+                    }
+                }
+            });
+
+            myChart.data.labels = labels;
+            myChart.data.datasets = datasets;
+            myChart.update();
+        });
+    }
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+});
+  </script>
+
+<!--직군별 직원수  -->
+<script>
+$(document).ready(function() {
+	        $.getJSON("<c:url value='/sales/jobEmpChart.do' />").done(function(resp) {
+	            var labels = [];
+	            var data= [];
+	            var backgroundColors = ['#FF6384', '#36A2EB', '#FFCE56']; // 각 섹션의 색상
+
+
+	            $(resp).each(function(idx, jobChart) {
+	            	  var type = jobChart.empType;
+	                  var empCount = jobChart.jobEmpCount;
+	                  
+	                  data.push(empCount);
+	                  labels.push(type);
+	            });
+	
+	
+	
+    var ctx = document.getElementById('donutChart').getContext('2d');
+    
+    // 데이터 예시 (각 직군별 직원 수)
+    var donutData = {
+        labels: labels,
+        datasets: [{
+            data: data, // 각 직군의 직원 수
+            backgroundColors,
+            hoverBackgroundColor: backgroundColors
+        }]
+    };
+
+    var options = {
+            cutoutPercentage: 70,
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: true,
+                position: 'bottom'
+            }
+    
+    };
+
+
+        var myDonutChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: donutData,
+            options: options
+        });
+    });
+});
+
+</script>
+
+
+<!--부서별 직원수  -->
+<script>
+$(document).ready(function() {
+	        $.getJSON("<c:url value='/sales/deptEmpChart.do' />").done(function(resp) {
+	            var labels = [];
+	            var data= [];
+	            var backgroundColors = ['#FF6384', '#36A2EB', '#FFCE56']; // 각 섹션의 색상
+
+
+	            $(resp).each(function(idx, jobChart) {
+	            	  var dept = jobChart.deptNm;
+	                  var empCount = jobChart.empCount;
+	                  
+	                  data.push(empCount);
+	                  labels.push(dept);
+	            });
+	
+	
+	
+    var ctx = document.getElementById('donutChart2').getContext('2d');
+    
+    // 데이터 예시 (각 직군별 직원 수)
+    var donutData = {
+        labels: labels,
+        datasets: [{
+            data: data, // 각 직군의 직원 수
+            backgroundColors,
+            hoverBackgroundColor: backgroundColors
+        }]
+    };
+
+    var options = {
+            cutoutPercentage: 70,
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+                display: true,
+                position: 'bottom'
+            }
+    
+    };
+
+
+        var myDonutChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: donutData,
+            options: options
+        });
+    });
+});
+
+</script>
+
+
+
+
+<!-- 연도별, 월별 내원환자수, 입원환자수 -->
+
+
+<script>
+
+function getRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+
+$(document).ready(function() {
+    $.getJSON("<c:url value='/sales/countMonth.do' />").done(function(resp) {
+        var years = {}; // 연도별로 월 데이터 그룹화
+        var datasets = [];
+
+        $(resp).each(function(idx, monthChart) {
+            var year = monthChart.year;
+            var month = monthChart.month;
+           /*  var monthCount = monthChart.monthCount+ getRandomNumber(1000, 2000); */
+           var monthCount = monthChart.monthCount;
+            
+            var monthChart = resp[7]; // 8번째 인덱스의 데이터 가져오기
+            var eightMonthCount = monthChart.monthCount;
+            
+            // 가져온 monthCount 값을 <div> 영역에 넣기
+            $("#eightClinicCount").text(monthCount);
+            
+            
+
+            if (!years[year]) {
+                years[year] = {};
+                years[year].data = [];
+            }
+            years[year].data.push(monthCount);
+        });
+
+        if (years["2022"] && years["2023"]) {
+            datasets.push({
+                label: "2022년",
+                data: years["2022"].data,
+                borderColor: 'rgb(75, 192, 192)',
+                fill: false
+            });
+            datasets.push({
+                label: "2023년",
+                data: years["2023"].data,
+                borderColor: 'rgb(255, 99, 132)', // 다른 색상을 지정하세요
+                fill: false
+            });
+        }
+
+        var ctx = document.getElementById('monthCountChart').getContext('2d');
+        var lineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "환자수(단위:명)"
+                        } 
+                    }
+                }
+            }
+        });
+        
+    });
+});
+
+
+</script>
+
+<script>
+
+$(document).ready(function() {
+    var year = "2023"; // 원하는 연도값
+    var month = "08";  // 원하는 월값
+
+    // URL에 파라미터를 추가하여 요청 보내기
+    
+    $.getJSON("<c:url value='/sales/totalHospital.do' />",{year:year, month:month}).done(function(resp) {
+        	console.log(resp);
+            var totalCount = resp;
+            // 가져온 monthCount 값을 <div> 영역에 넣기
+            $("#eightHospitalCount").text(totalCount);
+    });
+});
+
+</script>

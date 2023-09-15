@@ -1,0 +1,358 @@
+<%-- <%@ page language="java" contentType="application/vnd.ms-excel; charset=UTF-8"
+	pageEncoding="UTF-8"%> --%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<!-- plugin css file  -->
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+<script src="<%=request.getContextPath()%>/resources/js/loadingoverlay.min.js"></script>
+
+
+<style>
+/* 스크롤 버튼 스타일 */
+#scrollToTopButton {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	z-index: 99;
+	cursor: pointer;
+	padding: 10px;
+	background-color: #6aab9c;
+	color: white;
+	border: none;
+	border-radius: 4px;
+}
+#overflow {
+	width:1120px;
+	height: 400px;
+	overflow-y: scroll;
+}
+
+
+#overflow::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+#overflow1 {
+	width: 1700px;
+	height: 400px;
+	overflow-y: scroll;
+}
+
+#overflow1::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+
+#overflow2 {
+	height: 400px;
+	overflow-y: scroll;
+}
+
+#overflow2::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+.top-color {
+  border-top: 3px solid #6aab9c; 
+}
+
+</style>
+	
+<button type="button" class="btn btn-primary" style="margin-left:1465px; margin-top: 10px;, margin-bottom:20px; width :180px; font-size: 15px;" 
+onclick="redirectToChartView()">차트 바로가기<i class="icofont-touch fs-3"></i></button>
+
+<script>
+function redirectToChartView() {
+    // 원하는 URL로 리다이렉션
+    window.location.href = "<%= request.getContextPath() %>/sales/chartView.do";
+}
+</script>
+
+<!-- 1행 카드 시작 -->
+<div class="row g-3 mb-3 custom-box" style="height: 500px; margin-left: -100px; margin-right:-100px;  margin-top: 10px;" id="top">
+				<div class="col-lg-12 col-xl-6" style="max-height: 400px; width: 65%; margin-right: 2%">
+					<div class="card top-color">
+						<div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0" style="margin-left: 10px;">
+						<h6 class="bi bi-chevron-right" style="font-weight: 700; font-size: 16px; color: #173b6c;">병원 매출현황 자료
+						<button id="salesDownloadButton" class=" btn btn-primary" onclick="loading()" style="margin-left: 20px;">엑셀다운로드</button>
+						</h6>
+						</div>	
+					<div class="card-body" id="overflow">
+						<table id="myProject2" class="table table-hover align-middle mb-0" style="width: 1070px;">
+								<thead>
+									<tr>
+										<th>NO</th>
+										<th>부서명</th>
+										<th>연도</th>
+										<th>월</th>
+										<th>매출(백만원)</th>
+										<th>외래(명)</th>
+										<th>입원(명)</th>
+									</tr>
+								</thead>
+								<tbody>
+									<c:set var="salesList" value="${salesList}" />
+									<c:if test="${empty salesList }">
+										<tr>
+											<td colspan="7">데이터가 없습니다</td>
+										</tr>
+									</c:if>
+									<c:if test="${not empty salesList }">
+										<c:forEach items="${salesList }" var="salesList">
+
+											<c:url value="/free/freeView.do" var="viewURL">
+												<c:param name="what" value="${salesList.deptAmount }"></c:param>
+											</c:url>
+											<tr>
+												<td>${salesList.rnum }</td>
+												<td>${salesList.deptNm}</td>
+												<td>${salesList.salesYear}</td>
+												<td>${salesList.salesMonth}</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<fmt:formatNumber value="${salesList.deptAmount}" type="number" pattern="#,##0" /></td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;<fmt:formatNumber value="${salesList.clinicCustomer}" type="number" pattern="#,##0" /></td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;<fmt:formatNumber value="${salesList.hospitalCustomer}" type="number" pattern="#,##0" /></td>
+											</tr>
+										</c:forEach>
+									</c:if>
+								</tbody>
+							</table>
+						</div>
+					</div><!--card  -->
+				</div><!--col  -->
+
+				<div class="col-lg-12 col-xl-6"style="max-height: 400px; width: 33%; ">
+					<div class="card top-color">
+						<div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0" style="margin-left: 10px;">
+						<h6 class="bi bi-chevron-right" style="font-weight: 700; font-size: 16px; color: #173b6c;">
+								직군별 직원규모 자료
+							<button id="jobDownloadButton" class=" btn btn-primary" style="margin-left: 20px;">엑셀 다운로드</button></h6>
+						</div>
+						
+						<div class="card-body" id="overflow2">
+							<table id="myDataTable2" class="table table-hover align-middle mb-0" style="width: 100%">
+								<thead>
+									<tr>
+										<th>No</th>
+										<th>&nbsp;&nbsp;부서명</th>
+										<th>직원수(명)</th>
+									</tr>
+								</thead>
+								<tbody>
+									<c:set var="deptEmpList" value="${deptEmpList}" />
+									<c:if test="${empty deptEmpList }">
+										<tr>
+											<td colspan="6">데이터가 없습니다</td>
+										</tr>
+									</c:if>
+									<c:if test="${not empty deptEmpList }">
+										<c:forEach items="${deptEmpList }" var="deptEmpList">
+
+											<c:url value="/free/freeView.do" var="viewURL">
+												<c:param name="what" value="${deptEmpList.deptNm }"></c:param>
+											</c:url>
+											<tr>
+												<td>&nbsp;&nbsp;${deptEmpList.rnum }</td>
+												<td>${deptEmpList.deptNm }</td>
+												<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<fmt:formatNumber value="${deptEmpList.empCount }" type="number" pattern="#,##0" /></td>
+												
+											</tr>
+										</c:forEach>
+									</c:if>
+								</tbody>
+							</table>
+						</div>
+
+					</div><!--card  -->
+				</div><!--col  -->
+			</div><!--row  -->
+
+
+
+			<div class="row g-3 mb-3 row-deck" style="margin-left: -100px; margin-right: -100px;">
+					<div class="card top-color">
+						<div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+							<h6 class="bi bi-chevron-right" style="font-weight: 700; margin-bottom: -17px;font-size: 16px; color: #173b6c;" >전체 임직원 자료
+							<button id="empDownloadButton" class=" btn btn-primary" style="margin-left: 20px;">엑셀 다운로드</button></h6>
+						</div>
+						<div class="card-body" id="overflow1">
+							<table id="patient-table" class="table table-hover align-middle mb-0" style="width: 1655px; margin-left: 10px;">
+								<thead style="text-align: center;">
+									<tr>
+										<th>NO</th>
+										<th>사원번호</th>
+										<th>부서명</th>
+										<th>직원명</th>
+										<th>연락처</th>
+										<th>생년월일</th>
+										<th>이메일</th>
+										<th>주소</th>
+										<th>입사일자</th>
+										<th>사용승인</th>
+										<th>비고</th>
+									</tr>
+								</thead>
+								<tbody>
+									<c:set var="empList" value="${empList}" />
+									<c:if test="${empty empList }">
+										<tr>
+											<td colspan="7">데이터가 없습니다</td>
+										</tr>
+									</c:if>
+									<c:if test="${not empty empList }">
+										<c:forEach items="${empList }" var="empList">
+
+											<c:url value="/free/freeView.do" var="viewURL">
+												<c:param name="what" value="${empList.deptNm }"></c:param>
+											</c:url>
+											<tr>
+												<td>${empList.rnum }</td>
+												<td>${empList.empNo }</td>
+												<td>${empList.deptNm}</td>
+												<td>${empList.empNm}</td>
+												<td>${empList.empTelno}</td>
+												<td>${empList.empBirth}</td>
+												<td>${empList.empEmail}</td>
+												<td>${empList.empAddr1}</td>
+												<td>${empList.jncmpYmd}</td>
+												<td>${empList.aprvYn}</td>
+												<td>${empList.empRole}</td>
+											</tr>
+										</c:forEach>
+									</c:if>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+
+<button id="scrollToTopButton">Top</button>
+			
+
+			<script>
+				document.getElementById("salesDownloadButton").addEventListener("click", function() {
+					
+					//loadingOverlay 라이브러리 실행
+					$.LoadingOverlay("show", {
+				        image: "<%=request.getContextPath() %>/resources/images/mainSpinnerIcon.gif" // 로딩 중에 표시될 이미지 경로
+				        ,imageAnimation: false  //빙글빙글 돌아가는거 막음
+				    });
+
+				    // 1초 후에 함수 실행
+				    setTimeout(function () {
+					
+					// 다운로드 요청을 보내는 코드
+					window.location.href = "${pageContext.request.contextPath}/sales/salesDownloadExcel.do";
+				    
+				
+					 // LoadingOverlay 숨기기
+			        	$.LoadingOverlay("hide");
+				    	}, 1000); // 1초 후에 실행
+				    	
+				    }); /*function  */
+				
+			</script>
+			
+			
+			
+			
+			<script>
+				document.getElementById("jobDownloadButton").addEventListener("click", function() {
+
+									//loadingOverlay 라이브러리 실행
+									$.LoadingOverlay("show", {
+								        image: "<%=request.getContextPath() %>/resources/images/mainSpinnerIcon.gif" // 로딩 중에 표시될 이미지 경로
+								        ,imageAnimation: false  //빙글빙글 돌아가는거 막음
+								    });
+
+								    // 1초 후에 함수 실행
+								    setTimeout(function () {
+								    	
+								    
+									// 다운로드 요청을 보내는 코드
+									window.location.href = "${pageContext.request.contextPath}/sales/deptDownloadExcel.do";
+
+									 // LoadingOverlay 숨기기
+							        	$.LoadingOverlay("hide");
+								    	}, 1000); // 1초 후에 실행
+								    	
+								    }); /*function  */
+								
+			</script>
+
+			<script>
+				document.getElementById("empDownloadButton").addEventListener("click", function() {
+									
+									//loadingOverlay 라이브러리 실행
+									$.LoadingOverlay("show", {
+								        image: "<%=request.getContextPath() %>/resources/images/mainSpinnerIcon.gif" // 로딩 중에 표시될 이미지 경로
+								        ,imageAnimation: false  //빙글빙글 돌아가는거 막음
+								    });
+
+								    // 1초 후에 함수 실행
+								    setTimeout(function () {
+								    	
+									// 다운로드 요청을 보내는 코드
+									window.location.href = "${pageContext.request.contextPath}/sales/empDownloadExcel.do";
+									 // LoadingOverlay 숨기기
+						        	$.LoadingOverlay("hide");
+							    	}, 1000); // 1초 후에 실행
+							    	
+							    }); /*function  */
+			</script>
+
+
+
+
+<script type="text/javascript">
+	document.getElementById("scrollToTopButton").addEventListener("click",
+			function() {
+				// 대상 <div>의 위치로 스크롤 이동
+				document.getElementById("top").scrollIntoView({
+					behavior : "smooth"
+				});
+			});
+</script>
+
+
+<!-- Plugin Js-->
+<script
+	src="<%=request.getContextPath()%>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+
+<script>
+	$(document).ready(function() {
+		$('#patient-table').addClass('nowrap').dataTable({
+			responsive : true,
+			columnDefs : [ {
+				targets : [ -1, -3 ],
+				className : 'dt-body-right'
+			} ]
+		});
+	});
+
+	$(document).ready(function() {
+		$('#myProject2').addClass('nowrap').dataTable({
+			responsive : true,
+			columnDefs : [ {
+				targets : [ -1, -3 ],
+				className : 'dt-body-right'
+			} ]
+		});
+	});
+
+	$(document).ready(function() {
+		$('#myDataTable2').addClass('nowrap').dataTable({
+			responsive : true,
+			columnDefs : [ {
+				targets : [ -1, -3 ],
+				className : 'dt-body-right'
+			} ]
+		});
+	});
+</script>

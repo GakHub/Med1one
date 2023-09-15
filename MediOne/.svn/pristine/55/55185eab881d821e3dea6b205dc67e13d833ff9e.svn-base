@@ -1,0 +1,50 @@
+package kr.or.ddit.medical.hospital.service;
+
+import java.util.List;
+
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.hospital.vo.SckbdVO;
+import kr.or.ddit.medical.vo.PatientVO;
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+public interface HospitalService {
+
+	/**
+	 * 병동 환자 조회
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveHospitalPatientList();
+	
+	/**
+	 * 병동 병실 list
+	 * @param sckbdRo 
+	 * @return
+	 */
+	public List<SckbdVO> retrieveSckbdList(String sckbdRo);
+	
+	/**
+	 * 입원대기 환자
+	 * @return
+	 */
+	public List<PatientVO> retrieveHospitalWaitList(String word);
+	
+	/**
+	 * 병동 침상 사용가능여부
+	 * @param sckbd
+	 * @return
+	 */
+	public boolean modifySckBD(SckbdVO sckbd);
+	
+	/**
+	 * 입원 insert
+	 * @param hsptl
+	 * @return
+	 */
+	public boolean createHsptlzIn(HospitalizationVO hsptl);
+	/**
+	 * 환자의 위치상태 코드 insert
+	 * @param patntStat(=recCode)
+	 * @return
+	 */
+	public boolean createHspPatnt(String patntStat);
+}

@@ -1,0 +1,456 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@taglib uri="http://www.springframework.org/security/tags"
+	prefix="security"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page import="java.time.format.DateTimeFormatter"%>
+
+<!--     plugin css file  -->
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+<!--     project css file  -->
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/css/ihealth.style.min.css">
+
+<style>
+.bi-arrow-down-square-fill {
+	font-size: 50px;
+	line-height: 22px;
+	flex: auto;
+	padding-right: 15px;
+}
+
+.bi-arrow-up-square-fill {
+	font-size: 50px;
+	padding-left: 15px;
+}
+
+.select {
+	text-align: right;
+	margin-right: 3%;
+}
+
+.top-color {
+	border-top: 3px solid #6aab9c;
+}
+
+</style>
+
+<security:authorize access="isAuthenticated()">
+	<security:authentication property="principal.realUser" var="authMember" />
+</security:authorize>
+
+<!--Row start  -->
+<div class="row align-items-center" style="margin-top: 20px;">
+	<div class="border-0 mb-3">
+		<div
+			class="card-header py-3 no-bg bg-transparent d-flex align-items-center px-0 justify-content-between border-bottom flex-wrap">
+			<h3 class="fw-bold mb-0">비품신청목록</h3>
+			<div class="col-auto d-flex w-sm-100">
+				<button type="button" class="btn btn-user btn-set-task w-sm-100"
+					data-bs-toggle="modal" data-bs-target="#fixIqr"
+					onclick="fixturesList()" style="margin-right: 10px;">
+					<i class="icofont-check me-2 fs-6"></i>비품조회
+				</button>
+				<button type="button" class="btn btn-user btn-set-task w-sm-100"
+					data-bs-toggle="modal" data-bs-target="#fixAdd">
+					<i class="icofont-plus-circle me-2 fs-6"></i>신규등록
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Row end  -->
+
+<!-- main body area -->
+<div class="main px-lg-2 px-md-1">
+	<!-- Body: Body -->
+	<div class="body d-flex py-lg-3 py-md-2">
+
+		<div class="container-xxl">
+			<!-- 컨테이너 -->
+
+			<div class="row clearfix g-3">
+				<div class="col-sm-12">
+					<div class="card mb-3 top-color">
+						<div class="card-body">
+							<div class="card mb-3 top color">
+								<div style="overflow: auto; width: 1526 px; height: 250px;">
+									<table id="myProjectTable2"
+										class="table table-hover align-middle mb-0"
+										style="width: 100%">
+										<thead>
+											<tr>
+												<th>NO.</th>
+												<th>주문코드</th>
+												<th>비품명</th>
+												<th>신청수량</th>
+												<th>등록과</th>
+												<th>신청인</th>
+												<th>신청일자</th>
+												<th>진행상태</th>
+											</tr>
+										</thead>
+										<tbody id="fixOrdList">
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+
+	<!--Row start  -->
+	<div class="row align-items-center">
+		<div class="border-0 mb-3">
+			<div
+				class="card-header py-3 no-bg bg-transparent d-flex align-items-center px-0 justify-content-between border-bottom flex-wrap">
+				<h3 class="fw-bold mb-0">지급완료목록</h3>
+			</div>
+		</div>
+	</div>
+	<!-- Row end  -->
+
+	<div class="row clearfix g-3">
+		<div class="col-sm-12">
+			<div class="card mb-3 top-color">
+				<div class="card-body">
+					<table id="myProjectTable2"
+						class="table table-hover align-middle mb-0" style="width: 100%">
+						<thead>
+							<tr>
+								<th>NO.</th>
+								<th>주문코드</th>
+								<th>비품명</th>
+								<th>신청수량</th>
+								<th>등록과</th>
+								<th>신청인</th>
+								<th>신청일자</th>
+								<th>지급일자</th>
+								<th>진행상태</th>
+							</tr>
+						</thead>
+						<tbody id="fixOrdList2">
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 비품 신청목록 확인-->
+	<div class="modal fade" id="ordCheck" tabindex="-1" aria-hidden="true">
+		<div
+			class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable">
+			<div class="modal-content">
+
+				<div class="modal-header">
+					<h5 class="modal-title  fw-bold" id="depaddLabel">신청내역 확인</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Close"></button>
+				</div>
+
+				<div class="modal-body">
+					<div class="deadline-form">
+						<form name="sub1" method="post"
+							action="/fixtures/fixturesReqInsert">
+							<div class="mb-3">
+								<label for="exampleDataList" class="form-label">주문코드</label> <input
+									type="text" class="form-control" id="fxtrsOrdCode" readonly>
+							</div>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1111" class="form-label">비품명</label>
+								<input type="text" class="form-control" id="fxtrsNm" readonly>
+							</div>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1111" class="form-label">신청수량</label>
+								<input type="text" id='fxtrsCnt' class="form-control" value=""
+									readonly>
+							</div>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1111" class="form-label">등록과</label>
+								<input type="text" class="form-control" id="deptNm" readonly>
+							</div>
+							<div class="mb-3">
+								<label for="exampleFormControlInput1111" class="form-label">신청인</label>
+								<input type="text" class="form-control" id="empNm" readonly>
+							</div>
+							<div hidden="">
+								<label for="exampleFormControlInput1111" class="form-label">진행상태</label>
+								<input type="text" class="form-control" id="fxtrsSttus" readonly>
+							</div>
+							<div hidden="">
+								<input type="hidden" id="fxtrsCode">
+							</div>
+						</form>
+
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-primary" id="orderButton"
+						data-bs-dismiss="modal">주문하기</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--비품 신청목록 확인  -->
+</div>
+
+
+<!-- 비품 신청목록 확인-->
+<div class="modal fade" id="fixAdd" tabindex="-1" aria-hidden="true">
+	<div
+		class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h5 class="modal-title  fw-bold" id="depaddLabel">비품 신규등록</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+
+			<div class="modal-body">
+				<div class="deadline-form">
+					<form name="sub2" method="post"
+						action="/fixtures/insertFixturesReq.do">
+						<div class="mb-3">
+							<label for="exampleDataList" class="form-label">비품코드</label> <input
+								type="text" class="form-control" id="fixCode">
+						</div>
+						<div class="mb-3">
+							<label for="exampleFormControlInput1111" class="form-label">비품명</label>
+							<input type="text" class="form-control" id="fixNm">
+						</div>
+						<div class="mb-3">
+							<label for="exampleFormControlInput1111" class="form-label">등록수량</label>
+							<input type="text" id='fixInv' class="form-control" value="">
+						</div>
+						<div class="mb-3">
+							<label for="exampleFormControlInput1111" class="form-label">비품단가</label>
+							<input type="text" class="form-control" id="fixUntpc">
+						</div>
+						<div class="mb-3">
+							<label for="exampleFormControlInput1111" class="form-label">제조업체</label>
+							<input type="text" class="form-control" id="fixMfbiz">
+						</div>
+						<div class="mb-3">
+							<label for="exampleFormControlInput1111" class="form-label">분류코드</label>
+							<input type="text" class="form-control" id="fixLclas">
+						</div>
+					</form>
+
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary"
+					data-bs-dismiss="modal">취소</button>
+				<button type="submit" class="btn btn-primary" id="addButton"
+					data-bs-dismiss="modal">등록하기</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!--비품 신청목록 확인  -->
+</body>
+
+<!-- Plugin Js-->
+<script
+	src="<%=request.getContextPath()%>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+
+<!-- Jquery Page Js -->
+<script src="<%=request.getContextPath()%>/resources/js/template.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+<script type="text/javascript">
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'center-center',
+    showConfirmButton: false,
+    timer: 2000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+});	
+
+//클릭한 테이블의 행의 데이터 가져오기
+$('#fixOrdList').on("click", "tr", function(){		// <table id=""> 테이블에 id 지정. 
+	
+	let fxtrsOrdCode = $(this).find("td:eq(1)").text(); 	// 행의 순서.
+	let fxtrsNm = $(this).find("td:eq(2)").text(); 
+	let fxtrsCode = $(this).find("td:eq(3)").text(); 
+	let fxtrsCnt = $(this).find("td:eq(4)").text(); 
+	let deptNm = $(this).find("td:eq(5)").text(); 
+	let empNm = $(this).find("td:eq(6)").text(); 
+	let fxtrsDate = $(this).find("td:eq(7)").text();
+	let fxtrsSttus = $(this).find("td:eq(8)").text();
+	
+	$("#fxtrsOrdCode").val(fxtrsOrdCode);
+	$("#fxtrsNm").val(fxtrsNm);
+	$("#fxtrsCnt").val(fxtrsCnt);
+	$("#fxtrsCode").val(fxtrsCode);
+	$("#deptNm").val(deptNm);
+	$("#empNm").val(empNm);
+	$("#fxtrsDate").val(fxtrsDate);
+	$("#fxtrsSttus").val(fxtrsSttus);
+	
+});	
+
+// 신규 비품 등록하기 버튼 클릭
+$('#addButton').click(function(){
+	var fixCode = $('#fixCode').val(); 
+	var fixNm = $("#fixNm").val();
+    var fixUntpc = $("#fixUntpc").val();
+    var fixInv = $("#fixInv").val();
+    var fixMfbiz = $("#fixMfbiz").val();
+    var fixLclas = $("#fixLclas").val();
+    
+    var fixtures = {
+    		'fixCode' : fixCode
+    	   ,'fixNm'   : fixNm
+    	   ,'fixUntpc': fixUntpc
+    	   ,'fixInv'  : fixInv
+    	   ,'fixMfbiz': fixMfbiz
+    	   ,'fixLclas': fixLclas 
+    }
+
+    console.log(fixtures);
+    
+ // AJAX 요청 설정
+    $.ajax({
+       type: 'POST', // 또는 "GET", 적절한 HTTP 메서드 선택
+       url: '<%=request.getContextPath()%>/fixtures/insertFixtures.do',   // 서버의 엔드포인트 URL로 변경해야 합니다.
+       dataType: 'json',
+       contentType: 'application/json; charset=utf-8',
+       data: JSON.stringify(fixtures), // 전송할 데이터
+       success: function (result) {
+           // 성공 시 실행할 코드
+           alert("데이터 삽입 성공");
+           // 필요한 추가 동작 수행
+    	   console.log(result);
+       },
+       error: function (error) {
+           // 실패 시 실행할 코드
+           alert("데이터 삽입 실패:");
+           // 필요한 에러 처리 수행
+    	   console.log(error);
+       }
+   });
+});
+
+//주문완료
+function order() {
+    // 주문 처리 로직을 여기에 추가
+    const val = document.getElementById("fxtrsSttus").value,
+    foc = document.getElementById("fxtrsOrdCode").value;
+    
+    const val1 = val.trim();
+    
+    var jsonData = {
+    		'fxtrsSttus' : val1
+    		, 'fxtrsOrdCode' : foc
+    		}
+
+    $.ajax({
+    	type : 'POST',
+    	url : '/fixtures/fixturesReqInsert.do',
+    	dataType : 'json',
+    	contentType : 'application/json; charset=utf-8',
+    	data : JSON.stringify(jsonData),
+    	success : function(result) {
+    		alert("주문 완료되었습니다!");
+    		
+    		location.reload();
+    	},
+    	error : function(error) {
+    		alert("에러");
+    		
+    	}
+    });
+}
+
+//비품 주문 리스트 조회
+$.getJSON("<c:url value='/fixtures/selectFixOrdList.do' />").done(function(resp){
+	console.log(resp);
+	if(resp.length>0){
+		let tbody1 = $("#fixOrdList"); //지급대기
+		let tbody2 = $("#fixOrdList2"); //지급완료
+		$(resp).each(function(idx,fix){
+			if(fix.fxtrsSttus === '0'){ //지급대기
+				let tr = $("<tr>").append(
+						$("<td>").html(idx)		
+						,$("<td>").html(fix.fxtrsOrdCode)		
+						,$("<td>").html(fix.fix.fxtrsNm)		
+						,$("<td>").html(fix.fxtrsCode).attr("hidden", "true") // hidden 속성 설정		
+						,$("<td>").html(fix.fxtrsCount)		
+						,$("<td>").html(fix.deptNm)		
+						,$("<td>").html(fix.empNm)
+						,$("<td>").html(fix.fxtrsDate)
+						,$("<td>").append($("<button>").addClass("badge bg-secondary order").attr("data-fxtrsCode",fix.fxtrsCode).text("지급대기"))
+				);
+				tbody1.append(tr);
+			} else if(fix.fxtrsSttus === '1'){ //지급완료
+				let tr = $("<tr>").append(
+						$("<td>").html(idx)		
+						,$("<td>").html(fix.fxtrsOrdCode)		
+						,$("<td>").html(fix.fix.fxtrsNm)
+						,$("<td>").html(fix.fxtrsCode).attr("hidden", "true") // hidden 속성 설정
+						,$("<td>").html(fix.fxtrsCount)		
+						,$("<td>").html(fix.deptNm)		
+						,$("<td>").html(fix.empNm)
+						,$("<td>").html(fix.fxtrsDate)
+						,$("<td>").html(fix.fxtrsGvDate)
+						,$("<td>").append($("<span>").addClass("badge bg-primary").text("지급완료"))
+				);
+				tbody2.append(tr);
+			}
+		});
+	}else{
+		
+	}
+});
+	
+	$(document).on("click", ".order", function() {
+	    let fxtrsCode = $(this).attr("data-fxtrsCode");
+	    // 주문 정보를 모달에 채우는 로직 (아래 코드에서는 주문 코드, 비품명, 신청수량, 등록과, 신청인을 모달에 채웁니다.)
+		let fxtrsOrdCode = $("#fxtrsOrdCode").val();
+		let fxtrsNm = $("#fxtrsNm").val();
+		let fxtrsCnt = $("#fxtrsCnt").val();
+		let deptNm = $("#deptNm").val();
+		let empNm = $("#empNm").val();
+
+		// 모달에 주문 정보 채우기
+		$("#modalFxtrsOrdCode").text(fxtrsOrdCode);
+		$("#modalFxtrsNm").text(fxtrsNm);
+		$("#modalFxtrsCnt").text(fxtrsCnt);
+		$("#modalDeptNm").text(deptNm);
+		$("#modalempNm").text(empNm);
+
+		// 모달 창 열기
+		$("#ordCheck").modal("show");
+
+		$("#orderButton").on("click",function(){
+			$.getJSON("<c:url value='/fixtures/updateOrderStatus.do' />",{fxtrsOrdCode:fxtrsOrdCode,fxtrsCnt:fxtrsCnt,fxtrsCode:fxtrsCode}).done(function(resp){
+				Toast.fire({
+	    		    icon: 'success',
+	    		    title: '비품 주문이 완료되었습니다'
+	    		});
+				location.reload();
+			});
+		});
+	});
+	
+	function fixturesList(){
+		window.open('/fixtures/fixturesListPop.do', '비품목록', 'width=800px,height=500px,scrollbars=yes');
+	}
+</script>
+

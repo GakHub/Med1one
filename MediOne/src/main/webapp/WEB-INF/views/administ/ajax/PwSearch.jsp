@@ -1,0 +1,229 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" buffer="8kb"%>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-loading-overlay/2.3.2/loadingoverlay.min.js"></script>
+<script src="<%=request.getContextPath()%>/resources/js/loadingoverlay.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+.card.mb-3.top-color {
+    text-align: center;
+}
+
+.card-body {
+	width: 100px;
+	hieght: 100px;
+}
+
+.form-control {
+	border-radius: 1cm;
+	background-color: #f0f0f0;
+}
+
+.form-select {
+	border-radius: 1cm;
+	background-color: #f0f0f0;
+}
+
+.form-label {
+	color: #5fa192;
+	font-weight: bold;
+}
+
+.btn-primary {
+	display:right;
+}
+
+.ui-tooltip {
+    padding: 10px 20px;
+    color: black;
+    border-radius: 5px;
+    background:#ffffff;
+    width:800px;
+     border-radius: 5px;
+    box-shadow: 0 0 7px #f0f0f0;
+}
+</style>
+
+<div id="ihealth-layout" class="theme-tradewind">
+
+	<!-- main body area -->
+	<div class="main px-lg-4 px-md-4">
+
+		<!-- Body: Body -->
+		<div class="body d-flex py-3">
+
+			<!--컨테이너  -->
+			<div class="container">
+				<div class="row">
+					<h3 style="text-align: center; color: #5fa192; font-weight: bold;">비밀번호
+						찾기</h3>
+					<br> <br>
+					<h6 style="text-align: center;">비밀번호 분실시 문의해주세요.</h6>
+					<br> <br>
+					<div class="col-md-6 mb-3">
+						<div class="mb-3">
+							<label class="form-label">성명</label> <input type="text"
+								class="form-control" id="empName">
+						</div>
+					</div>
+					<div class="col-md-6 mb-3">
+						<div class="mb-3">
+							<label class="form-label">사번</label> <input type="text"
+								class="form-control" id="empNo">
+						</div>
+					</div>
+					<div class="col-md-6 mb-3">
+						<div class="mb-3">
+							<label class="form-label">부서</label> <select class="form-select"
+								id="empDept">
+								<option value="PM">호흡기내과</option>
+								<option value="GI">소화기내과</option>
+								<option value="DR">영상의학과</option>
+								<option value="HT">심장내과</option>
+								<option value="IF">감염내과</option>
+								<option value="ME">내분비내과</option>
+								<option value="TC">종합검진센터</option>
+								<option value="NS">병동간호과</option>
+								<option value="NC">특수간호과</option>
+								<option value="NR">임상병리과</option>
+								<option value="CP">방사선과</option>
+								<option value="RD">원무과</option>
+								<option value="AD">총무과</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="col-md-6 mb-3">
+						<div class="mb-3">
+							<label class="form-label">전화번호</label> <input type="text"
+								class="form-control" id="Telno">
+						</div>
+					</div>
+
+					<div class="col-md-6 mb-3">
+						<div class="mb-3">
+							<label class="form-label">이메일</label> <input type="text"
+								class="form-control" id="email">
+						</div>
+					</div>
+
+					<div class="col-md-6 mb-3">
+						<div class="mb-3">
+							<label class="form-label">발신자</label> <input type="text"
+								class="form-control" placeholder="MED1ONE" id="sender">
+						</div>
+					</div>
+
+						<div class="col-md-6 mb-3">
+							<div class="mb-3">
+							<label class="form-label">내용</label> <input type="text"
+								class="form-control" style="width: 690px; height: 100px; text-align: left;"
+								id="content">
+							</div>
+						</div>
+
+
+						<div class="mb-3 form-check">
+							<input type="checkbox" class="form-check-input" id="checkBox"> <label
+								class="form-check-label" for="agreement" id="event" data-bs-toggle="tooltip" data-bs-placement="bottom" 
+								title="MED1ONE은 아래와 같이 개인정보를 수집, 이용합니다.<br><br> 목적 : 비밀번호 분실시 접수 및 답변 항목 : 사번, 부서, 전화번호, 이메일 <br> 보유 기간: 수집일로부터 1년
+								<br><br>서비스 이용에 필요한 최소한의 수집 및 이용에 동의하지 않을 수 있으나, 동의를 거부할 경우 서비스 이용에 제한이 있을 수 있습니다.">개인정보 제공동의</label>
+								
+								
+						</div>
+
+						<div class="col-md-6 mb-3 text-end" style="margin-left: 345px;">
+							<button class="btn btn-primary"  id="send">제출하기</button>
+							<input class="btn btn-secondary" type="button" value="click" id="dataInsert">
+						</div>
+					
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-loading-overlay/2.1.7/loadingoverlay.min.js"></script>
+<script>
+
+$(function() {
+    $(document).tooltip({
+        content: function() {
+            return $(this).prop('title');
+        }
+    });
+});
+
+// 체크박스 안 눌렀을 때
+document.getElementById("send").addEventListener("click", function() {
+    var checkbox = document.getElementById("checkBox");
+    
+    if (!checkbox.checked) {
+        alert("개인정보 제공동의에 동의해주세요.");
+    } else {
+        // 체크박스가 체크되었을 때의 처리
+        // 여기에 필요한 코드 추가
+        sendEmail();
+    }
+});
+
+
+
+function sendEmail() {
+    var email = $("#email").val();
+    var sender = $("#sender").val();
+    var content = $("#content").val();
+    var empName = $("#empName").val();
+    var empDept = $("#empDept option:selected").text();
+
+    
+ // LoadingOverlay 라이브러리 실행
+    $.LoadingOverlay("show", {
+         image: "<%=request.getContextPath() %>/resources/images/mainSpinnerIcon.gif", // 로딩 중에 표시될 이미지 경로
+         imageAnimation: false // 빙글빙글 돌아가는 것 막음
+     });
+    
+	$.ajax({
+			url : "${pageContext.request.contextPath}/admin/sendEmail.do",
+			type : "POST",
+			dataType : "json",
+			data : {
+				email : email,
+				sender : sender,
+				content : content,
+				empName : empName,
+				empDept : empDept
+			},
+			success : function(response) {
+				alert("이메일이 성공적으로 전송되었습니다.");
+				// finishTask(); // 작업이 완료되면 스피너 비활성화 및 버튼 활성화
+				 $.LoadingOverlay("hide");
+				 window.close();
+			},
+			error : function(xhr, status, error) {
+				alert("이메일 전송에 실패하였습니다.");
+				// finishTask(); // 작업이 완료되면 스피너 비활성화 및 버튼 활성화
+				 $.LoadingOverlay("hide");
+				
+			}
+		});
+	}
+	
+// 시연용
+		document.getElementById("dataInsert").addEventListener("click",
+				function() {
+			document.getElementById("empName").value = "양수아"; 
+			document.getElementById("empNo").value = "NNC0062"; 
+			document.getElementById("empDept").value = "NC"; 
+		    document.getElementById("Telno").value = "01027023624"; 
+		    document.getElementById("email").value = "sohee950516@naver.com"; 
+		    document.getElementById("content").value = "비밀번호를 분실하였습니다."; 
+			
+		});
+
+</script>

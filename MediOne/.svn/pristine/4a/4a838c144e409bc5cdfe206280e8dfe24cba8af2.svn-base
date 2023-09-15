@@ -1,0 +1,15 @@
+package kr.or.ddit.Free.vo;
+
+
+import lombok.Data;
+
+/**
+ * 단순 키워드 검색
+ *
+ */
+
+@Data
+public class FreeSimpleCondition {
+	private String searchType;
+	private String searchWord;
+}

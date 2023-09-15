@@ -1,0 +1,56 @@
+package kr.or.ddit.medical.examinate.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.medical.examinate.vo.MdexmnDtl;
+import kr.or.ddit.medical.examinate.vo.MdexmnPackVO;
+import kr.or.ddit.medical.examinate.vo.MdexmnRstltVO;
+import kr.or.ddit.medical.examinate.vo.MdexmnVO;
+
+@Mapper
+public interface MdexmnDao {
+
+	/**
+	 * 검사 목록 전체 리스트 조회
+	 * @return
+	 */
+	public List<MdexmnPackVO> selectMdexmnList(String recCode);
+	
+	/**
+	 * 환자 검진 여부 및 내용 등록
+	 * @param mdexDtlVO
+	 * @return
+	 */
+	public int insertMdexmnDtl(MdexmnDtl mdexDtlVO);
+	
+	/**
+	 * 환자의 검진된 목록 뽑기
+	 * @param mdexmnCode
+	 * @return
+	 */
+	public List<MdexmnDtl> selectMdexDtl(String mdexmnCode);
+	
+	
+	/**
+	 * 환자 검진 결과 저장
+	 * @param resultVO
+	 * @return
+	 */
+	public int insertMdexmnRst(MdexmnRstltVO resultVO);
+	
+	/**
+	 * 환자 코드 생성
+	 * @param mdexmnVO
+	 * @return
+	 */
+	public int insertMdexmn(MdexmnVO mdexmnVO);
+	
+	/**
+	 * 검진 완료 환자 정보
+	 * @param mdexmnCode
+	 * @return
+	 */
+	public MdexmnVO selectDoneMdexmn(String mdexmnCode);
+}

@@ -1,0 +1,30 @@
+package kr.or.ddit.medical.hospital.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/hospital/")
+public class HospitalRetrieveController {
+	
+	// 간호부 병동-입원환자리스트 조회
+	@GetMapping("hospitalPatientList.do")
+	public String hospitalPatientList() {
+		return "hospital/hospitalization";
+	}
+	
+	// 간호부 병동-입원환자검색
+	@GetMapping("hospitalPatientDetail.do")
+	public String hospitalPatientDetail() {
+		return "hospital/hospitalization";
+	}
+	
+	// 병동 조회
+	@GetMapping("hospitalSearch.do")
+	public String hospitalSearch() {
+		return "hospital/ward";
+	}
+	
+	
+}

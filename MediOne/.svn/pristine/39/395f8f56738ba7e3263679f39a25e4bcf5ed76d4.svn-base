@@ -1,0 +1,23 @@
+package kr.or.ddit.medical.examinate.vo;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 검진목록
+ * 
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = { "mdexlistCode", "inspCode" })
+public class MdexmnListVO {
+	@NotBlank
+	private String mdexlistCode; // 검진목록코드
+	@NotBlank
+	private String inspCode; // 검사코드
+	@NotBlank
+	private String mdexmnCode; // 환자검진코드
+}

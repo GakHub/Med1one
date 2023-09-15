@@ -1,0 +1,43 @@
+package kr.or.ddit.employee.admin.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/admin/")
+public class AdminManageController {
+
+	@GetMapping("authRequestList.do")
+	public String authRequestList() {
+		return "auth/authReqList";
+	}
+	
+	@GetMapping("authRequestCheck.do")
+	public String authRequestCheck() {
+		return "auth/authReqList";
+	}
+	
+	
+	@GetMapping("nurScheduleView.do")
+	public String nurScheduleView() {
+		return "medi/schedule";
+	}
+	
+	@GetMapping("docScheduleView.do")
+	public String docScheduleView() {
+		return "medi/schedule";
+	}
+	
+	@GetMapping("nurScheduleInsert.do")
+	public String nurScheduleInsert() {
+		return "medi/schedule";
+	}
+	
+	@GetMapping("docScheduleInsert.do")
+	public String docScheduleInsert() {
+		return "medi/schedule";
+	}
+	
+	
+}

@@ -1,0 +1,8 @@
+imagePath=/resources/images
+
+atchPath=file:${basedir}\\resources\\images\\atch
+
+atchUrl=/resources/images/atch
+
+#imagePath=file:M:\\resources\\images
+#atchPath=file:M:\\resources\\images\\atch

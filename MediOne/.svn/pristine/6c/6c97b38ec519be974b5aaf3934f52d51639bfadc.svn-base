@@ -1,0 +1,34 @@
+package kr.or.ddit.medical.hospital.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/hospital/")
+public class HospitalInsertController {
+	
+	// 병동 - 환자관리 투약 입력
+	@GetMapping("medicineInsert.do")
+	public String medicineInsert() {
+		return "hospital/hospitalization";
+	}
+	
+	// 병동-환자관리 식이 입력
+	@GetMapping("dietInsert.do")
+	public String dietInsert() {
+		return "hospital/hospitalization";
+	}
+	
+	// 병동-환자관리 바이탈 입력
+	@GetMapping("vitalInsert.do")
+	public String vitalInsert() {
+		return "hospital/hospitalization";
+	}
+	
+	// 병동-환자관리 IO 입력
+	@GetMapping("IOInsert.do")
+	public String IOInsert() {
+		return "hospital/hospitalization";
+	}
+}

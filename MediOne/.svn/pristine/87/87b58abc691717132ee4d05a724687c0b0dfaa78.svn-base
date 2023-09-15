@@ -1,0 +1,74 @@
+package kr.or.ddit.medical.hospital.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.medical.hospital.dao.HospitalDao;
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.hospital.vo.SckbdVO;
+import kr.or.ddit.medical.vo.PatientVO;
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+@Service
+public class HospitalServiceImpl implements HospitalService {
+
+	@Inject
+	private HospitalDao hospitalDAO;
+	
+	/**
+	 * 병동 환자 조회
+	 */
+	@Override
+	public List<HospitalizationVO> retrieveHospitalPatientList() {
+		return hospitalDAO.hospitalPatientList();
+	}
+
+	/**
+	 *병동 병실 list
+	 */
+	@Override
+	public List<SckbdVO> retrieveSckbdList(String sckbdRo) {
+		return hospitalDAO.sckbdList(sckbdRo);
+	}
+
+	/**
+	 * 환자 검색
+	 */
+	@Override
+	public List<PatientVO> retrieveHospitalList(String word, String code) {
+		return hospitalDAO.patntSearch(word,code);
+	}	
+	/**
+	 * 병동 침상 사용가능여부 수정
+	 */
+	@Override
+	public boolean modifySckBD(SckbdVO sckbd) {
+		return hospitalDAO.updateBed(sckbd) > 0;
+	}
+
+	/**
+	 * 입원대기 환자의 입원 처리
+	 */
+	@Override
+	public boolean createHsptlzIn(HospitalizationVO hsptl) {
+		return hospitalDAO.insertHsptl(hsptl) > 0;
+	}
+
+	/**
+	 * recCode인 환자의 입원중 상태코드 insert
+	 */
+	@Override
+	public boolean createHspPatnt(String patntStat) {
+		return hospitalDAO.insertHspPatnt(patntStat) > 0;
+	}
+
+	@Override
+	public List<HospitalizationVO> retrieveInPatnt(String patntCode) {
+		return hospitalDAO.inPatntDetail(patntCode);
+	}
+
+
+}

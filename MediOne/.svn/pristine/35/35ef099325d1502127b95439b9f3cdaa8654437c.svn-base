@@ -1,0 +1,24 @@
+package kr.or.ddit.medical.examinate.vo;
+
+import java.time.LocalDate;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(of = "mdexRstCode")
+public class MdexmnRstltVO {
+	@NotBlank
+	private String mdexRstCode;		//검진결과코드 (시퀀스)
+	@NotBlank
+	private LocalDate mdexmnDate;	//검진일자 sysdate
+	@NotBlank
+	private String mdexmnRs;		//검진내용
+	@NotBlank
+	private String inspNm;			//검진항목
+	@NotBlank
+	private String mdexlistCode;	//검진목록코드
+	private LocalDate mdexmnRsdate;	//검진결과 일시 sysdate
+}

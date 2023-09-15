@@ -1,0 +1,60 @@
+package kr.or.ddit.employee.vo;
+
+import java.time.LocalDate;
+
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonFormatTypes;
+
+import kr.or.ddit.File.vo.AtchFileVO;
+import kr.or.ddit.validate.groups.DeleteGroup;
+import kr.or.ddit.validate.groups.UpdateGroup;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 승인신청 VO
+ * AUTHORIZATION_REQ
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "reqCode")
+public class AuthorizationReqVO {
+	@NotBlank(groups = {UpdateGroup.class, DeleteGroup.class})
+	private String reqCode; //신청코드 (시퀀스) /// err
+	@NotBlank
+	private String empNo; //사번
+	@NotBlank
+	private String empNm; //이름
+	@NotBlank
+	private String empIdentino; //주민번호
+//	@NotBlank
+	private String reqStatus; //승인상태 (기본값 N) ///err
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate authoreqDate; //승인신청일시 sysdate
+	
+	@NotBlank 
+	private String deptCode;
+	
+	private DepartmentVO dept;
+	
+	private EmployeeVO emp;
+	
+	private int atchSn; //첨부파일번호
+	
+	private MultipartFile[] boFiles;
+	
+	private Integer atchFileId;
+	
+	private AtchFileVO fileGroup;
+	
+	private String reason; //반려 사유
+	
+}

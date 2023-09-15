@@ -1,0 +1,14 @@
+package kr.or.ddit.medical.clinc.service;
+
+import java.util.List;
+
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+public interface InspectionService {
+	
+	/**
+	 * 검사대기(007) 검사중(008) 인 환자 조회
+	 * @return
+	 */
+	public List<PatntStatVO> retrieveInspPatntStat();
+}

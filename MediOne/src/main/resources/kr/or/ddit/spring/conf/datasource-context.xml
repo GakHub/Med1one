@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+<!-- save하는순간 에러가 없음 = 기본생성자 라는 소리 -->
+<!-- properties를 로딩하는방법 EL #{} , JSTL? -->
+<!-- id를사용하려면 dataSource를 입력?  -->
+
+
+<!-- 데이터베이스를 사용하기위한 전략객체 -->
+	<util:properties id="dbInfo" location="classpath:kr/or/ddit/db/dbInfo.properties"/>
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
+		p:driverClassName="#{dbInfo.driverClassName}"
+		p:url="#{dbInfo.url}"
+		p:username="#{dbInfo.user}"
+		p:password="#{dbInfo.password}"
+		p:initialSize="#{dbInfo.initialSize}"
+		p:maxTotal="#{dbInfo.maxTotal}"
+		p:maxWaitMillis="#{dbInfo.maxWait}"
+	/>
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" 
+		p:dataSource-ref="dataSource"
+	/>
+
+</beans>

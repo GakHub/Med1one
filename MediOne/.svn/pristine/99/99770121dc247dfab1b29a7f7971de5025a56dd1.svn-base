@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.nurse.dao.NurseDao">
+
+
+   <select id="selectDoctorList" resultType="kr.or.ddit.medical.nurse.vo.DoctorDtlVO">
+      SELECT D.DOCTR_DATE, C.CODE_NM, T.DOC_EMP_NM
+         FROM COMMON_CODE C
+         INNER JOIN
+         DOCTOR_SCHDUL D
+         ON(D.DOCWK_CODE = C.CODE_ID)
+         INNER JOIN
+          DOCTOR_DTL T 
+        ON (D.DOC_EMP_NO = T.DOC_EMP_NO)
+   </select>
+
+
+   <select id="selectNurseList"  resultType="NurseDtlVO">
+      SELECT N.NURSE_DATE, C.CODE_NM, T.NUR_EMP_NM
+      FROM COMMON_CODE C
+      INNER JOIN
+      nurse_schdul N
+      ON(N.NURWK_CODE = C.CODE_ID)
+      INNER JOIN
+      NURSE_DTL T
+      ON (N.EMP_NO = T.EMP_NO)
+   </select>
+   
+   <select id="selectDoctorDeptList" resultType="kr.or.ddit.medical.nurse.vo.DoctorDtlVO" parameterType="string">
+      SELECT D.DOCTR_DATE, C.CODE_NM, T.DOC_EMP_NM, T.FCLTY_CODE
+         FROM COMMON_CODE C
+         INNER JOIN
+         DOCTOR_SCHDUL D
+         ON(D.DOCWK_CODE = C.CODE_ID)
+         INNER JOIN
+          DOCTOR_DTL T 
+        ON (D.DOC_EMP_NO = T.DOC_EMP_NO)
+        WHERE T.FCLTY_CODE = #{fcltyCode}
+   </select>
+
+
+   <select id="selectNurseDeptList"  resultType="NurseDtlVO" parameterType="string">
+      SELECT N.NURSE_DATE, C.CODE_NM, T.NUR_EMP_NM, T.FCLTY_CODE
+      FROM COMMON_CODE C
+      INNER JOIN
+      nurse_schdul N
+      ON(N.NURWK_CODE = C.CODE_ID)
+      INNER JOIN
+      NURSE_DTL T
+      ON (N.EMP_NO = T.EMP_NO)
+      WHERE T.FCLTY_CODE = #{fcltyCode}
+   </select>
+   
+   <!-- 모든간호일지 출력 -->
+   <select id="selectAllNurseNote" resultType="NursenoteVO" parameterType="string">
+   SELECT
+	    NRSNOTE_CODE
+	  , NURWK_CODE
+	  , TO_CHAR(TO_DATE(NRSNOTE_DATE, 'YYYY-MM-DD'), 'YYYY-MM-DD') "nrsnoteDate"
+	  , NRSNOTE_NM
+	  , EMP_NO
+	  , NRSNOTE_CONTENT
+	FROM
+	    NURSENOTE
+	ORDER BY NRSNOTE_DATE DESC
+   </select>
+   
+   <select id="selectReservationList" resultType="ReservationVO" parameterType="string">
+   		 SELECT RESVE_DATE, RESVE_TIME, PATNT_NM, FCLTY_CODE, RESVE_NUM
+         FROM RESERVATION
+         WHERE FCLTY_CODE = #{fcltyCode}
+   </select>
+   
+   <select id="selectNurseDayNote" resultType="NursenoteVO" parameterType="string">
+   SELECT
+	   NRSNOTE_CONTENT
+	  , NRSNOTE_DATE
+	  , NRSNOTE_NM
+	  , NURWK_CODE
+	FROM
+	    NURSENOTE
+	    WHERE NRSNOTE_DATE = TO_CHAR(SYSDATE, 'YYYYMMDD')
+   </select>
+   <insert id="insertNurseNote" parameterType="NursenoteVO">
+		INSERT INTO NURSENOTE (
+		    NRSNOTE_CODE
+		    , NURWK_CODE
+		    , NRSNOTE_DATE
+		    , NRSNOTE_NM
+		    , EMP_NO
+		    , NRSNOTE_CONTENT
+		) VALUES (
+		    'NR' || LPAD(NRSNOTE_CODE_SEQ.nextval,4,'0')
+			, #{nurwkCode,jdbcType=VARCHAR}
+			, #{nrsnoteDate,jdbcType=VARCHAR}
+			, #{nrsnoteNm,jdbcType=VARCHAR}
+			, #{empNo,jdbcType=VARCHAR}
+			, #{nrsnoteContent,jdbcType=VARCHAR}
+		)
+   </insert>
+</mapper>

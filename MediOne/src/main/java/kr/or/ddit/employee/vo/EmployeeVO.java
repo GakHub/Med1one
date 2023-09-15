@@ -1,0 +1,98 @@
+package kr.or.ddit.employee.vo;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Base64;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+import javax.validation.groups.Default;
+
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import kr.or.ddit.File.vo.AtchFileVO;
+import kr.or.ddit.medical.nurse.vo.DoctorDtlVO;
+import kr.or.ddit.medical.nurse.vo.NurseDtlVO;
+import kr.or.ddit.validate.groups.DeleteGroup;
+import kr.or.ddit.validate.groups.InsertGroup;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@Data
+@EqualsAndHashCode(of = "empNo")
+@ToString(exclude = {"empPw","empIdentino"})
+public class EmployeeVO implements Serializable {
+	  
+	@NotBlank(groups = {InsertGroup.class, DeleteGroup.class})
+	private String empNo;
+	@NotBlank
+	private String deptCode;
+	@NotBlank
+	private String empNm;
+
+	@NotBlank(groups = Default.class)
+	@Size(min = 4)
+	@JsonIgnore
+	private transient String empPw;
+	@NotBlank
+	private String empTelno;
+	@NotBlank
+	private transient String empIdentino;
+	@NotBlank
+	private String empEmail;
+	@NotBlank
+	private String empAddr1;
+	@NotBlank
+	private String empAddr2;
+	@NotBlank
+	private String empZipcode;
+	private String jncmpYmd;
+	private String rsgntnYmd;
+	private String hdofYn;
+	
+	private boolean aprvYn;
+	private String empRole;
+	
+	private String empOtp; //직원 otp 번호
+	
+	private byte[] empImg;
+	private MultipartFile empImage;
+	//vo에서 코드 작성안하려면 밑의 코드가 service or controller로 가야함
+	public void setMemImage(MultipartFile empImage) throws IOException { //파일 데이터 byte[]로 바꾸는 작업
+		if(!empImage.isEmpty()) {
+			this.empImage = empImage;
+			this.empImg = empImage.getBytes(); //DB와 대화하는 프로퍼티인 memImg -> byte로 변환하기 .getBytes()
+		}
+	}
+	
+	public String getBase64Img() {
+		if(empImg == null) {
+			return null;
+		}else {
+			return Base64.getEncoder().encodeToString(empImg);
+		}
+	}
+	
+	//저장한 첨부파일(ex. 사원이미지) 불러올때 사용하는 속성
+	private Integer atchSn;
+	
+	private DepartmentVO dept;
+	
+	private DoctorDtlVO doctrList;
+	private NurseDtlVO nurseList;
+	private TechnicianVO techList;
+	
+	
+	//통계 자료용 속성
+	private String deptNm;
+	private long rnum; //연번
+	private int empCount; //직원수
+	private int deptCount; //부서개수
+	private String empType; //직군종류
+	private int jobEmpCount; //직군별 직원수
+	private String empBirth;//직원생년월일6자리
+	
+}

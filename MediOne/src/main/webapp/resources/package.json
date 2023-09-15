@@ -1,0 +1,33 @@
+{
+    "name": "ihealth",
+    "version": "1.0.0",
+    "description": "Bootstrap admin template",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Pixelwibes",
+    "license": "ISC",
+    "dependencies": {
+        "@popperjs/core": "^2.8.2",
+        "apexcharts": "^3.26.0",
+        "bootstrap": "^5.0.2",
+        "bootstrap-datepicker": "^1.9.0",
+        "bootstrap-icons": "^1.0.0",
+        "datatables.net": "^1.10.22",
+        "daterangepicker": "^3.1.0",
+        "echarts": "^5.1.1",
+        "font-awesome": "^4.7.0",
+        "fullcalendar": "^5.5.1",
+        "grunt-contrib-uglify": "^5.0.0",
+        "jquery": "^3.6.0",
+        "jquery-sparkline": "^2.4.0",
+        "node-sass": "^6.0.0",
+        "owl.carousel2": "^2.2.1",
+        "prismjs": "^1.23.0"
+    },
+    "devDependencies": {
+        "grunt": "^1.4.0",
+        "grunt-sass": "^2.1.0"
+    }
+}

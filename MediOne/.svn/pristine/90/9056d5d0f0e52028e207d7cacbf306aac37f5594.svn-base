@@ -1,0 +1,98 @@
+package kr.or.ddit.employee.admin.controller;
+
+import java.util.List;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.File.vo.AtchFileDtlVO;
+import kr.or.ddit.employee.admin.service.AdminService;
+import kr.or.ddit.employee.vo.AuthorizationReqVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.employee.vo.PaginationInfo;
+import kr.or.ddit.employee.vo.SimpleCondition;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Controller
+@RequestMapping("/admin/")
+public class AdminManageController {
+
+	private final AdminService service;
+
+	// ui 출력용
+	@GetMapping("authRequestList.do")
+	public String authRequestCheck() {
+		return "auth/authReqList";
+	}
+
+	// 리스트데이터 담기
+	@GetMapping(value = "authAprvList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public PaginationInfo<AuthorizationReqVO> authRequestList(
+			@RequestParam(name = "page", required = false, defaultValue = "1") long currentPage,
+			@ModelAttribute("simpleCondition") SimpleCondition simpleCondition, Model model) {
+		PaginationInfo<AuthorizationReqVO> paging = new PaginationInfo<>();
+		paging.setCurrentPage(currentPage);
+		paging.setSimpleCondition(simpleCondition);
+
+		List<AuthorizationReqVO> authList = service.retrieveAuthList(paging);
+		paging.setDataList(authList);
+
+		return paging;
+	}
+
+	// 승인버튼 누르면
+	@RequestMapping(value = "authReqApprv.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public boolean authReqApprv(@RequestParam("who") String empNo, @RequestParam("reqCode") String reqCode, @RequestParam("atchSn")int atchSn ,
+			Model model) {
+		AuthorizationReqVO authReq = new AuthorizationReqVO();
+		authReq.setEmpNo(empNo);
+		authReq.setReqCode(reqCode);
+		
+		EmployeeVO empAprv = new EmployeeVO();
+		empAprv.setEmpNo(empNo);
+		empAprv.setAtchSn(atchSn);
+
+		boolean result1 = service.modifyAuthReq(authReq);
+		boolean result2 = service.modifyEmpAprv(empAprv);
+
+		return (result1 == true) && (result2 == true);
+	}
+
+	@GetMapping("nurScheduleView.do")
+	public String nurScheduleView() {
+		return "medi/schedule";
+	}
+
+	@GetMapping("docScheduleView.do")
+	public String docScheduleView() {
+		return "medi/schedule";
+	}
+
+	@GetMapping("nurScheduleInsert.do")
+	public String nurScheduleInsert() {
+		return "medi/schedule";
+	}
+
+	@GetMapping("docScheduleInsert.do")
+	public String docScheduleInsert() {
+		return "medi/schedule";
+	}
+
+	@GetMapping(value = "fileNameSearch.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public AtchFileDtlVO selectFileName(@RequestParam("reqCode") String reqCode) {
+		AtchFileDtlVO name = service.retrieveatchSearch(reqCode);
+
+		return name;
+	}
+
+}

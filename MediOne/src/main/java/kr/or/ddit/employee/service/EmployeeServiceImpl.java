@@ -1,0 +1,117 @@
+ 
+package kr.or.ddit.employee.service;
+
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.File.vo.AtchFileDtlVO;
+import kr.or.ddit.common.controller.ServiceResult;
+import kr.or.ddit.employee.dao.EmployeeDao;
+import kr.or.ddit.employee.vo.DepartmentVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.employee.vo.EmployeeVOWrapper;
+import kr.or.ddit.exception.PKNotFoundException;
+
+@Service
+public class EmployeeServiceImpl implements EmployeeService {
+
+	
+	@Inject
+	private EmployeeDao empDao;
+	
+	
+	@Override
+	public List<EmployeeVO> retrieveDeptTreeList(String deptCode) {
+		return empDao.selectDeptTreeList(deptCode);
+	}
+
+	@Override
+	public List<DepartmentVO> retrieveDept() {
+		return empDao.selectDeptList();
+	}
+
+	@Override
+	public EmployeeVO retrieveEmployee(String empNo) throws PKNotFoundException {
+		EmployeeVO saved = empDao.selectEmployee(empNo);
+		if(saved==null)
+			throw new PKNotFoundException(MessageFormat.format("{0}에 해당하는 사용자 없음", empNo));
+		return saved;
+	}
+	
+
+	
+	/**
+	 * 로그인 및 권한
+	 */
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		EmployeeVO employee = empDao.selectEmpForAuth(username);
+
+		if(employee==null) {
+			throw new UsernameNotFoundException(MessageFormat.format("{0} 사용자 없음", username));
+		}
+		
+		return new EmployeeVOWrapper(employee);
+	}
+
+	@Override
+	public ServiceResult modifyEmp(EmployeeVO employee) {
+		ServiceResult result = null;
+		String empNo = employee.getEmpNo();
+		
+		// 기존 직원 정보를 조회합니다.
+	    EmployeeVO existingEmp = empDao.selectEmployee(empNo);
+		if(!existingEmp.getEmpPw().equals(employee.getEmpPw())){
+			result = ServiceResult.INVALIDPASSWORD;
+		}else {
+			int cnt = empDao.updateEmployee(employee);
+			if(cnt > 0){
+				result = ServiceResult.OK;
+			}else {
+				result = ServiceResult.FAIL;
+			}
+		}
+		return result;
+	}
+
+	
+	/**
+	 * 통계자료용(부서별 직원수)
+	 */
+	
+	@Override
+	public List<EmployeeVO> retrieveDeptEmp() {
+		return empDao.selectDeptEmp();
+	}
+
+	@Override
+	public List<EmployeeVO> retrieveJobEmp() {
+		return empDao.selectJobEmp();
+	}
+
+	@Override
+	public AtchFileDtlVO retrieveAtch(String empNo) {
+		return empDao.atchSearch(empNo);
+	}
+
+	@Override
+	public List<EmployeeVO> retrieveEmpList() {
+		return empDao.selectEmpList();
+	}
+
+	@Override
+	public boolean motifyOtpNum(Map<String, Object> map) {
+		int cnt = empDao.updateOtpNum(map);
+		return cnt > 0;
+	}
+	
+	
+
+}

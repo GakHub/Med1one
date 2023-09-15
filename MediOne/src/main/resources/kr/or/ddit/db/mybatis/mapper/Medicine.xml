@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.nurse.dao.MedicineDao">
+
+<!-- 약품 리스트 조회 -->
+<select id="selectMedicineList" resultType="MedicineVO">
+	SELECT
+		  MEDI_CODE
+		, MEDI_NM
+		, MEDI_KIMSCL
+		, MEDI_MTH
+		, MEDI_BZNM
+		, MEDI_STD
+		, MEDI_UNIT
+		, MEDI_AMT
+	FROM 
+		MEDICINE
+	WHERE MEDI_NM  LIKE '%' ||  #{mediNm} || '%'
+</select>
+
+<!-- 마약류 리스트 조회 -->
+<select id="selectNarcoticsList" resultType="kr.or.ddit.medical.clinc.vo.NarcoticsVO">
+	SELECT
+		  NAR_CODE
+		, NAR_NM
+		, NAR_KIMSCL
+		, NAR_MTH
+		, NAR_CAUTION
+		, NAR_STOCK
+	FROM
+		NARCOTICS
+</select>
+</mapper>

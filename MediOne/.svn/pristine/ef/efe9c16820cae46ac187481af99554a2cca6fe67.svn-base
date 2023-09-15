@@ -1,0 +1,436 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<head>
+<!-- plugin css file  -->
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+
+<style type="text/css">
+.top-color {
+	border-top: 3px solid #6aab9c;
+}
+
+.card mb-3 {
+	width: 20px; /* 원하는 길이로 설정 */
+}
+
+.even-row {
+	background-color: rgba(106, 171, 156, 0.1);
+}
+
+/* !!!!!!!!!!이건 오른쪽 스크롤바 없애는 스타일이라 있어야함 */
+#overflow::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+.custom-style:hover {
+	cursor: pointer;
+}
+</style>
+</head>
+<body>
+	<!--전체  -->
+	<div class="body d-flex py-3">
+		<div class="container-xxl">
+			<!-- 1행 3열 카드 시작 -->
+			<div class="row g-3 mb-3"
+				style="height: 100vh; margin-left: -150px; margin-right: -170px; margin-top: -10px">
+				<div class="col-md-4 col-lg-4"
+					style="width: 32%; height: 85%; margin-right: 1%;">
+					<div class="card top-color" style="height: 100%;">
+						<div
+							class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0"
+							style="height: 50px;">
+							<h6 class="bi bi-chevron-right"
+								style="font-weight: 700; font-size: 16px; color: #173b6c;">문자
+								전송</h6>
+						</div>
+						<div class="card-body">
+							<form:form method="post" modelAttribute="msg"
+								enctype="multipart/form-data" id="msgForm" style="height: 100%;">
+								<table class="table table-border" style="height: 100%;">
+									<tr>
+										<th>수신인</th>
+										<td><form:input path="msgRec" class="form-control"
+												id="msgRec" style="width:470px;" /> <form:errors
+												path="msgRec" class="error" /></td>
+									</tr>
+									<tr>
+										<th>내용</th>
+										<td><form:hidden path="formCode" id="formCode" /> <form:textarea
+												class="form-control" path="form" id="form"
+												style="height:500px; width:470px;" /> <form:errors
+												path="formCode" class="error" /></td>
+									</tr>
+									<tr style="text-align: center;">
+										<td colspan="2"><input class="btn btn-success"
+											type="submit" value="등록"> <input
+											class="btn btn-danger" type="reset" value="취소"></td>
+									</tr>
+								</table>
+							</form:form>
+						</div>
+					</div>
+				</div>
+				<!-- 나머지 카드들 (2행부터) -->
+				<div class="col-md-8 col-lg-8">
+					<!-- 2행 1열 카드 시작 -->
+					<div class="row g-3 mb-3">
+						<div class="col-md-4 col-lg-4"
+							style="width: 42%; margin-right: 1%; height: 400px">
+							<div class="card h-100 top-color">
+								<div
+									class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+									<h6 class="bi bi-chevron-right"
+										style="font-weight: 700; font-size: 16px; color: #173b6c;">환자
+										리스트</h6>
+									<div class="input-group mb-3" style="width: 180px;">
+										<!-- mb-4 -->
+										<span class="input-group-text" id="basic-addon1"> <svg
+												xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+												fill="currentColor" class="bi bi-search-heart"
+												viewBox="0 0 16 16">
+														  <path
+													d="M6.5 4.482c1.664-1.673 5.825 1.254 0 5.018-5.825-3.764-1.664-6.69 0-5.018Z" />
+														  <path
+													d="M13 6.5a6.471 6.471 0 0 1-1.258 3.844c.04.03.078.062.115.098l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1.007 1.007 0 0 1-.1-.115h.002A6.5 6.5 0 1 1 13 6.5ZM6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Z" />
+														</svg>
+										</span> <input type="search" class="form-control" id="searchForm"
+											aria-controls="myDataTable" aria-label="Input group example"
+											aria-describedby="basic-addon1" autocomplete="off" />
+									</div>
+								</div>
+								<div class="card-body"
+									style="width: 97%; height: 50px; margin-top: -30px">
+									<div style="height: 60px;">
+										<!-- div, table 각각 추가  -->
+										<table id="myProjectTable"
+											class="table table-hover align-middle mb-0"
+											style="width: 100%">
+											<thead>
+												<tr style="border-bottom: 1px solid black;">
+													<!-- 헤더 밑줄 검은색 스타일, 다른 방법 못 찾음,, -->
+													<th style="width: 150px">성명</th>
+													<th style="width: 190px">연락처</th>
+													<th>생년월일</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+									<!-- 여기도 div, table 각각 추가 div안에 overflow 주고 크기만 각자 다르게  -->
+									<div id="overflow"
+										style="height: 260px; width: 500px; overflow-y: scroll;">
+										<table class="table table-hover align-middle mb-0">
+											<tbody id="patientList">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-md-4 col-lg-4"
+							style="width: 56%; margin-right: 1%; height: 400px">
+							<div class="card h-100 top-color">
+								<div
+									class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+									<h6 class="bi bi-chevron-right"
+										style="font-weight: 700; font-size: 16px; color: #173b6c;">문자
+										내역</h6>
+								</div>
+								<div class="card-body" style="width: 97%;">
+									<div>
+										<table id="myProjectTable"
+											class="table table-hover align-middle mb-0"
+											style="width: 100%">
+											<thead>
+												<tr style="border-bottom: 1px solid black;">
+													<!-- 만약 헤더 텍스트 간격 벌어지면 각자 스타일 주기!!  -->
+													<th style="width: 103px;">수신자</th>
+													<th style="width: 406px;">문자 내역</th>
+													<th>전송 일시</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+									<div id="overflow"
+										style="height: 275px; width: 647px; overflow-y: scroll;">
+										<table class="table table-hover align-middle mb-0">
+											<tbody id="patientList2">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+					</div>
+
+					<!-- 2행 1열 카드 종료 -->
+					<!-- 2행 2열 카드 시작 -->
+					<div class="row g-3 mb-3" style="flex: 1; display: flex;">
+						<div class="col-md-4 col-lg-4"
+							style="width: 32%; height: 477px; margin-right: 1%; flex-grow: 1;">
+							<div class="card h-100 top-color"
+								style="width: 100%; height: 30%;">
+								<div
+									class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+									<h6 class="bi bi-chevron-right"
+										style="font-weight: 700; font-size: 16px; color: #173b6c;">문자
+										양식</h6>
+								</div>
+								<div class="card-body" style="width: 100%;">
+									<div style="height: 60px;">
+										<table id="myProjectTable2"
+											class="table table-hover align-middle mb-0"
+											style="border-collapse: separate; border-spacing: 0; width: 1200px; margin-top: -30px">
+											<thead>
+												<tr style="border-bottom: 1px solid black;">
+													<th style="width: 54px">번호</th>
+													<th>메시지 양식</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+
+									<div id="overflow" style="height: 352px; overflow-y: scroll;">
+										<table class="table table-hover align-middle mb-0">
+											<tbody id=msgformList>
+												<c:forEach items="${msgformList }" var="msg">
+													<tr>
+														<td>${msg.formCode }</td>
+														<td id="form" class="custom-style"
+															data-form-code="${msg.formCode}">${msg.form }</td>
+													</tr>
+												</c:forEach>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- 2행 2열 카드 종료 -->
+
+				</div>
+			</div>
+			<!-- 1행 3열 카드 종료 -->
+		</div>
+	</div>
+	</div>
+
+
+	<!-- Plugin Js-->
+	<script
+		src="<%=request.getContextPath()%>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/jquery-loading-overlay/2.1.7/loadingoverlay.min.js"></script>
+	<script>
+   
+   const Toast = Swal.mixin({
+	    toast: true,
+	    position: 'center-center',
+	    showConfirmButton: false,
+	    timer: 2000,
+	    timerProgressBar: true,
+	    didOpen: (toast) => {
+	        toast.addEventListener('mouseenter', Swal.stopTimer)
+	        toast.addEventListener('mouseleave', Swal.resumeTimer)
+	    }
+	});
+   
+$(document).ready(function() {
+     // 환자 정보 테이블에서 행 클릭 이벤트 처리
+     $('#patientList').on('click', 'tr', function() {
+       
+        // 클릭한 행에서 데이터를 읽어옴
+        var patntTelno = $(this).find('td:eq(1)').text();
+       
+        $('#msgRec').val(patntTelno);
+       
+       
+     });
+     
+     
+     let uesdMsgCodes = {}; //중복제거
+     //문자내역 출력
+     $.getJSON("<c:url value='/message/msgHistory.do' />").done(function(resp){
+    	 let tbody = $("#patientList2");
+    	 tbody.empty();
+    	 
+    	 $(resp).each(function(idx,res){
+    		 if (!uesdMsgCodes[res.msgCode]) {
+    			    let tr = $("<tr>").append(
+    			      $("<td>").css("width", "90px").html(res.patient.patntNm),
+    			      $("<td>").html(res.form),
+    			      $("<td>").css("width", "138px").html(res.msgInsDate)
+    			    );
+    			    if (idx % 2 === 1) {
+    	                tr.addClass("even-row");
+    	            }
+    			    tbody.append(tr);
+
+    			    // Mark this msgCode as added
+    			    uesdMsgCodes[res.msgCode] = true;
+    		}
+    	 });
+    	 
+     });
+     
+     //환자 연락처 전체 출력
+     $.getJSON("<c:url value='/message/telnumberRetrieve.do' />").done(function(resp){
+    	 let tbody = $("#patientList");
+    	 $(resp).each(function(idx, pat){
+    		 let tr = $("<tr>").append(
+    				 $("<td>").html(pat.patntNm).addClass("custom-style").css({
+                         "text-decoration": "underline",
+                         "font-weight": "bold",
+                         "font-size": "14px"
+                       })
+    				 ,$("<td>").html(pat.patntTelno)
+    				 ,$("<td>").html(pat.patntIdentino)
+    		 );
+    		 if (idx % 2 === 1) {
+	                tr.addClass("even-row");
+	            }
+    		 tbody.append(tr);
+    	 });
+     });
+
+});
+   
+   
+$(document).ready(function(){
+    	
+    	
+           let tdElements = document.querySelectorAll('#form'); // id가 form인 거 선택
+
+           tdElements.forEach(td => {
+               td.addEventListener('click', function() {
+                   let clickedContent = this.textContent;
+                   let formCode = this.getAttribute('data-form-code');
+                   let textarea = document.getElementById('form');
+                   let hiddenFormCode = document.getElementById('formCode');
+                   
+                   textarea.value = clickedContent;
+                   
+                   hiddenFormCode.value = formCode;
+               });
+           });
+			
+           
+           
+           
+           $('#msgForm').submit(function(event){
+              
+               event.preventDefault();
+               
+               $.LoadingOverlay("show", {
+                   image: "<%=request.getContextPath()%>/resources/images/mainSpinnerIcon.gif", // 로딩 중에 표시될 이미지 경로
+                   imageAnimation: false // 빙글빙글 돌아가는 것 막음
+               });
+               
+               $.ajax({
+                   type: 'POST',
+                   url: 'messageSend.do',
+                   data:$(this).serialize(),
+                   
+                   success: function(data) {
+                	   $.LoadingOverlay("hide");
+                       if(data){
+                    	   Toast.fire({
+                               icon: 'success',
+                               text: '문자가 전송되었습니다.'
+                           });
+                    	   
+                    	   setTimeout(function() {
+                               location.reload();
+                    		 }, 2000); 
+                           
+                           //환자 리스트 갱신
+                           let patientList = data.patientList;
+                           let patientListTable = $('#patientList');
+                           
+                           // 기존 데이터 삭제
+                           patientListTable.empty();
+                           
+                           // 새로운 데이터로 갱신
+                           patientList.forEach(patient => {
+                               let newRow = '<tr>' +
+                                            '<td>' + patient.patntNm + '</td>' +
+                                            '<td>' + patient.patntTelno + '</td>' +
+                                            '</tr>';
+                               patientListTable.append(newRow);
+                           });
+                       }else{
+                           alert("잠시 뒤 시도해주세요.");
+                       }
+                   }
+               });
+           });
+
+           
+           //환자검색
+           $("#searchForm").on("keyup",function(){
+        	   let what = $(this).val();
+        	   
+        	   if (!what.trim()) {
+        		   $.getJSON("<c:url value='/message/telnumberRetrieve.do' />").done(function(resp){
+        		    	 let tbody = $("#patientList");
+        		    	 $(resp).each(function(idx, pat){
+        		    		 let tr = $("<tr>").append(
+        		    				 $("<td>").html(pat.patntNm).addClass("custom-style").css({
+        		                         "text-decoration": "underline",
+        		                         "font-weight": "bold",
+        		                         "font-size": "14px"
+        		                       })
+        		    				 ,$("<td>").html(pat.patntTelno)
+        		    				 ,$("<td>").html(pat.patntIdentino)
+        		    		 );
+        		    		 if (idx % 2 === 1) {
+        			                tr.addClass("even-row");
+        			            }
+        		    		 tbody.append(tr);
+        		    	 });
+        		     });
+        		   
+        		   
+        	    } else {
+	        	   $.getJSON("<c:url value='/message/patientSearch.do' />",{what:what}).done(function(resp){
+	        		   let tbody = $("#patientList");
+	        		   tbody.empty();
+	        		   
+	        		   if(resp.length>0){
+		        		   $(resp).each(function(idx,res){
+		        			   let tr = $("<tr>").append(
+		        					  $("<td>").html(res.patntNm).addClass("custom-style").css({
+	        		                      "text-decoration": "underline",
+	        		                      "font-weight": "bold",
+	        		                      "font-size": "14px"
+	        		                  })
+		   							,$("<td>").html(res.patntTelno)
+		   							,$("<td>").html(res.patntIdentino)
+		   							
+		   						);		   
+		        			   if (idx % 2 === 1) {
+       			                	tr.addClass("even-row");
+       			           		 }
+		        			   tbody.append(tr);
+	        		   		});
+	        		   } 
+	        	   });
+        	    }
+           });
+           
+           $("#msgformList tr:even").addClass("even-row");
+           $("#patientList tr:even").addClass("even-row");
+           $("#patientList2 tr:even").addClass("even-row");
+           
+});
+</script>
+</body>

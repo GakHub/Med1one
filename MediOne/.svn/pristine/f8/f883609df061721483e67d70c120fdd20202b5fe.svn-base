@@ -1,0 +1,82 @@
+package kr.or.ddit.employee.fixtures.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import kr.or.ddit.employee.fixtures.vo.FixturesDTLVO;
+import kr.or.ddit.employee.fixtures.vo.FixturesReqVO;
+import kr.or.ddit.employee.fixtures.vo.FixturesVO;
+
+/**
+ * @author wf207
+ *
+ */
+@Mapper
+public interface FixturesDao {
+	/**
+	 * 비품 리스트 조회
+	 * @return
+	 */
+	public List<FixturesVO> selectFixList(String fxtrsLclas);
+	
+	/**
+	 * 비품 분류 리스트 조회
+	 * @return
+	 */
+	public List<FixturesDTLVO> selectFixDtlList();
+	
+	/**
+	 * 분류별 비품리스트 조회
+	 * @return
+	 */
+	public List<FixturesVO> selectFixwhereDtlList(String fxtrsLclas);
+	
+	// 발주 insert
+	public int insertFixOrderList(FixturesReqVO fixturesReqVO);
+	
+	
+	// 발주 리스트 조회
+	public List<FixturesReqVO> selectFixOrdList();
+	
+	public List<FixturesVO> updateFixList();
+
+	/**
+	 * 비품 이름 검색
+	 * @param fxtrsNm
+	 * @return
+	 */
+	public List<FixturesVO> searchFixList(String fxtrsNm);
+	
+	/**
+	 *  나의 발주 신청내역
+	 * @param empNm
+	 * @return
+	 */
+	public List<FixturesReqVO> selectFixOrdWhereEmpNm(String empNo);
+	
+	
+	/**
+	 * 비품 업데이트
+	 * @param fxtrsInv
+	 * @param fxtrsCode
+	 * @return
+	 */
+	public int updateFxtrsInv(@Param("fxtrsInv") int fxtrsInv, @Param("fxtrsCode") String fxtrsCode);
+	
+	/**
+	 * 비품주문 상태 업데이트
+	 * @return
+	 */
+	public int updateFixSttus(String fxtrsOrdCode);
+	
+	
+	/**
+	 * 비품 신규등록
+	 * @return
+	 */
+	public int insertFixList(FixturesVO fixturesVO);
+
+}

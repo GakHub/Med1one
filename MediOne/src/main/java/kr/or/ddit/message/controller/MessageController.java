@@ -1,0 +1,143 @@
+package kr.or.ddit.message.controller;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.medical.vo.PatientVO;
+import kr.or.ddit.message.service.MessageService;
+import kr.or.ddit.message.vo.MessageDtlVO;
+import kr.or.ddit.message.vo.MessageVO;
+import lombok.RequiredArgsConstructor;
+import net.nurigo.sdk.NurigoApp;
+import net.nurigo.sdk.message.exception.NurigoMessageNotReceivedException;
+import net.nurigo.sdk.message.model.Message;
+import net.nurigo.sdk.message.service.DefaultMessageService;
+import retrofit2.http.GET;
+
+@Controller
+@RequestMapping("/message")
+@RequiredArgsConstructor
+public class MessageController {
+   
+   @Inject
+   private final MessageService service;
+   
+   @ModelAttribute("msg")
+   public MessageVO msg() {
+      return new MessageVO();
+   }
+   
+   /**
+    * ui 출력용
+    * @return
+    */
+   @GetMapping("messageSend.do")
+   public String message(Model model) {
+      List<PatientVO> patientList = service.retrieveTelNumberList();
+      model.addAttribute("patientList", patientList);
+      List<MessageDtlVO> msgformList = service.retrieveMessageFormList();
+      model.addAttribute("msgformList", msgformList);
+      List<MessageVO> msgHistory = service.retrieveMsgHistroy();
+      model.addAttribute("msgHistory", msgHistory);
+      return "message/message";
+   }
+
+   // 문자 - 환자 연락처 리스트 조회
+   @GetMapping(value = "telnumberRetrieve.do", produces = MediaType.APPLICATION_JSON_VALUE)
+   @ResponseBody
+   public List<PatientVO> telnumberRetrieve(Model model) {
+      List<PatientVO> patientList = service.retrieveTelNumberList();
+      model.addAttribute("patientList", patientList);
+      return patientList;
+   }
+   
+   // 문자 - 문자양식 조회
+   @GetMapping(value = "messageFormRetrieve.do", produces = MediaType.APPLICATION_JSON_VALUE)
+   @ResponseBody
+   public List<MessageDtlVO> messageFormRetrieve(Model model, @RequestParam("what") String msgfrom) {
+      List<MessageDtlVO> msgformList = service.retrieveMessageFormList();
+      model.addAttribute("msgformList", msgformList);
+      return msgformList;
+   }
+   
+   // 문자 보내기
+   @PostMapping(value = "messageSend.do")
+   public String getPostMsg(
+         @ModelAttribute("msg") MessageVO msg
+         , @RequestParam("msgRec") String msgRec
+         , @RequestParam("form") String form
+         , Errors errors
+         , Model model
+   ) {
+      String logicalViewName = null;
+      boolean result = false;
+    //String from = "01038009056";
+      
+      DefaultMessageService messageService =  NurigoApp.INSTANCE.initialize("NCSH8Y6KETSKRAMQ", "CCOMJJPYE7J9VD0HKWY68BAUWSQJT91W", "https://api.solapi.com");
+      // Message 패키지가 중복될 경우 net.nurigo.sdk.message.model.Message로 치환하여 주세요
+      Message message = new Message();
+      message.setFrom("01027023624");
+      message.setTo(msgRec);
+      message.setText(form);
+
+      try {
+        // send 메소드로 ArrayList<Message> 객체를 넣어도 동작합니다!
+        messageService.send(message);
+      } catch (NurigoMessageNotReceivedException exception) {
+        // 발송에 실패한 메시지 목록을 확인할 수 있습니다!
+        System.out.println(exception.getFailedMessageList());
+        System.out.println(exception.getMessage());
+      } catch (Exception exception) {
+        System.out.println(exception.getMessage());
+      }
+      
+      
+      
+         
+      if(!errors.hasErrors()) {
+         result = service.createMsg(msg);
+         
+         if(result == true) {
+            logicalViewName = "message/message";
+         }else {
+            model.addAttribute("message", "잘못된 번호 입니다.");
+            logicalViewName = "message/message";
+         }
+      }else {
+         logicalViewName = "message/message";
+      }
+      return logicalViewName;
+   }
+   
+   /**
+    * 문자 내역 조회
+    */
+   @GetMapping(value = "msgHistory.do", produces = MediaType.APPLICATION_JSON_VALUE)
+   @ResponseBody
+   public List<MessageVO> msgHistory(Model model){
+      List<MessageVO> msgHistory = service.retrieveMsgHistroy();
+      model.addAttribute("msgHistory", msgHistory);
+      return msgHistory;
+   }
+   
+   // 환자 검색
+   @GetMapping(value = "patientSearch.do", produces = MediaType.APPLICATION_JSON_VALUE)
+   @ResponseBody
+   public List<PatientVO> patientSearch(@RequestParam("what") String patntNm) {
+      List<PatientVO> patientList = service.searchTelNumberList(patntNm);
+      return patientList;
+   }
+   
+}

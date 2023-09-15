@@ -1,0 +1,5 @@
+package kr.or.ddit.employee.admin.dao;
+
+public interface AdminDao {
+
+}

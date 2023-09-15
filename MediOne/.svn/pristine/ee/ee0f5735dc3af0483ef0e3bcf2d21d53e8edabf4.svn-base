@@ -1,0 +1,119 @@
+package kr.or.ddit.medical.receive.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.medical.clinc.vo.PresDocVO;
+import kr.or.ddit.medical.examinate.vo.MdexmnVO;
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.receive.dao.ReceiveDao;
+import kr.or.ddit.medical.receive.vo.ReceiveVO;
+import kr.or.ddit.medical.vo.ReceptionVO;
+
+@Service
+public class ReceiveServiceImpl implements ReceiveService {
+	
+	@Inject
+	private ReceiveDao receiveDao;
+	
+	
+	/**
+	 * 외래진료 수납대기인 환자리스트 조회
+	 */
+	@Override
+	public List<PresDocVO> retrievePatientList() {
+		return receiveDao.selectPatientList();
+	}
+
+	/**
+	 * 검진 수납대기인 환자리스트 조회
+	 */
+	@Override
+	public List<MdexmnVO> retrieveMdexList() {
+		return receiveDao.selectMdexList();
+	}
+
+	/**
+	 * 병동 수납대기인 환자리스트 조회
+	 */
+	@Override
+	public List<HospitalizationVO> retrieveHospitalList() {
+		return receiveDao.selectHospitalList();
+	}
+
+	/**
+	 * 선택한 환자의 처방내역. 검사. 소견
+	 */
+	@Override
+	public List<PresDocVO> retrievePatientClinicOrder(String recCode) {
+		return receiveDao.selectPatientClinicOrder(recCode);
+	}
+
+	/**
+	 * 입원 환자의 내역
+	 */
+	@Override
+	public List<HospitalizationVO> retrieveHospitalClinicOrder(String recCode) {
+		return receiveDao.selectHospitalClinicOrder(recCode);
+	}
+
+	/**
+	 * 검진 환자의 내역
+	 */
+	@Override
+	public List<MdexmnVO> retrieveMdexClinicOrder(String recCode) {
+		return receiveDao.selectMdexClinicOrder(recCode);
+	}
+
+	/**
+	 *  수납 insert
+	 */
+	@Override
+	public boolean createReceive(ReceiveVO receive) {
+		return receiveDao.insertReceive(receive)>0;
+	}
+
+	/**
+	 * 영수증 창에 금액 정보 조회
+	 */
+	@Override
+	public List<ReceptionVO> retrieveReceiveAmount(String recCode) {
+		return receiveDao.selectReceiveAmount(recCode);
+	}
+
+	@Override
+	public List<ReceiveVO> retrieveTotalAmount() {
+		return receiveDao.selectTotalAmount();
+	}
+
+	/**
+	 *  환자의 제증명 확인 - 진료확인서 
+	 */
+	@Override
+	public List<ReceptionVO> retrieveDocument(String recCode) {
+		return receiveDao.selectDocument(recCode);
+	}
+
+	/**
+	 * 외래진료 수납대기인 환자 검색
+	 */
+	@Override
+	public List<PresDocVO> searchPatientList(String patntName) {
+		return receiveDao.searchPatientList(patntName);
+	}
+
+	/**
+	 * 외래진료 수납대기인 환자 검색 (날짜)
+	 */
+	@Override
+	public List<PresDocVO> searchPatientDate(String recDate) {
+		return receiveDao.searchPatientDate(recDate);
+	}
+
+	
+	
+	
+}

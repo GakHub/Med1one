@@ -1,0 +1,27 @@
+package kr.or.ddit.medical.vo;
+
+import java.time.LocalDate;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 접수
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "recCode")
+public class ReceptionVO {
+	@NotBlank
+	private String recCode; 	//접수코드
+	private String symptom;		//증상
+	@NotBlank
+	private LocalDate receiptDate;	//접수일자
+	@NotBlank
+	private String patntCode;		//환자코드
+	
+	private PatientVO patnt; //환자정보 객체
+}

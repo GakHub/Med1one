@@ -1,0 +1,36 @@
+package kr.or.ddit.employee.vo;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 승인신청 VO
+ * AUTHORIZATION_REQ
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "reqCode")
+public class AuthorizationReqVO {
+	@NotBlank
+	private String reqCode; //신청코드 (시퀀스)
+	@NotBlank
+	private String empNo; //사번
+	@NotBlank
+	private String empNm; //이름
+	@NotBlank
+	private String empIdentino; //주민번호
+	@NotBlank
+	private String reqStatus; //승인상태 (기본값 N)
+	
+	private LocalDate authoreqDate; //승인신청일시 sysdate
+	@NotBlank
+	private String deptCode; //부서코드
+	
+	private List<DepartmentVO> departList; //부서 리스트
+}

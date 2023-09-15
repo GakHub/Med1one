@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.clinc.dao.ClinicDao">
+	
+	<!-- 약품 리스트 검색 -->
+	<select id="selectMedicineList" resultType="MedicineVO">
+		SELECT
+		    MEDI_CODE
+		   ,MEDI_NM
+		   ,MEDI_KIMSCL
+		   ,MEDI_MTH
+		   ,MEDI_BZNM
+		   ,MEDI_STD
+		   ,MEDI_UNIT
+		   ,MEDI_AMT
+		FROM
+    		MEDICINE
+    	WHERE MEDI_NM  LIKE '%' ||  #{mediNm} || '%'
+	</select>
+	
+	<!-- 상병 리스트 검색 -->
+	<select id="selectDiseaseList" resultType="DiseaseVO">
+		SELECT
+		    DSS_CODE
+		  , DSS_NM
+		  , DSS_ENNM
+		  , DSS_NO
+		FROM
+		    DISEASE
+		WHERE DSS_NM LIKE '%' || #{dssNm} || '%'
+	</select>
+	
+	<!-- 약품 검색 수 update -->
+	<update id="SearchCnt" parameterType="String">
+		UPDATE MEDICINE
+			SET SEARCH_CNT = SEARCH_CNT + 1
+		WHERE MEDI_NM LIKE '%' || #{mediNm} || '%'
+	</update>
+	
+	<!-- 즐겨찾는 약품 리스트 -->
+	<select id="popluarMedicineList" resultType="MedicineVO">
+		SELECT
+		    MEDI_CODE
+		  , MEDI_NM
+		  , MEDI_KIMSCL
+		  , MEDI_MTH
+		  , MEDI_BZNM
+		  , MEDI_STD
+		  , MEDI_UNIT
+		  , MEDI_AMT
+		  , SEARCH_CNT
+		FROM (
+		    SELECT
+		        MEDI_CODE
+		      , MEDI_NM
+		      , MEDI_KIMSCL
+		      , MEDI_MTH
+		      , MEDI_BZNM
+		      , MEDI_STD
+		      , MEDI_UNIT
+		      , MEDI_AMT
+		      , SEARCH_CNT
+		    FROM
+		        MEDICINE
+		    ORDER BY SEARCH_CNT DESC
+		) 
+		WHERE ROWNUM <![CDATA[ <= ]]> 5
+	</select>
+	
+	<!-- 검사 리스트 -->
+	<select id="selectInspectList" resultType="InspectionVO">
+		SELECT
+		    INSP_CODE
+		  , INSP_NM
+		  , INSP_COST
+		  , FCLTY_CODE
+		FROM
+    		INSPECTION
+	</select>
+	
+	<!-- 기본 검사리스트 -->
+	<select id="selectGenInsList" resultType="InspectionVO">
+		SELECT
+		    INSP_CODE
+		  , INSP_NM
+		  , INSP_COST
+		  , FCLTY_CODE
+		FROM
+  		  INSPECTION
+		WHERE INSP_COST = 0
+	</select>
+	
+	<!-- 장비 검사리스트 -->
+	<select id="selectEuqInsList" resultType="InspectionVO">
+		SELECT
+		    INSP_CODE
+		  , INSP_NM
+		  , INSP_COST
+		  , FCLTY_CODE
+		FROM
+  		  INSPECTION
+		WHERE INSP_COST != 0
+	</select>
+	
+	
+	
+	<select id="selectInfoPatien" parameterType="string" resultType="PatientVO">
+	
+		select  R.rec_code "recept.recCode"
+		, R.symptom "recept.symptom"
+        , P.patnt_code
+        , P.patnt_nm
+        ,CASE
+        WHEN P.gen = 'M' THEN '남'
+        WHEN P.gen = 'F' THEN '여'
+        ELSE '기타'
+        END AS gen
+        , P.patnt_telno
+        , TO_CHAR(
+        CASE
+            WHEN SUBSTR(P.patnt_identino, 1, 2) BETWEEN '69' AND '99' THEN
+                TO_DATE('19' || SUBSTR(P.patnt_identino, 1, 6), 'YYYYMMDD')
+            ELSE
+                TO_DATE('20' || SUBSTR(P.patnt_identino, 1, 6), 'YYYYMMDD')
+        END,
+        'YYYY-MM-DD'
+	    ) AS patnt_identino
+	    , P.patnt_addr1
+	    , C.ctfdoc_cmt "recept.ctfdoc.ctfdocCmt"
+		from patient P inner join reception R on(P.patnt_code = R.patnt_code)
+						inner join ctf_doc C on (R.rec_code = C.rec_code)
+		where R.rec_code = #{recCode}
+	</select>
+	
+	
+	<!-- 상병 처방 -->
+	<insert id="insertCtfdoc" parameterType="CtfDocVO">
+	
+	<selectKey order="BEFORE" keyProperty="ctfdocCod" resultType="String">
+         SELECT 'D' || TO_CHAR(SYSDATE, 'YYMMDD') || LPAD(CTFDOC_COD_SEQ.NEXTVAL,3,'0') FROM DUAL
+      </selectKey>
+	
+	INSERT INTO ctf_doc (
+    ctfdoc_cod
+    , ctfdoc_cmt
+    , rec_code
+    , nonb_code
+	) VALUES (
+	    #{ctfdocCod}
+	  , #{ctfdocCmt}
+	  , #{recCode}
+	  , #{nonbCode}
+	)
+	</insert>
+	
+	
+	
+	<!-- 진료 중인 환자 조회 -> 시설코드  -->
+	<select id="selectPatntStat" resultType="PatntStatVO">
+	
+	WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT
+            CASE 
+              WHEN SUBSTR(PATNT_IDENTINO, 1, 1) IN ('0', '1', '2') THEN 
+                  '20' || SUBSTR(PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(PATNT_IDENTINO, 5, 2)
+              ELSE 
+                  '19' || SUBSTR(PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(PATNT_IDENTINO, 5, 2)
+             END AS   "RECEP.PATNT.PATNTIDENTINO"        
+		    ,PATNT_NM "RECEP.PATNT.PATNTNM"
+		    ,PATNT_CODE "RECEP.PATNTCODE"
+		    ,REC_CODE
+		    ,STAT_CODE
+		    ,STAT_TIME
+		    ,FCLTY_CODE
+            ,SYMPTOM "RECEP.SYMPTOM"
+		FROM
+		    CTE
+		WHERE
+		    RN = 1 AND FCLTY_CODE = #{fcltyCode} 
+		ORDER BY
+		    REC_CODE
+	
+	
+	</select>
+	
+	<!-- 환자의 과거 처방 내역 -->
+	<select id="selectPatPastMedi" resultType="PresDocVO">
+	
+		WITH CTE AS (
+		    SELECT 
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+    
+		SELECT CTE.PATNT_NM, P.STAT_CODE, P.FCLTY_CODE,C.REC_CODE, M.MEDI_CODE
+				, CTE.PATNT_CODE 
+				, C.CLINIC_CONTENT "pre.clinic.clinicContent"
+				, M.MEDI_NM "medi.mediNm"
+				, D.PRES_DATE
+		FROM CTE
+			INNER JOIN PATNT_STAT P ON(CTE.REC_CODE = P.REC_CODE)
+			INNER JOIN CLINIC C ON(P.REC_CODE = C.REC_CODE)
+			INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+			INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+			LEFT OUTER JOIN MEDICINE M ON (D.MEDI_CODE = M.MEDI_CODE)
+		WHERE
+		    CTE.RN = 1  AND P.STAT_CODE = '006' and CTE.PATNT_CODE = #{patntCode}
+		ORDER BY
+		    CTE.REC_CODE
+		    
+	</select>
+	
+	<!-- 환자 상태 변경 005(진료대기중) -> 006(진료중)  -->
+	<insert id="insertPatntStat" parameterType="PatntStatVO">
+		INSERT INTO PATNT_STAT (
+		    STAT_CODE
+		    , REC_CODE
+		    , FCLTY_CODE
+		    , STAT_TIME
+		) VALUES (
+			'006'
+			, #{recCode,jdbcType=VARCHAR}
+			, #{fcltyCode,jdbcType=VARCHAR}
+			, SYSDATE
+		)
+	</insert>
+	
+	<!-- 외래진료오더 추가 -->
+	<insert id="insertDssOrder" parameterType="ClinicVO">
+		<selectKey order="BEFORE" keyProperty="clinicCode" resultType="String">
+			SELECT 'C' || TO_CHAR(SYSDATE, 'YYMMDD') || LPAD(CLNIC_CODE_SEQ.NEXTVAL,3,'0') 
+			FROM DUAL
+		</selectKey>
+		INSERT INTO CLINIC (
+	   	 	CLINIC_CODE
+		    , REC_CODE
+		    , DOC_EMP_NO
+		    , DSS_CODE 
+		    , CLINIC_CONTENT
+		    , CLINIC_DATE
+		    , DSS_NO
+		    <if test="insYn != null">
+           	  , INS_YN
+      		</if>
+		) VALUES (
+		    #{clinicCode,jdbcType=VARCHAR}
+		    , #{recCode,jdbcType=VARCHAR}
+		    , 'DPM0001'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+		    , #{dssCode,jdbcType=VARCHAR}
+		    , #{clinicContent,jdbcType=CLOB}
+		    , SYSDATE
+		    , #{dssNo,jdbcType=NUMERIC}
+		     <if test="insYn != null">
+        	    , #{insYn,jdbcType=VARCHAR}
+     	     </if>
+		)
+	</insert>
+	
+	<!-- 진료코드 조회 -->
+	<select id="selectClinicCd" resultType="ClinicVO">
+		SELECT
+		    CLINIC_CODE
+		  , REC_CODE
+		  , DOC_EMP_NO
+		  , DSS_CODE
+		  , CLINIC_CONTENT
+		  , CLINIC_DATE
+		  , DSS_NO
+		  , INS_YN
+		FROM
+  		  CLINIC
+		WHERE REC_CODE = #{recCode}
+	</select>
+	
+	<!-- 진료처방오더코드 조회 -->
+	<select id="selectPresCd" resultType="PrescriptionVO">
+		SELECT
+		    PRES_CODE
+		  , PRES_DAY
+		  , CLINIC_CODE
+		FROM
+   		 	PRESCRIPTION
+		WHERE CLINIC_CODE = #{clinicCode}
+	</select>
+	
+	<!-- 처방내역 오더 추가 -->
+	<insert id="insertPresOrder" parameterType="PresDocVO">
+	
+		INSERT INTO PRES_DOC (
+		    PRES_CODE 
+		    , MEDI_CODE
+		    , DOC_EMP_NO
+		    , PRES_M_AMT
+		    , PRES_M_CO
+		    , MEDI_DAY
+		    , PRES_DATE
+		    , REC_CODE
+		    , PRESDOC_AMT
+		    <if test="presSepar != null">
+           	  , PRES_SEPAR
+      		</if>
+		) VALUES (
+			  #{presCode,jdbcType=VARCHAR}
+			, #{mediCode,jdbcType=VARCHAR}
+			, 'DPM0001'
+			, #{presMAmt,jdbcType=VARCHAR}
+			, #{presMCo,jdbcType=NUMERIC}
+			, #{mediDay,jdbcType=NUMERIC}
+			, SYSDATE
+			, #{recCode,jdbcType=VARCHAR}
+			, #{presdocAmt,jdbcType=NUMERIC}
+			 <if test="presSepar != null">
+        	    , #{presSepar,jdbcType=VARCHAR}
+     	     </if>
+		)
+		
+	</insert>
+	
+	<!-- 원무과 수납대기 insert -->
+	<insert id="insertReceiveWait" parameterType="String">
+	
+			INSERT INTO PATNT_STAT (
+                STAT_CODE
+                ,REC_CODE
+                ,FCLTY_CODE
+                ,STAT_TIME
+            ) VALUES (
+                '015'
+                ,#{recCode,jdbcType=VARCHAR}
+                ,'I'
+                ,SYSDATE
+            )
+            
+	</insert>
+	
+	
+	
+	<!-- 입원오더용 식이 리스트 조회 -->
+	<select id="selectDietList" resultType="CommonCodeVO">
+		
+		SELECT
+		   CODE_ID
+		   ,CODE_NM
+		   ,CODE_VAL
+		FROM
+		    COMMON_CODE
+		WHERE HIGH_CODE = 'D001'
+		
+	</select>
+	
+	<!-- 입원오더 insert -->
+	<insert id="inserthospitalOrder" parameterType="HsptlzOrderVO">
+		<selectKey order="BEFORE" keyProperty="hspodCode" resultType="String">
+			SELECT 'HPOR' || LPAD(HSPTLZ_CODE_SEQ.NEXTVAL,3,'0') 
+			FROM DUAL
+		</selectKey>
+		INSERT INTO HSPTLZ_ORDER (
+		     HSPOD_CODE
+		   ,HSPOD_TOTAL
+		   ,REC_CODE
+		   ,PRES_CODE
+		   ,DIET
+		) VALUES (
+		    #{hspodCode,jdbcType=VARCHAR}
+			,#{hspodTotal,jdbcType=NUMERIC}
+			,#{recCode,jdbcType=VARCHAR}
+			,#{presCode,jdbcType=VARCHAR}
+			,#{diet,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 병동 병동대기 insert -->
+	<insert id="inserthospitalWait" parameterType="String">
+	
+			INSERT INTO PATNT_STAT (
+                STAT_CODE
+                ,REC_CODE
+                ,FCLTY_CODE
+                ,STAT_TIME
+            ) VALUES (
+                '010'
+                ,#{recCode,jdbcType=VARCHAR}
+                ,'J'
+                ,SYSDATE
+            )
+	
+	</insert>
+	
+	<!-- 검사오더 insert -->
+	<insert id="insertInspectionOrder" parameterType="String">
+		INSERT INTO INSP_ORDER (
+		    CLINIC_CODE
+		   ,INSP_CODE
+		   ,DOC_EMP_NO
+		   ,REC_CODE
+		) VALUES (
+		    #{clinicCode,jdbcType=VARCHAR}
+			,#{inspCode,jdbcType=VARCHAR}
+			,'DPM0001'
+			,#{recCode,jdbcType=VARCHAR}
+					    
+		)
+	</insert>
+	
+	<!-- 검사실 검사대기 insert  -->
+	<insert id="insertInspWait" parameterType="String">
+	
+		INSERT INTO PATNT_STAT (
+                STAT_CODE
+                ,REC_CODE
+                ,FCLTY_CODE
+                ,STAT_TIME
+            ) VALUES (
+                '007'
+                ,#{recCode,jdbcType=VARCHAR}
+                ,'H'
+                ,SYSDATE
+            )
+            
+	</insert>
+	
+	<!-- 환자 클릭했을때 recCode가져오기 -->
+	<select id="selectPatRecCode" resultType="ReceptionVO">
+	
+		SELECT P.PATNT_CODE
+				, P.PATNT_NM
+				, MAX(R.REC_CODE) "REC_CODE"
+		FROM PATIENT P
+			INNER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+		WHERE P.PATNT_CODE = #{patntCode}
+			GROUP BY P.PATNT_CODE, P.PATNT_NM
+			
+	</select>
+	
+	<!-- 환자의 검사내역 조회 -->
+	<select id="selectPatInspResult" resultType="InspRsltVO">
+	
+		SELECT INSP_RSLT_CODE
+		  , R.INSP_RSLT_CN
+		  , R.INSP_DAY
+		  , R.CLINIC_CODE
+		  , R.INSP_CODE
+		  , R.DOC_EMP_NO
+		  , R.REC_CODE
+		  , I.INSP_NM "insp.inspNm"
+		FROM INSP_RSLT R 
+			INNER JOIN INSPECTION I ON(R.INSP_CODE = I.INSP_CODE)
+		WHERE REC_CODE = #{recCode}
+		
+	</select>
+	
+	<!-- 환자가 이미 clinicCode를 가지고 있는지 확인 -->
+	<select id="selectGetClinicCode" parameterType="String">
+		
+		SELECT COUNT(*)
+		FROM RECEPTION R 
+		INNER JOIN CLINIC C ON(R.REC_CODE = C.REC_CODE)
+		WHERE C.REC_CODE = #{recCode}
+		
+	</select>
+	
+	<update id="updateClinicOrder" parameterType="ClinicVO">
+	
+		UPDATE CLINIC
+		SET
+		   DSS_CODE = #{dssCode,jdbcType=VARCHAR}                  
+		   ,DSS_NO =  #{dssNo,jdbcType=NUMERIC}
+		   ,CLINIC_CONTENT=  #{clinicContent,jdbcType=CLOB}
+		   ,CLINIC_DATE = SYSDATE
+		WHERE clinic_code = #{clinicCode}
+		
+	</update>
+	
+	
+	
+</mapper>

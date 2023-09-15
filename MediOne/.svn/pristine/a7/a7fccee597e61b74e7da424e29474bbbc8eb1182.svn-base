@@ -1,0 +1,34 @@
+package kr.or.ddit.employee.fixtures.vo;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+
+/**
+ * 비품신청 VO
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "fxtrsOrdCode")
+public class FixturesReqVO {
+	@NotBlank
+	private String fxtrsOrdCode; //주문코드 (시퀀스)
+	@NotBlank
+	private LocalDate fxtrsDate; //주문일자 sysdate
+	@NotBlank
+	private int fxtrsCount; //수량
+	@NotBlank
+	private String fxtrsCode; //비품코드
+	@NotBlank 
+	private String empNo; //사번
+	@NotBlank
+	private String fxtrsSeCode; //비품분류코드
+	
+	private List<FixturesVO> fixtureList; //비품리스트
+}

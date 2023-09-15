@@ -1,0 +1,27 @@
+package kr.or.ddit.medical.clinc.vo;
+
+import java.time.LocalDateTime;
+
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 증상내역VO
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = {"disisCode","dssCode"})
+public class DiagnosisVO {
+	@NotBlank
+	private String disisCode; //상병진단코드 (시퀀스)
+	@NotBlank 
+	private String dssCode; //상병코드 -> DISEASE 테이븛
+	@DateTimeFormat(iso = ISO.DATE_TIME)
+	private LocalDateTime disisDate; //상병진단일시 -> sysdate
+}

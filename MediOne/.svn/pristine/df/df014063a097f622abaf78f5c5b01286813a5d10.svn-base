@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.clinc.dao.InspectionDao">
+
+	<!-- 검사대기(007) 검사중(008) 인 환자 조회 -->
+	<select id="selectInspPatntStat" resultType="ClinicVO">
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+             
+		)
+		SELECT
+                       
+            SUBSTR(PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(PATNT_IDENTINO, 5, 2) "RECEP.PATNT.PATNTIDENTINO"
+		    ,CTE.PATNT_NM "RECEPT.PATNT.PATNTNM"
+		    ,CTE.PATNT_CODE "RECEPT.PATNTCODE"
+		    ,CTE.REC_CODE
+		    ,CTE.STAT_CODE "RECEPT.PATSTAT.STATCODE"
+		    ,CTE.STAT_TIME 
+		    ,CTE.FCLTY_CODE "RECEPT.PATSTAT.FCLTYCODE"
+            ,C.REC_CODE
+            ,C.CLINIC_CONTENT
+		FROM
+		    CLINIC C
+            INNER JOIN CTE ON(CTE.REC_CODE = C.REC_CODE)
+		WHERE
+		    RN = 1 AND FCLTY_CODE = #{fcltyCode}
+		ORDER BY
+		    CTE.REC_CODE
+	</select>
+	
+	<!-- 검사대기(007) -> 검사중(008) insert -->
+	<insert id="insertInspStat" parameterType="PatntStatVO">
+	
+		INSERT INTO PATNT_STAT (
+		    STAT_CODE
+		    , REC_CODE
+		    , FCLTY_CODE
+		    , STAT_TIME
+		) VALUES (
+		    '008'
+		  , #{recCode,jdbcType=VARCHAR}
+		  , #{fcltyCode,jdbcType=VARCHAR}
+		  , SYSDATE
+		)
+		
+	</insert>
+	
+	<!-- 환자의 검사목록 출력 -->
+	<select id="selectInspOrdList" resultType="InspOrderVO" parameterType="String">
+	
+		SELECT O.CLINIC_CODE
+				,O.INSP_CODE
+				,O.REC_CODE 
+				,I.INSP_NM "insp.inspNm"
+				,I.FCLTY_CODE "insp.fcltyCode"
+				,F.FCLTY_NM "insp.fc.fcltyNm"
+		FROM INSP_ORDER O
+			INNER JOIN INSPECTION I ON(O.INSP_CODE = I.INSP_CODE)
+			INNER JOIN FCLTY_INFO F ON (I.FCLTY_CODE = F.FCLTY_CODE)
+		WHERE O.REC_CODE = #{recCode}
+		
+	</select>
+	
+	<!-- 셀렉트 박스 눌러서 해당 검사실로 보내기 -->
+	<insert id="insertFctInfo" parameterType="PatntStatVO">
+		
+		INSERT INTO PATNT_STAT (
+		    STAT_CODE
+		    , REC_CODE
+		    , FCLTY_CODE
+		    , STAT_TIME
+		) VALUES (
+		    '008'
+		  , #{recCode,jdbcType=VARCHAR}
+		  , #{fcltyCode,jdbcType=VARCHAR}
+		  , SYSDATE
+		)
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+	</insert>
+	
+	<!-- 환자의 진료내역 조회 -->
+	<select id="selectClinic" resultType="ClinicVO" parameterType="String">
+	
+		SELECT C.CLINIC_CODE
+				,C.CLINIC_CONTENT
+				,TO_DATE(TO_CHAR(C.CLINIC_DATE,'YY-MM-DD')) "CLINIC_DATE"
+				,D.DSS_NM "DISEASE.DSSNM"
+		FROM CLINIC C
+			INNER JOIN DISEASE D ON(C.DSS_CODE = D.DSS_CODE)
+		WHERE ROWNUM=1 AND REC_CODE = #{recCode}
+		
+	</select>
+	
+	<!-- 해당 환자의 과거 처방 내역 -->
+	<select id="selectPastPres" resultType="PresDocVO">
+	
+		WITH CTE AS (
+		    SELECT 
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+    
+		SELECT CTE.PATNT_NM, P.STAT_CODE, P.FCLTY_CODE, D.MEDI_DAY, C.REC_CODE, M.MEDI_CODE
+				, CTE.PATNT_CODE 
+				, C.CLINIC_CONTENT "PRE.CLINIC.CLINICCONTENT"
+				, M.MEDI_NM "MEDI.MEDINM"
+				, D.PRES_DATE
+		FROM CTE
+			INNER JOIN PATNT_STAT P ON(CTE.REC_CODE = P.REC_CODE)
+			INNER JOIN CLINIC C ON(P.REC_CODE = C.REC_CODE)
+			INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+			INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+			LEFT OUTER JOIN MEDICINE M ON (D.MEDI_CODE = M.MEDI_CODE)
+		WHERE
+		    RN=1 AND P.STAT_CODE='006' AND CTE.PATNT_CODE = #{patntCode}
+		ORDER BY
+		    CTE.REC_CODE
+		    
+	</select>
+	
+	<!-- 검사목록 중 검사를 마쳤는지 판별하는 메서드 -->
+	<select id="selectInsRstYn" parameterType="String">
+	
+		SELECT COUNT(*) AS NUM_RESULTS
+		FROM INSP_ORDER O
+		 	INNER JOIN INSP_RSLT R ON (O.CLINIC_CODE = R.CLINIC_CODE)
+		WHERE R.REC_CODE = #{recCode} AND R.INSP_CODE = #{inspCode}
+		
+	</select>
+	
+	<!-- 검사결과에 INSERT -->
+	<insert id="insertInspResult" parameterType="InspRsltVO">
+		<selectKey order="BEFORE" keyProperty="inspRsltCode" resultType="String">
+         SELECT 'INRS' || LPAD(INSP_RELT_CODE_SEQ.NEXTVAL,3,'0') FROM DUAL
+      	</selectKey>
+		INSERT INTO INSP_RSLT (
+		    INSP_RSLT_CODE
+		    , INSP_RSLT_CN
+		    , INSP_DAY
+		    , CLINIC_CODE
+		    , INSP_CODE
+		    , DOC_EMP_NO
+		    , REC_CODE
+		) VALUES (
+		   #{inspRsltCode,jdbcType=VARCHAR}
+		  , #{inspRsltCn,jdbcType=CLOB}
+		  , SYSDATE
+		  , #{clinicCode,jdbcType=VARCHAR}
+		  , #{inspCode,jdbcType=VARCHAR}
+		  , 'DPM0001'
+		  , #{recCode,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 검사실 오기전에 있던 진료실 찾기 -->
+	<select id="searchClinicRoom" resultType="PatntStatVO">
+	
+		SELECT STAT_CODE
+			  , REC_CODE
+			  , FCLTY_CODE
+			  , STAT_TIME 
+		FROM (
+		    SELECT STAT_CODE
+				  , REC_CODE
+				  , FCLTY_CODE
+				  , STAT_TIME 
+		    FROM PATNT_STAT
+		    WHERE REC_CODE = #{recCode}
+		    AND FCLTY_CODE NOT IN ('H', 'K', 'L', 'M', 'N', 'O')
+		    ORDER BY STAT_TIME DESC
+		) WHERE ROWNUM = 1
+		
+	</select>
+	
+	<!-- 다시 진료실로 보내기 -->
+	<insert id="insertPatClinicRoom" parameterType="PatntStatVO">
+		
+		INSERT INTO PATNT_STAT (
+		    STAT_CODE
+		    , REC_CODE
+		    , FCLTY_CODE
+		    , STAT_TIME
+		) VALUES (
+		    '005'
+		  ,	#{recCode,jdbcType=VARCHAR}
+		  , #{fcltyCode,jdbcType=VARCHAR}
+		  , SYSDATE
+		)
+		
+	</insert>
+</mapper>

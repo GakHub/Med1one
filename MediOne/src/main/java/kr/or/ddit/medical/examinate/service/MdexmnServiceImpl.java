@@ -1,0 +1,57 @@
+package kr.or.ddit.medical.examinate.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.medical.examinate.dao.MdexmnDao;
+import kr.or.ddit.medical.examinate.vo.MdexmnDtl;
+import kr.or.ddit.medical.examinate.vo.MdexmnPackVO;
+import kr.or.ddit.medical.examinate.vo.MdexmnRstltVO;
+import kr.or.ddit.medical.examinate.vo.MdexmnVO;
+
+@Service
+public class MdexmnServiceImpl implements MdexmnService {
+
+	@Inject
+	private MdexmnDao mdexmnDao;
+	
+	@Override
+	public List<MdexmnPackVO> retrieveMdexnm(String recCode) {
+		return mdexmnDao.selectMdexmnList(recCode);
+	}
+
+	@Override
+	public boolean createMdexDtl(MdexmnDtl mdexDtlVO) {
+		int cnt = mdexmnDao.insertMdexmnDtl(mdexDtlVO);
+		
+		return cnt > 0;
+	}
+
+	@Override
+	public List<MdexmnDtl> selectMdexDtl(String mdexmnCode) {
+		return mdexmnDao.selectMdexDtl(mdexmnCode);
+	}
+
+	@Override
+	public boolean createMdexRst(MdexmnRstltVO resultVO) {
+		int cnt = mdexmnDao.insertMdexmnRst(resultVO);
+		
+		return cnt > 0;
+	}
+
+	@Override
+	public boolean createMdexmn(MdexmnVO mdexmnVO) {
+		int cnt = mdexmnDao.insertMdexmn(mdexmnVO);
+		
+		return cnt > 0;
+	}
+
+	@Override
+	public MdexmnVO selectDoneExam(String mdexmnCode) {
+		return mdexmnDao.selectDoneMdexmn(mdexmnCode);
+	}
+
+}

@@ -1,0 +1,64 @@
+package kr.or.ddit.medical.nurse.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.medical.nurse.vo.DoctorDtlVO;
+import kr.or.ddit.medical.nurse.vo.DoctorSchdulVO;
+import kr.or.ddit.medical.nurse.vo.NurseDtlVO;
+import kr.or.ddit.medical.nurse.vo.NurseSchdulVO;
+import kr.or.ddit.medical.nurse.vo.NursenoteVO;
+import kr.or.ddit.medical.nurse.vo.ReservationVO;
+
+@Mapper
+public interface NurseDao {
+
+	/**
+	 * 의사 일정 전체 조회
+	 * @return
+	 */
+	public List<DoctorDtlVO> selectDoctorList();
+	
+	/**
+	 * 간호사 일정 전체 조회
+	 * @param nurseCode 
+	 * @return
+	 */
+	public List<NurseDtlVO> selectNurseList();
+	
+	
+	/**
+	 * 부서별 의사 조회
+	 * @return
+	 */
+	public List<DoctorDtlVO> selectDoctorDeptList(String fcltyCode);
+	
+	/**
+	 * 부서별 간호사 조회
+	 * @param nurseCode 
+	 * @return
+	 */
+	public List<NurseDtlVO> selectNurseDeptList(String fcltyCode);
+	
+	/**
+	 * 부서별 예약 환자 조회
+	 * @param fcltyCode
+	 * @return
+	 */
+	public List<ReservationVO> selectReservationList(String fcltyCode);
+	
+	/**
+	 * 오늘 일자의 일지 조회(기록일지 출력용)
+	 * @param dayNote
+	 * @return
+	 */
+	public List<NursenoteVO> selectNurseDayNote(String dayNote);
+	public boolean insertNurseNote(NursenoteVO note);
+	
+	/**
+	 * 모든 간호일지 출력
+	 * @return
+	 */
+	public List<NursenoteVO> selectAllNurseNote();
+}

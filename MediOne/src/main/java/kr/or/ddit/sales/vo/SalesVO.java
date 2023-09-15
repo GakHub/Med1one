@@ -1,0 +1,52 @@
+package kr.or.ddit.sales.vo;
+
+
+import javax.validation.constraints.NotBlank;
+
+
+import kr.or.ddit.employee.vo.DepartmentVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import lombok.Data;
+
+@Data
+public class SalesVO {
+
+	private long rnum;
+	
+	@NotBlank
+	private String salesDeptCode;//부서코드
+	@NotBlank
+	private String salesYear;//연도
+	@NotBlank
+	private String salesMonth;//월
+	@NotBlank
+	private String salesAmount; //월별매출액
+	@NotBlank
+	private String deptNm;//부서이름
+	
+	//통계용
+	
+	@NotBlank
+	private int clinicCustomer;//부서별월고객수
+	
+	
+	@NotBlank
+	private int hospitalCustomer;//부서별 입원고객수
+	
+	
+	//병원 총매출액
+	
+	private long totalSalesAmount;
+	
+	
+	//부서별 매출액
+	private long deptAmount;
+	
+	private int quarter;
+	
+	
+	public DepartmentVO dept;
+	public EmployeeVO employee;
+	
+
+}

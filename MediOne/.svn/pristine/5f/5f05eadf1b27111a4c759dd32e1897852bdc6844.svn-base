@@ -1,0 +1,34 @@
+package kr.or.ddit.employee.fixtures.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.employee.fixtures.dao.FixturesDao;
+import kr.or.ddit.employee.fixtures.vo.FixturesDTLVO;
+import kr.or.ddit.employee.fixtures.vo.FixturesVO;
+
+@Service
+public class FixturesServiceImpl implements FixturesService {
+
+	@Inject
+	private FixturesDao fixDao;
+	
+	@Override
+	public List<FixturesVO> retrieveFixList() {
+		return fixDao.selectFixList() ;
+	}
+
+	@Override
+	public List<FixturesDTLVO> retrieveFixDtlList() {
+		return fixDao.selectFixDtlList();
+	}
+
+	@Override
+	public List<FixturesVO> retrieveFixwhereDtlList(String fixtureCode) {
+		return fixDao.selectFixwhereDtlList(fixtureCode);
+	}
+
+}

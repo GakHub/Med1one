@@ -1,0 +1,96 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core"  prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>    
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form" %>  
+<table class="table table-border">
+	<thead>
+		<tr>
+			<td>공지글코드</td>
+			<td>제목</td>
+			<td>등록일시</td>
+			<td>조회수</td>
+			<td>관리자사번</td>
+		</tr>
+	</thead>
+	<tbody>
+		<c:set var="boardList" value="${paging.dataList }" />
+		<c:choose>
+		<c:when test="${empty boardList }">
+			<tr>
+				<td colspan="">해당 리스트 없음</td>
+			</tr>
+		</c:when>
+		<c:otherwise>
+			<c:forEach items="${boardList }" var="list">
+				<c:url value="/notice/noticeDetail.do" var="viewURL">
+					<c:param name="what" value="${list.noticeCode }" />
+				</c:url>
+				<tr>
+					<td><a href="${viewURL }">${list.noticeCode }</a></td>
+					<td>${list.noticeTitle }</td>
+					<td>${list.noticeRegidate }</td>
+					<td>${list.noticeReadcount }</td>
+					<td>${list.adminEmpNo }</td>
+				</tr>
+			</c:forEach>
+			</c:otherwise>
+		</c:choose>
+		
+	</tbody>
+	<tfoot>
+		<tr>
+			<td  colspan="5">
+			 	<div class="d-flex justify-content-center mb-3">
+				${paging.pagingHTML }
+				</div>
+				<div id="searchUI" class="row justify-content-center">
+					<div  class="col-auto">
+						<form:select path="simpleCondition.searchType" class="form-select">
+							<form:option value="" label="전체" />
+							<form:option value="title" label="제목" />
+							<form:option value="content" label="내용" />
+							<form:option value="Number" label="관리자사번" />
+						</form:select>
+					</div>
+					<div  class="col-auto">
+						<form:input path="simpleCondition.searchWord" class="form-control"/>
+					</div>
+					<div  class="col-auto">
+						<input type="button" value="검색" id="searchBtn" class="btn btn-success"/>
+						<a href="<c:url value='/notice/noticeInsert.do'/>" class="btn btn-primary">새글쓰기</a>
+					</div>
+				</div>
+			</td>
+		</tr>
+	
+	</tfoot>
+	
+</table>
+<form:form id="searchForm" modelAttribute="simpleCondition" method="get">
+	<form:hidden path="searchType" />
+	<form:hidden path="searchWord" />
+	<input type="hidden" name="page" />
+</form:form>
+<script>
+	function fn_paging(page){
+		searchForm.page.value = page;
+		searchForm.requestSubmit();
+	}
+	$(searchBtn).on("click", function(event){
+		$(searchUI).find(":input[name]").each(function(idx, input){
+			let name = input.name;
+			let value = $(input).val();
+			$(searchForm).find(`[name=\${name}]`).val(value);
+		});
+		$(searchForm).submit();
+	});
+</script>
+
+
+
+
+
+
+
+

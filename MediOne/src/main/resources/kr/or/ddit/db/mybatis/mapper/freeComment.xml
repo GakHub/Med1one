@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.Free.dao.CommentDao">
+
+
+	<resultMap type="CommentVO" id="cmtMap">
+		<result property="cmtNo" column="cmt_no" />
+		<result property="cmtContent" column="cmt_content" />
+		<result property="boardNo" column="board_no" />
+		<result property="empNo" column="emp_no" />	
+	</resultMap>
+
+
+<sql id="searchFrag">
+	<where>
+			<if	test="simpleCondition neq null and simpleCondition.searchWord neq null and not simpleCondition.searchWord.isEmpty()">
+				<choose>
+					<when test="simpleCondition.searchType eq 'writer'">
+						INSTR(EMP_NO, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'boardNo'">
+						INSTR(BOARD_NO, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'content'">
+						INSTR(CMT_CONTENT, #{simpleCondition.searchWord}) > 0
+					</when>
+					<otherwise> <!-- 전체옵션을 줬을 때 -->
+						INSTR(EMP_NO, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(BOARD_NO, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(CMT_CONTENT, #{simpleCondition.searchWord}) > 0
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</sql>
+
+<!--특정게시글의 댓글 수  -->
+	<select id="selectTotalRecord" resultType="long" parameterType="PaginationInfo">
+		SELECT COUNT(*)
+		FROM "COMMENT"
+<!--     WHERE BOARD_NO = #{boardNo} -->
+	<include refid="searchFrag"></include>
+	</select>
+	
+	
+	
+<!--특정게시글의 댓글 수  -->
+	<select id="boardCmtRecord" resultType="long" parameterType="String">
+		SELECT COUNT(*)
+		FROM "COMMENT"
+ 		WHERE BOARD_NO = #{boardNo}
+	</select>
+	
+
+<!--특정게시글의 전체 댓글 조회  -->
+<select id="selectFreeCommentList" resultType="CommentVO" parameterType="PaginationInfo">
+	SELECT B.*, EMPLOYEE.EMP_NM AS EMPNM, DEPARTMENT.DEPT_NM AS DEPTNM
+	FROM (
+    SELECT ROWNUM RNUM, A.*
+    FROM (
+        SELECT
+            CMT_NO,
+            CMT_CONTENT,
+            CMT_REGIDATE,
+            BOARD_NO,
+            EMP_NO
+		FROM "COMMENT"
+		WHERE "COMMENT".BOARD_NO = #{boardNo}
+		
+		<include refid="searchFrag" />
+		ORDER BY CMT_REGIDATE DESC
+		) A
+		) B
+		JOIN EMPLOYEE ON B.EMP_NO = EMPLOYEE.EMP_NO
+		JOIN DEPARTMENT ON  EMPLOYEE.DEPT_CODE=DEPARTMENT.DEPT_CODE
+         <![CDATA[
+         WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+         ]]>
+	</select>
+	
+
+<!--댓글 등록  -->
+ <insert id="insertFreeComment" parameterType="CommentVO">
+      <selectKey order="BEFORE" keyProperty="cmtNo" resultType="String">
+         SELECT COMMENT_NO_SEQ.NEXTVAL FROM DUAL
+      </selectKey>
+     INSERT INTO "COMMENT" (
+	 	CMT_NO,
+     	CMT_CONTENT,
+     	CMT_REGIDATE,
+     	BOARD_NO,
+     	EMP_NO
+      ) VALUES (
+          #{cmtNo,jdbcType=VARCHAR}
+		, #{cmtContent,jdbcType=VARCHAR}
+		, CURRENT_TIMESTAMP
+		, #{boardNo,jdbcType=VARCHAR}
+		, #{empNo,jdbcType=VARCHAR}
+      )
+   </insert>
+
+
+<!--나의 댓글 전체 조회  -->
+<select id="selectMyFreeCommentList" resultType="CommentVO" parameterType="PaginationInfo">
+		SELECT B.*
+		FROM (
+		SELECT ROWNUM RNUM, A.*
+		FROM(
+		
+		SELECT
+        CMT_NO,
+     	CMT_CONTENT,
+     	CMT_REGIDATE,
+     	BOARD_NO,
+     	EMP_NO
+		FROM "COMMENT"
+		WHERE "COMMENT".EMP_NO = #{empNo}
+		
+		<include refid="searchFrag" />
+		ORDER BY BOARD_REGIDATE DESC
+		) A
+		) B
+         <![CDATA[
+         WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+         ]]>
+	</select>
+	
+	
+<!--특정 게시물의 나의 댓글 조회  -->
+<select id="selectMyFreeComment" resultType="CommentVO" parameterType="PaginationInfo">
+		SELECT B.*
+		FROM (
+		SELECT ROWNUM RNUM, A.*
+		FROM(
+		
+		SELECT
+        CMT_NO,
+     	CMT_CONTENT,
+     	CMT_REGIDATE,
+     	BOARD_NO,
+     	EMP_NO
+		FROM "COMMENT"
+		WHERE "COMMENT".EMP_NO = #{empNo}
+		AND "COMMENT".BOARD_NO = #{boardNo}
+		
+		<include refid="searchFrag" />
+		ORDER BY BOARD_REGIDATE DESC
+		) A
+		) B
+         <![CDATA[
+         WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+         ]]>
+	</select>
+
+
+
+
+	
+<!--특정 게시물의 나의 댓글 조회  -->
+<select id="selectFreeComment" resultType="CommentVO" parameterType="String">
+		SELECT * 
+		FROM "COMMENT"
+		WHERE CMT_NO = #{cmtNo}
+	</select>
+
+
+<!--formView에서 작성자 이름, 부서 찾기 -->
+	<select id="selectDept" resultType="String" parameterType="String">
+	SELECT
+    	DEPARTMENT.DEPT_NM DEPTNM
+    FROM EMPLOYEE 
+    	INNER JOIN FREE_BOARD ON(FREE_BOARD.EMP_NO = EMPLOYEE.EMP_NO)
+    	INNER JOIN DEPARTMENT ON(EMPLOYEE.DEPT_CODE=DEPARTMENT.DEPT_CODE)
+    WHERE 
+    	FREE_BOARD.EMP_NO={boardNo};
+	</select>
+
+
+  <delete id="deleteFreeComment" parameterType="String">
+		DELETE FROM "COMMENT"
+		WHERE CMT_NO = #{cmtNo}
+		<!-- AND EMP_NO = #{empNo} -->
+	</delete>
+
+
+	<update id="updateFreeComment" parameterType="CommentVO">
+		UPDATE "COMMENT"
+		SET
+		CMT_CONTENT = #{cmtContent,jdbcType=VARCHAR}
+		WHERE CMT_NO = #{cmtNo}
+		
+		
+	</update>
+
+
+
+
+</mapper>

@@ -1,0 +1,14 @@
+package kr.or.ddit.message.service;
+
+import java.util.List;
+
+import kr.or.ddit.medical.vo.PatientVO;
+
+public interface MessageService {
+
+	/**
+	 * 환자 전체 연락처 조회
+	 * @return
+	 */
+	public List<PatientVO> retrieveTelNumberList();
+}

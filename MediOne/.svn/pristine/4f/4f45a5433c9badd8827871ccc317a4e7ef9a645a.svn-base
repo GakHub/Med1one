@@ -1,0 +1,61 @@
+package kr.or.ddit.rez.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.medical.nurse.vo.ReservationVO;
+import kr.or.ddit.rez.dao.RezDAO;
+
+@Service
+public class RezServiceImpl implements RezService{
+	
+	
+	@Inject
+	private RezDAO rezDAO;
+
+	@Override
+	public List<ReservationVO> retriveAllRez() {
+	
+		return rezDAO.selectAllRez();
+	}
+
+	@Override
+	public List<ReservationVO> retriveFcltyRez(String fcltyCode) {
+		return rezDAO.selectFcltyRez(fcltyCode);
+	}
+
+	@Override
+	public List<ReservationVO> retrivePatntRez(String patntCode) {
+		return rezDAO.selectPatientRez(patntCode);
+	}
+
+	@Override
+	public List<ReservationVO> retriveTimeRez(String resevDate, String fcltyCode) {
+		
+		return rezDAO.selectTimeRez(resevDate, fcltyCode);
+	}
+
+	@Override
+	public List<ReservationVO> retriveClinicAllRez() {
+		return rezDAO.selectClinicAllRez();
+	}
+
+	@Override
+	public List<ReservationVO> retriveExamAllRez() {
+		return rezDAO.selectExamAllRez();
+	}
+
+	@Override
+	public List<ReservationVO> retriveClinicTimeTable(String resveDate) {
+		return rezDAO.selectClinicTimeTable(resveDate);
+	}
+
+	@Override
+	public List<ReservationVO> retriveExamTimeTable(String resveDate) {
+		return rezDAO.selectExamTimeTable(resveDate);
+	}
+
+}

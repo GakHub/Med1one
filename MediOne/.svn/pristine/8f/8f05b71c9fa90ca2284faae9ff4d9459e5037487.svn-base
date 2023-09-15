@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.hospital.dao.HospitalDao">
+
+<sql id="searchFrag">
+   <where>
+      <if test="simpleCondition neq null and simpleCondition.searchWord neq null and not simpleCondition.searchWord.isEmpty()">
+         <choose>
+            <when test="simpleCondition.searchType eq 'patntNm'">
+                INSTR(PATNT_NM, #{simpleCondition.searchWord}) > 0
+            </when>
+            <when test="simpleCondition.searchType eq 'sckbdRo'">
+                INSTR(SCKBD_RO, #{simpleCondition.searchWord}) > 0
+            </when>
+            <otherwise>
+                  INSTR(PATNT_NM, #{simpleCondition.searchWord}) > 0
+                  OR
+                  INSTR(SCKBD_RO, #{simpleCondition.searchWord}) > 0
+            </otherwise>
+         </choose>
+      </if>
+   </where>
+</sql>
+   <select id="selectTotalRecord" resultType="long" parameterType="PaginationInfo">
+       SELECT COUNT(*) FROM HOSPITALIZATION INNER JOIN PATIENT USING (PATNT_CODE)
+    <include refid="searchFrag" ></include>
+   </select>
+
+
+<!-- 간호부 병동 입원중 환자 조회 -->
+   <select id="hospitalPatientList" resultType="HospitalizationVO">
+      WITH CTE AS (
+         SELECT
+          P.PATNT_NM
+          , P.PATNT_CODE
+          , R.REC_CODE
+          , S.STAT_TIME
+          , S.STAT_CODE
+          , P.PATNT_IDENTINO
+         , ROW_NUMBER() OVER(PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+            , CASE WHEN SUBSTR(PATNT_IDENTINO, 8, 1) IN ('1', '2')
+                THEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE('19' || SUBSTR(patnt_identino, 1, 2),'YYYY'))
+                WHEN SUBSTR(PATNT_IDENTINO, 8, 1) IN ('3', '4')
+                THEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE('20' || SUBSTR(patnt_identino, 1, 2),'YYYY'))
+               END AS PATNT_AGE
+         FROM PATIENT P
+         INNER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+         INNER JOIN PATNT_STAT S ON (R.REC_CODE = S.REC_CODE)
+         )
+         SELECT
+          H.PATNT_CODE 
+          , SCKBD_RO 
+          , SCKBD_NO 
+          , CTE.PATNT_NM "patnt.patntNm"
+          , TO_CHAR(TO_DATE(HSPTLZ_IN, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzIn"
+          , TO_CHAR(TO_DATE(HSPTLZ_OUT, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzOut"
+          , H.REC_CODE 
+             , CTE.PATNT_AGE "patnt.patntAge"
+             , SUBSTR(CTE.PATNT_IDENTINO, 1, 8) || '******' "patnt.patntIdentino"
+            FROM HOSPITALIZATION H
+            INNER JOIN CTE ON (CTE.PATNT_CODE = H.PATNT_CODE)
+         WHERE RN = 1 AND STAT_CODE = '011'
+         ORDER BY "hsptlzIn" ASC
+   </select>
+   
+
+   <!-- 간호부 병동 입원중 환자 조회 페이징포함 -->
+   <select id="hospitalPatientPaging" resultType="HospitalizationVO">
+   WITH CTE AS ( 
+   SELECT P.PATNT_NM 
+   , P.PATNT_CODE 
+   , R.REC_CODE 
+   , S.STAT_TIME 
+   , S.STAT_CODE 
+   , P.PATNT_IDENTINO
+   , ROW_NUMBER() OVER(PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC)
+   AS RN 
+   , CASE WHEN SUBSTR(PATNT_IDENTINO ,8, 1) IN ('1', '2') THEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM
+   TO_DATE('19' || SUBSTR(patnt_identino, 1, 2),'YYYY')) WHEN SUBSTR(PATNT_IDENTINO, 8, 1) IN ('3', '4') THEN
+   EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE('20' || SUBSTR(patnt_identino, 1, 2),'YYYY')) END AS PATNT_AGE
+   FROM PATIENT P INNER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+   INNER JOIN PATNT_STAT
+   S ON (R.REC_CODE = S.REC_CODE) )
+   SELECT B.* FROM(
+   SELECT A.*
+   FROM(
+   SELECT ROWNUM RNUM
+   , RN
+   , H.PATNT_CODE 
+   , H.HSPTLZ_CODE
+   , SCKBD_RO 
+   , SCKBD_NO 
+   , CTE.PATNT_NM
+   "patnt.patntNm"
+   , TO_CHAR(TO_DATE(HSPTLZ_IN, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzIn" 
+   , TO_CHAR(TO_DATE(HSPTLZ_OUT, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzOut" 
+   , H.REC_CODE 
+   , CTE.PATNT_AGE "patnt.patntAge"
+   , CTE.PATNT_IDENTINO
+   "patnt.patntIdentino" FROM HOSPITALIZATION H INNER JOIN CTE ON (CTE.PATNT_CODE = H.PATNT_CODE)
+    <include refid="searchFrag" />
+   AND RN = 1 AND STAT_CODE = '011'
+   ORDER BY "hsptlzIn" ASC
+   ) A
+   ) B
+   <![CDATA[
+       WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+    ]]>
+   </select>
+   
+   
+   <!-- 병동 병실 list 조회 -->
+   <select id="sckbdList" resultType="SckbdVO">
+      SELECT
+          SCKBD_RO
+        , SCKBD_NO
+        , AVAILABLE_YM
+      FROM
+          SCKBD
+      WHERE SUBSTR(SCKBD_RO,1,1) = #{sckbdRo}
+   </select>
+   
+   <!-- (행정부,간호부)병동환자 검색 조회(입원대기,입원중) -->
+   <resultMap type="HsptlzOrderVO" id="hspOrderMap" autoMapping="true">
+      <id property="hspodCode" column="HSPOD_CODE"/>
+         <association property="pres" javaType="PrescriptionVO" autoMapping="true">
+            <association property="clinic" javaType="ClinicVO" autoMapping="true">
+               <association property="recept" javaType="ReceptionVO" autoMapping="true">
+                  <association property="patnt" javaType="PatientVO" autoMapping="true">
+                  </association>
+               </association>
+            </association>
+         </association>
+   </resultMap>
+   <select id="patntSearch" parameterType="String" resultMap="hspOrderMap">
+      WITH CTE AS (
+           SELECT
+            P.PATNT_NM
+            , P.PATNT_CODE
+            , R.REC_CODE
+            , S.STAT_TIME
+            , S.STAT_CODE
+            , PATNT_IDENTINO
+            , ROW_NUMBER() OVER(PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+               FROM PATIENT P
+               INNER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+               INNER JOIN PATNT_STAT S ON (R.REC_CODE = S.REC_CODE)
+           )
+           SELECT PATNT_NM
+           , CTE.PATNT_CODE
+           , CTE.REC_CODE
+           , STAT_CODE
+           , STAT_TIME LAST_STAT
+           , PATNT_IDENTINO
+           , HSP.HSPOD_CODE
+           , HSPOD_TOTAL
+           , C.DOC_EMP_NO
+           , C.CLINIC_CODE
+            , SCKBD_RO
+            , SCKBD_NO
+            , PRES.PRES_CODE "presCode"
+               FROM CTE
+               INNER JOIN CLINIC C ON (CTE.REC_CODE = C.REC_CODE)
+               INNER JOIN PRESCRIPTION PRES ON (C.CLINIC_CODE = PRES.CLINIC_CODE)
+               INNER JOIN HSPTLZ_ORDER HSP ON (PRES.PRES_CODE = HSP.PRES_CODE)
+                LEFT OUTER JOIN hospitalization H ON (H.HSPOD_CODE = HSP.HSPOD_CODE)
+               WHERE RN = 1 AND STAT_CODE = #{code}
+                   AND (PATNT_NM LIKE '%' || #{word} || '%')
+   </select>
+   
+   <update id="updateBed" parameterType="SckbdVO">
+      UPDATE SCKBD SET
+         AVAILABLE_YM = 'N'
+         WHERE SCKBD_RO = #{sckbdRo} AND SCKBD_NO = #{sckbdNo}
+   </update>
+   
+   <insert id="insertHsptl" parameterType="HospitalizationVO">
+      INSERT INTO HOSPITALIZATION (
+             HSPTLZ_CODE
+             , HSPTLZ_IN
+             , HSPTLZ_OUT
+             , HSPTLZ_TOTAL
+             , REC_CODE
+             , HSPOD_CODE
+             , SCKBD_RO
+             , SCKBD_NO
+             , DOC_EMP_NO
+             , PATNT_CODE
+         ) VALUES (
+              'HSP' || LPAD(HSPTLZ_CODE_SEQ.nextval,4,'0')
+            , TO_CHAR(SYSDATE, 'YYYYMMDD')
+            , TO_CHAR(SYSDATE+#{hsptlzTotal}, 'YYYYMMDD')
+            , #{hsptlzTotal,jdbcType=NUMERIC}
+            , #{recCode,jdbcType=VARCHAR}
+            , #{hspodCode,jdbcType=VARCHAR}
+            , #{sckbdRo,jdbcType=VARCHAR}
+            , #{sckbdNo,jdbcType=NUMERIC}
+            , #{docEmpNo,jdbcType=VARCHAR}
+            , #{patntCode,jdbcType=VARCHAR}
+         )
+   </insert>
+   <insert id="insertHspPatnt" parameterType="PatntStatVO">
+      INSERT INTO PATNT_STAT (
+          STAT_CODE
+          , REC_CODE
+          , FCLTY_CODE
+          , STAT_TIME
+      ) VALUES (
+          '011'
+        , #{recCode,jdbcType=VARCHAR}
+        , 'J'
+        , SYSDATE
+      )
+   </insert>
+   
+   <!-- 퇴원 -->
+   <insert id="modifyHsptl" parameterType="PatntStatVO">
+   	 INSERT INTO PATNT_STAT (
+          STAT_CODE
+          , REC_CODE
+          , FCLTY_CODE
+          , STAT_TIME
+      ) VALUES (
+          '015'
+        , #{recCode,jdbcType=VARCHAR}
+        , 'J'
+        , SYSDATE
+      )
+   </insert>
+   
+  
+   
+   <select id="presList" resultType="PresDocVO">
+   WITH CTE AS (
+          SELECT 
+              P.PATNT_NM 
+              ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+              ,R.REC_CODE
+                ,R.SYMPTOM
+              ,S.STAT_CODE
+              ,S.STAT_TIME
+              ,S.FCLTY_CODE
+              ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+          FROM
+              PATIENT P
+              INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+              INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+      )
+        SELECT HSOD.PRES_CODE
+               , PRES.MEDI_CODE
+               , HSP.DOC_EMP_NO
+               , PRESDOC_AMT
+               , PRES_M_AMT
+               , PRES_M_CO
+               , MEDI_DAY
+               , PRES_DATE
+               , HSP.REC_CODE
+               , PRES_SEPAR
+               , M.MEDI_NM "medi.mediNm"
+               FROM PRES_DOC PRES
+            
+            INNER JOIN HSPTLZ_ORDER HSOD ON (PRES.PRES_CODE = HSOD.PRES_CODE)
+            INNER JOIN hospitalization HSP ON (HSOD.HSPOD_CODE = HSP.HSPOD_CODE)
+            INNER JOIN CTE ON (CTE.REC_CODE = HSP.REC_CODE)
+            LEFT OUTER JOIN MEDICINE M ON (PRES.MEDI_CODE = M.MEDI_CODE)
+            WHERE RN = 1 AND CTE.STAT_CODE='011' AND HSOD.PRES_CODE=#{presCode}
+   </select>   
+   
+   
+
+<!-- 관리자 통계용 : 월별 입원환자수 조회 -->
+   <select id="selectMonthHospitalCount" resultType="HospitalizationVO">
+   SELECT
+      SUBSTR(HSPTLZ_IN, 1,4) AS YEAR,
+      SUBSTR(HSPTLZ_IN, 5,2) AS MONTH,
+      COUNT(*) AS MONTHCOUNT
+   FROM
+      HOSPITALIZATION
+   GROUP BY
+      SUBSTR(HSPTLZ_IN, 1,4),
+      SUBSTR(HSPTLZ_IN, 5,2)
+   ORDER BY YEAR, MONTH
+   </select>
+
+   <select id="selectYearHospitalCount" resultType="HospitalizationVO">
+   SELECT
+      SUBSTR(HSPTLZ_IN, 1,4) AS YEAR,
+      COUNT(*) AS MONTHCOUNT
+   FROM
+      HOSPITALIZATION
+   GROUP BY
+      SUBSTR(HSPTLZ_IN, 1,4)
+      ORDER BY YEAR
+   </select>
+
+   <select id="selectTotalHospitalCount" resultType="int" parameterType="String">
+   SELECT
+      COUNT(*) AS MONTHCOUNT
+   FROM
+      HOSPITALIZATION
+   WHERE
+      SUBSTR(HSPTLZ_IN, 1,4) =#{year}
+      AND SUBSTR(HSPTLZ_IN, 5,2) = #{month}
+   GROUP BY
+      SUBSTR(HSPTLZ_IN, 1,4),
+      SUBSTR(HSPTLZ_IN, 5,2)
+   </select>
+   
+   <insert id="insertVital" parameterType="VitalVO">
+      INSERT INTO VITAL (
+          VT_CODE
+          , HSPTLZ_CODE
+          , VT_PLS
+          , VT_TMP
+          , VT_BP
+          , VT_RP
+          , VT_DATE
+          , RCDR_NM
+          , VT_TIME
+      ) VALUES (
+          'VT' || LPAD(VT_CODE_SEQ.nextval,4,'0')
+         , #{hsptlzCode,jdbcType=VARCHAR}
+         , #{vtPls,jdbcType=VARCHAR}
+         , #{vtTmp,jdbcType=VARCHAR}
+         , #{vtBp,jdbcType=VARCHAR}
+         , #{vtRp,jdbcType=VARCHAR}
+         , #{vtDate,jdbcType=VARCHAR}
+         , #{rcdrNm,jdbcType=VARCHAR}
+         , #{vtTime,jdbcType=VARCHAR}
+      )
+   </insert>
+   <select id="vitalDtlList" parameterType="VitalVO">
+      SELECT
+          VT_CODE
+        , VT_PLS
+        , VT_TMP
+        , VT_BP
+        , VT_RP
+        , VT_DATE
+        , RCDR_NM
+        , VT_TIME
+        , HSPTLZ_CODE
+      FROM
+          VITAL
+      WHERE HSPTLZ_CODE=#{hsptlzCode}
+   </select>
+   <delete id="deleteVital" parameterType="String">
+   DELETE FROM VITAL
+   WHERE
+        VT_CODE = #{vtCode}
+   </delete>
+   
+   <insert id="insertDiet" parameterType="DietRcdrVO">
+      INSERT INTO DIET_RCDR (
+          DRCDR_CODE
+          , HSPTLZ_CODE
+          , DIET_CODE
+          , DIET_RCDDATE
+          , DIET_TIME
+          , RCDR_NM
+      ) VALUES (
+         'DT' || LPAD(DRCDR_CODE_SEQ.nextval,4,'0')
+         , #{hsptlzCode,jdbcType=VARCHAR}
+         , #{dietCode,jdbcType=VARCHAR}
+         , #{dietRcddate,jdbcType=VARCHAR}
+         , #{dietTime,jdbcType=VARCHAR}
+         , #{rcdrNm,jdbcType=VARCHAR}
+      )
+   </insert>
+   <select id="DietDtlList" parameterType="DietRcdrVO">
+      SELECT
+          DRCDR_CODE
+        , HSPTLZ_CODE
+        , DIET_CODE
+        , DIET_RCDDATE
+        , DIET_TIME
+        , RCDR_NM
+      FROM
+          DIET_RCDR
+      WHERE HSPTLZ_CODE=#{hsptlzCode}
+   </select>
+   <delete id="deleteDiet" parameterType="String">
+   DELETE FROM DIET_RCDR
+   WHERE
+           DRCDR_CODE = #{drcdrCode}
+   </delete>
+   
+   <insert id="insertIO" parameterType="IOVO">
+      INSERT INTO IO (
+          IO_CODE
+          , HSPTLZ_CODE
+          , IO_IN
+          , IO_OUT
+          , IO_DATE
+          , IO_TIME
+          , RCDR_NM
+          , IO_MEDI
+      ) VALUES (
+          'IO' || LPAD(IO_CODE_SEQ.nextval,4,'0')
+         , #{hsptlzCode,jdbcType=VARCHAR}
+         , #{ioIn,jdbcType=VARCHAR}
+         , #{ioOut,jdbcType=VARCHAR}
+         , #{ioDate,jdbcType=VARCHAR}
+         , #{ioTime,jdbcType=VARCHAR}
+         , #{rcdrNm,jdbcType=VARCHAR}
+         , #{ioMedi,jdbcType=VARCHAR}
+      )
+   </insert>
+   <select id="ioList" parameterType="IOVO">
+      SELECT
+          IO_CODE
+        , HSPTLZ_CODE
+        , IO_IN
+        , IO_OUT
+        , IO_DATE
+        , IO_TIME
+        , RCDR_NM
+        , IO_MEDI
+      FROM
+          IO
+      WHERE HSPTLZ_CODE=#{hsptlzCode}
+   </select>
+   <delete id="deleteIO" parameterType="String">
+      DELETE FROM IO
+      WHERE
+         IO_CODE = #{ioCode}
+   </delete>
+   
+    <select id="inPatntDetail" resultType="HospitalizationVO">
+      WITH CTE AS (
+         SELECT
+          P.PATNT_NM
+          , P.PATNT_CODE
+          , R.REC_CODE
+          , S.STAT_TIME
+          , S.STAT_CODE
+          , P.PATNT_IDENTINO
+          , WEIGHT
+             , HEIGHT
+             , GEN
+         , ROW_NUMBER() OVER(PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+            , CASE WHEN SUBSTR(PATNT_IDENTINO, 8, 1) IN ('1', '2')
+                THEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE('19' || SUBSTR(patnt_identino, 1, 2),'YYYY'))
+                WHEN SUBSTR(PATNT_IDENTINO, 8, 1) IN ('3', '4')
+                THEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE('20' || SUBSTR(patnt_identino, 1, 2),'YYYY'))
+               END AS PATNT_AGE
+         FROM PATIENT P
+         INNER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+         INNER JOIN PATNT_STAT S ON (R.REC_CODE = S.REC_CODE)
+         )
+         SELECT
+          H.PATNT_CODE 
+          , SCKBD_RO 
+          , SCKBD_NO 
+          , CTE.PATNT_NM "patnt.patntNm"
+          , TO_CHAR(TO_DATE(HSPTLZ_IN, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzIn"
+          , TO_CHAR(TO_DATE(HSPTLZ_OUT, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzOut"
+          , H.REC_CODE 
+             , CTE.PATNT_AGE "patnt.patntAge"
+             , SUBSTR(CTE.PATNT_IDENTINO, 1, 8) || '******' "patnt.patntIdentino"
+             , H.HSPOD_CODE "hspodCode"
+             , HSPTLZ_TOTAL
+             , H.DOC_EMP_NO
+             , C.CLINIC_CODE
+             , PRES_CODE "hospitaliztion.presCode"
+             , WEIGHT "patnt.weight"
+             , HEIGHT "patnt.height"
+             , GEN "patnt.gen"
+             , PATNT_NM
+             , PRES.PRES_CODE "presCode"
+             , DSS.DSS_NM "dss.dssNm"
+             , H.HSPTLZ_CODE "hsptlzCode"
+            FROM HOSPITALIZATION H
+            INNER JOIN CTE ON (CTE.PATNT_CODE = H.PATNT_CODE)
+            INNER JOIN CLINIC C ON (CTE.REC_CODE = C.REC_CODE)
+            INNER JOIN DISEASE DSS ON (C.DSS_CODE = DSS.DSS_CODE)
+            INNER JOIN PRESCRIPTION PRES ON (C.CLINIC_CODE = PRES.CLINIC_CODE)
+            WHERE CTE.PATNT_CODE = #{patntCode} AND RN = 1 AND STAT_CODE = '011'
+            ORDER BY "hsptlzIn" ASC
+   </select>
+   
+   
+   <!-- 병동에있는 환자정보 출력   -->
+   <select id="patntDetail" parameterType="HospitalizationVO">
+      WITH CTE AS (
+             SELECT 
+                 P.PATNT_NM 
+                 ,P.PATNT_CODE
+                   ,P.PATNT_IDENTINO
+                   ,P.HEIGHT 
+                   ,P.WEIGHT 
+                   ,P.GEN 
+                   ,P.PATNT_TELNO
+                 ,R.REC_CODE
+                   ,R.SYMPTOM
+                 ,S.STAT_CODE
+                 ,S.STAT_TIME
+                 ,S.FCLTY_CODE
+                 ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+             FROM
+                 PATIENT P
+                 INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+                 INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+         )
+           SELECT 
+            CTE.PATNT_CODE "patnt.patntCode"
+           , CTE.PATNT_NM "patnt.patntNm"
+           , SUBSTR(CTE.PATNT_IDENTINO, 1, 8) || '******' "patnt.patntIdentino"
+           , (SUBSTR(CTE.PATNT_TELNO, 1, 3) || '-' || SUBSTR(CTE.PATNT_TELNO, 4, 4) || '-' || SUBSTR(CTE.PATNT_TELNO, 8, 4)) "patnt.patntTelno"
+           , CTE.HEIGHT  "patnt.height"
+           , CTE.WEIGHT "patnt.weight"
+           , CTE.GEN  "patnt.gen"
+           , P.REC_CODE "stat.recCode"
+           ,P.STAT_CODE "stat.statCode"
+            , TO_CHAR(TO_DATE(HSPTLZ_IN, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzIn"
+          , TO_CHAR(TO_DATE(HSPTLZ_OUT, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzOut"
+           , H.HSPTLZ_CODE
+           , H.SCKBD_RO
+           , H.SCKBD_NO
+           FROM CTE
+           INNER JOIN PATNT_STAT P ON(CTE.REC_CODE = P.REC_CODE)
+           INNER JOIN CLINIC C ON (P.REC_CODE = C.REC_CODE)
+           INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+           INNER JOIN HOSPITALIZATION H ON (P.REC_CODE = H.REC_CODE)
+           
+           
+           WHERE CTE.RN = 1 AND P.STAT_CODE ='011' AND CTE.STAT_CODE !='015'  AND H.SCKBD_RO= #{sckbdRo} AND H.SCKBD_NO = #{sckbdNo}
+           ORDER BY "hsptlzIn" ASC
+           <!-- ORDER BY P.REC_CODE -->
+   </select>
+   
+   
+   
+   <select id="wardDetail" parameterType="HospitalizationVO">
+    WITH CTE AS (
+             SELECT 
+                 P.PATNT_NM 
+                 ,P.PATNT_CODE
+                   ,P.PATNT_IDENTINO
+                   ,P.HEIGHT 
+                   ,P.WEIGHT 
+                   ,P.GEN 
+                   ,P.PATNT_TELNO
+                 ,R.REC_CODE
+                   ,R.SYMPTOM
+                 ,S.STAT_CODE
+                 ,S.STAT_TIME
+                 ,S.FCLTY_CODE
+                 ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+             FROM
+                 PATIENT P
+                 INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+                 INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+         )
+           SELECT 
+            CTE.PATNT_CODE "patnt.patntCode"
+           , CTE.PATNT_NM "patnt.patntNm"
+           , SUBSTR(CTE.PATNT_IDENTINO, 1, 8) || '******' "patnt.patntIdentino"
+           , (SUBSTR(CTE.PATNT_TELNO, 1, 3) || '-' || SUBSTR(CTE.PATNT_TELNO, 4, 4) || '-' || SUBSTR(CTE.PATNT_TELNO, 8, 4)) "patnt.patntTelno"
+           , CTE.HEIGHT  "patnt.height"
+           , CTE.WEIGHT "patnt.weight"
+           , CTE.GEN  "patnt.gen"
+           , P.REC_CODE "stat.recCode"
+           ,P.STAT_CODE "stat.statCode"
+            , TO_CHAR(TO_DATE(HSPTLZ_IN, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzIn"
+          , TO_CHAR(TO_DATE(HSPTLZ_OUT, 'YYYY-MM-DD'), 'YYYY-MM-DD') "hsptlzOut"
+           , H.HSPTLZ_CODE
+           , H.SCKBD_RO
+           , H.SCKBD_NO
+           FROM CTE
+           INNER JOIN PATNT_STAT P ON(CTE.REC_CODE = P.REC_CODE)
+           INNER JOIN CLINIC C ON (P.REC_CODE = C.REC_CODE)
+           INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+
+           INNER JOIN HOSPITALIZATION H ON (P.REC_CODE = H.REC_CODE)
+           
+           
+           WHERE CTE.RN = 1 AND P.STAT_CODE ='011' AND CTE.STAT_CODE !='015'  AND H.SCKBD_RO= #{sckbdRo}
+           ORDER BY "hsptlzIn" ASC
+           <!-- ORDER BY P.REC_CODE -->
+   </select>
+   
+   <!-- 퇴원할때 환자 상태 수납대기로 -->
+   <insert id="insertRecieveStat" parameterType="String">
+   
+   		INSERT INTO PATNT_STAT (
+		    STAT_CODE,
+		    REC_CODE,
+		    FCLTY_CODE,
+		    STAT_TIME
+		) VALUES (
+		    '015'
+		    ,#{recCode,jdbcType=VARCHAR}
+		    ,'J'
+		    ,SYSDATE
+		)
+		
+   </insert>
+   
+   
+   <!--퇴원일자 update -->
+   <update id="updateHsptlzOutDate">
+   
+   		UPDATE HOSPITALIZATION
+		SET
+		    HSPTLZ_OUT_DATE = SYSDATE
+		WHERE
+		     HSPTLZ_CODE = #{hsptlzCode}
+		     
+   </update>
+   
+   <!-- 침상사용가능 Y로 update -->
+   <update id="updateSckbdStatY">
+   
+   		UPDATE SCKBD
+			SET 
+			AVAILABLE_YM = 'Y'
+		WHERE SCKBD_RO = #{sckbdRo} AND SCKBD_NO = #{sckbdNo}
+		
+   </update>
+   
+</mapper>
+
+

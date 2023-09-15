@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.hospital.dao.HospitalDao">
+
+	<!-- 간호부 병동 환자 조회 -->
+	<select id="hospitalPatientList" resultType="HospitalizationVO">
+		WITH CTE AS (
+			SELECT P.PATNT_NM, P.PATNT_CODE, R.REC_CODE, S.STAT_TIME, S.STAT_CODE,
+			ROW_NUMBER() OVER(PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC)
+			AS RN
+			FROM PATIENT P
+			INNER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+			INNER JOIN PATNT_STAT S ON (R.REC_CODE = S.REC_CODE)
+			)
+			SELECT H.PATNT_CODE, SCKBD_RO, SCKBD_NO, CTE.PATNT_NM, HSPTLZ_IN, HSPTLZ_OUT, CTE.REC_CODE
+            FROM hospitalization H
+            INNER JOIN CTE ON (CTE.PATNT_CODE = H.PATNT_CODE)
+			WHERE RN = 1 AND STAT_CODE = '011'
+	</select>
+	
+	<!-- 병동 병실 list 조회 -->
+	<select id="sckbdList" resultType="SckbdVO">
+		SELECT
+		    SCKBD_RO
+		  , SCKBD_NO
+		  , AVAILABLE_YM
+		FROM
+		    SCKBD
+		WHERE SUBSTR(SCKBD_RO,1,1) = #{sckbdRo}
+	</select>
+	
+	<!-- (행정부) 입원대기환자 검색 조회 -->
+	<resultMap type="HsptlzOrderVO" id="hspOrderMap" autoMapping="true">
+		<id property="hspodCode" column="HSPOD_CODE"/>
+			<association property="pres" javaType="PrescriptionVO" autoMapping="true">
+				<association property="clinic" javaType="ClinicVO" autoMapping="true">
+					<association property="recept" javaType="ReceptionVO" autoMapping="true">
+						<association property="patnt" javaType="PatientVO" autoMapping="true">
+						</association>
+					</association>
+				</association>
+			</association>
+	</resultMap>
+	<select id="waitPatnt" parameterType="String" resultMap="hspOrderMap">
+		WITH CTE AS (
+	        SELECT
+	         P.PATNT_NM
+	         , P.PATNT_CODE
+	         , R.REC_CODE
+	         , S.STAT_TIME
+	         , S.STAT_CODE
+	         , PATNT_IDENTINO
+	         , ROW_NUMBER() OVER(PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+	            FROM PATIENT P
+	            INNER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+	            INNER JOIN PATNT_STAT S ON (R.REC_CODE = S.REC_CODE)
+	        )
+	        SELECT PATNT_NM
+	        , PATNT_CODE
+	        , CTE.REC_CODE
+	        , STAT_CODE
+	        , STAT_TIME LAST_STAT
+	        , PATNT_IDENTINO
+	        , HSPOD_CODE
+	        , HSPOD_TOTAL
+	        , DOC_EMP_NO
+	            FROM CTE
+	            INNER JOIN CLINIC C ON (CTE.REC_CODE = C.REC_CODE)
+	            INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+	            INNER JOIN HSPTLZ_ORDER HSP ON (PRE.PRES_CODE = HSP.PRES_CODE)
+	            WHERE (RN = 1 AND STAT_CODE = '010')
+	                AND (PATNT_NM LIKE '%' || #{word} || '%')
+	</select>
+	
+	<update id="updateBed" parameterType="SckbdVO">
+		UPDATE SCKBD SET
+			AVAILABLE_YM = 'N'
+			WHERE SCKBD_RO = #{sckbdRo} AND SCKBD_NO = #{sckbdNo}
+	</update>
+	
+	<insert id="insertHsptl" parameterType="HospitalizationVO">
+		INSERT INTO HOSPITALIZATION (
+			    HSPTLZ_CODE
+			    , HSPTLZ_IN
+			    , HSPTLZ_OUT
+			    , HSPTLZ_TOTAL
+			    , REC_CODE
+			    , HSPOD_CODE
+			    , SCKBD_RO
+			    , SCKBD_NO
+			    , DOC_EMP_NO
+			    , PATNT_CODE
+			) VALUES (
+			     'HSP' || LPAD(HSPTLZ_CODE_SEQ.nextval,4,'0')
+				, TO_CHAR(SYSDATE, 'YYYYMMDD')
+				, TO_CHAR(SYSDATE+#{hsptlzTotal}, 'YYYYMMDD')
+				, #{hsptlzTotal,jdbcType=NUMERIC}
+				, #{recCode,jdbcType=VARCHAR}
+				, #{hspodCode,jdbcType=VARCHAR}
+				, #{sckbdRo,jdbcType=VARCHAR}
+				, #{sckbdNo,jdbcType=NUMERIC}
+				, #{docEmpNo,jdbcType=VARCHAR}
+				, #{patntCode,jdbcType=VARCHAR}
+			)
+	</insert>
+	<insert id="insertHspPatnt" parameterType="PatntStatVO">
+		INSERT INTO PATNT_STAT (
+		    STAT_CODE
+		    , REC_CODE
+		    , FCLTY_CODE
+		    , STAT_TIME
+		) VALUES (
+		    '011'
+		  , #{recCode,jdbcType=VARCHAR}
+		  , 'J'
+		  , SYSDATE
+		)
+	</insert>
+</mapper>

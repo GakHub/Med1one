@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.employee.dao.EmployeeDao">
+
+	<select id="selectDeptList"
+		resultType="kr.or.ddit.employee.vo.DepartmentVO">
+		SELECT DEPT_NM
+		FROM DEPARTMENT
+	</select>
+
+	<select id="selectDeptTreeList"
+		resultType="kr.or.ddit.employee.vo.EmployeeVO" parameterType="string">
+		SELECT
+		EMP_NO,
+		DEPT_NM "dept.deptNm",
+		CASE
+		WHEN SUBSTR(EMP_NO, 1, 1) = 'N' AND NOT SUBSTR(EMP_NO, 2, 1) = 'N' THEN
+		EMP_NM || ' (간호사)'
+		ELSE EMP_NM
+		END AS EMP_NM,
+		EMP_TELNO
+		FROM DEPARTMENT INNER JOIN EMPLOYEE ON (DEPARTMENT.DEPT_CODE =
+		EMPLOYEE.DEPT_CODE)
+		<where>
+			<choose>
+				<when test='empNo.substring(1,1) eq "N".toString()'>
+					AND (SUBSTR(EMP_NO, 1 ,1) = 'N') AND (SUBSTR(EMP_NO, 2, 2) =
+					#{deptCode})
+				</when>
+				<when test='empNo.startsWith("D")'>
+					AND (SUBSTR(EMP_NO, 1 ,1) = 'D') AND (SUBSTR(EMP_NO, 2, 2) =
+					#{deptCode})
+				</when>
+				<otherwise>
+					AND SUBSTR(EMP_NO, 2 ,2) = #{deptCode}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+
+	
+	<resultMap type="EmployeeVO" id="empMap" autoMapping="true">
+	 <id property="empNo" column="EMP_NO" />
+	 	<association property="dept" javaType="DepartmentVO" autoMapping="true" />
+	 	<association property="doctrList" javaType="DoctorDtlVO" autoMapping="true"/>
+	 	<association property="nurseList" javaType="NurseDtlVO" autoMapping="true" />
+	 	<association property="techList" javaType="TechnicianVO" autoMapping="true"/>
+	 	<association property="atchSn" javaType="AtchFileDtlVO" autoMapping="true"/>
+	</resultMap>
+	<select id="selectEmployee" parameterType="string" resultMap="empMap">
+		SELECT
+		     EMP.EMP_NO, EMP.EMP_NM, EMP.EMP_PW, SUBSTR( EMP.EMP_IDENTINO, 1, 8) || '******' "empIdentino", EMP.EMP_TELNO, EMP.EMP_EMAIL, EMP.EMP_ZIPCODE
+			,EMP.EMP_ADDR1, EMP.EMP_ADDR2, EMP.JNCMP_YMD,EMP.ATCH_SN, EMP.DEPT_CODE, DEPT.DEPT_NM, EMP.EMP_OTP
+			<if test="empNo neq null and empNo.length gt 0">
+				<choose>
+		        <when test="empNo.startsWith('D')">
+		           , DDTL.DOCTR_NUM
+				FROM EMPLOYEE EMP
+					INNER JOIN DEPARTMENT DEPT ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+					LEFT OUTER JOIN DOCTOR_DTL DDTL ON EMP.EMP_NO = DDTL.DOC_EMP_NO
+		        </when>
+		        <when test="empNo.startsWith('N')">
+		           , NDTL.NURS_NUM
+				FROM EMPLOYEE EMP
+					INNER JOIN DEPARTMENT DEPT ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+					LEFT OUTER JOIN NURSE_DTL NDTL ON EMP.EMP_NO = NDTL.EMP_NO
+		        </when>
+		        <when test="empNo.startsWith('T')">
+		           , TDTL.TECH_NUM
+				FROM EMPLOYEE EMP
+					INNER JOIN DEPARTMENT DEPT ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+					LEFT OUTER JOIN TECHNICIAN TDTL ON EMP.EMP_NO = TDTL.TEC_EMP_NO
+		        </when>
+		        <otherwise>
+		        FROM EMPLOYEE EMP
+		        	INNER JOIN DEPARTMENT DEPT ON EMP.DEPT_CODE = DEPT.DEPT_CODE
+		        </otherwise>
+		        </choose>
+			</if>
+		WHERE EMP.EMP_NO = #{empNo}
+	</select>
+	
+	<!-- otp key 추가 -->
+	<select id="selectEmpForAuth" parameterType="String" resultType="EmployeeVO">
+		SELECT
+    		EMP_NO ,DEPT_CODE ,EMP_NM ,EMP_PW
+   			,EMP_TELNO ,EMP_EMAIL ,EMP_ADDR1
+    		,EMP_ADDR2 ,EMP_ZIPCODE ,APRV_YN, EMP_ROLE ,ATCH_SN, EMP_OTP
+		FROM EMPLOYEE
+		WHERE EMP_NO = #{empNo}
+	</select>
+	
+	
+	<update id="updateEmployee" parameterType="EmployeeVO">
+		UPDATE EMPLOYEE SET
+			 EMP_TELNO =#{empTelno, jdbcType=VARCHAR}
+			, EMP_EMAIL =#{empEmail, jdbcType=VARCHAR}
+			, EMP_ADDR1 =#{empAddr1, jdbcType=VARCHAR}
+			, EMP_ADDR2 =#{empAddr2, jdbcType=VARCHAR}
+			, EMP_ZIPCODE =#{empZipcode, jdbcType=VARCHAR}
+		WHERE EMP_NO = #{empNo}
+	</update>
+	
+	
+	<!--관리자 통계자료 출력용 쿼리 1. 부서별 직원수  -->
+	<select id="selectDeptEmp">
+		SELECT
+			ROW_NUMBER() OVER (ORDER BY
+			CASE
+			WHEN DEPARTMENT.DEPT_NM LIKE '%내과%' THEN 0
+			WHEN DEPARTMENT.DEPT_NM LIKE '%간호%' THEN 2
+			ELSE 1
+			END,
+			DEPARTMENT.DEPT_NM
+			) AS RNUM,
+			DEPARTMENT.DEPT_NM AS DEPTNM,
+			COUNT(*) AS EMPCOUNT
+		FROM EMPLOYEE
+			JOIN DEPARTMENT ON (EMPLOYEE.DEPT_CODE = DEPARTMENT.DEPT_CODE)
+			WHERE DEPARTMENT.DEPT_NM NOT IN ('관리과', '병원장', '원무과', '총무과')
+		GROUP BY DEPARTMENT.DEPT_NM
+	</select>
+	
+	<!--관리자 통계자료 출력용 쿼리 2. 직군별 직원수  -->
+	<select id="selectJobEmp">
+	SELECT
+	CASE
+		WHEN EMP_NO LIKE 'N%' THEN '간호사'
+		WHEN EMP_NO LIKE 'D%' THEN '의사'
+		ELSE '행정직'
+	END AS empType,
+	
+	COUNT(*) AS jobEmpCount
+	FROM
+		EMPLOYEE
+	GROUP BY
+	CASE
+		WHEN EMP_NO LIKE 'N%' THEN '간호사'
+		WHEN EMP_NO LIKE 'D%' THEN '의사'
+		ELSE '행정직'
+	END
+	
+	ORDER BY
+		empType
+	</select>
+	
+	
+	<select id="atchSearch" resultType="AtchFileDtlVO">
+		SELECT E.EMP_NO, E.EMP_NM, E.ATCH_SN, D.ATCH_FILE_ID, D.ORIGNL_FILE_NM, D.STRE_FILE_NM
+        FROM EMPLOYEE E
+        INNER JOIN ATCH_FILE_DTL D ON(E.ATCH_SN = D.ATCH_FILE_ID)
+        WHERE E.EMP_NO = #{empNo}
+	
+	</select>
+	
+	<select id="selectEmpList" resultType="EmployeeVO">
+	SELECT
+		ROWNUM AS RNUM
+		, E.EMP_NO
+		, D.DEPT_NM
+		, E.EMP_NM
+		, E.EMP_TELNO
+		 , CASE
+		WHEN SUBSTR(E.EMP_IDENTINO, 1, 1) IN ('0', '1', '2') THEN
+		'20' || SUBSTR(E.EMP_IDENTINO, 1, 2) || '-' || SUBSTR(E.EMP_IDENTINO,
+		3, 2) || '-' || SUBSTR(E.EMP_IDENTINO, 5, 2)
+		ELSE
+		'19' || SUBSTR(E.EMP_IDENTINO, 1, 2) || '-' || SUBSTR(E.EMP_IDENTINO,
+		3, 2) || '-' || SUBSTR(E.EMP_IDENTINO, 5, 2)
+		END AS EMPBIRTH
+		, E.EMP_EMAIL
+		, E.EMP_ADDR1
+		, E.EMP_ADDR2
+		, E.EMP_ZIPCODE
+		, SUBSTR( E.EMP_IDENTINO, 1, 8) || '******' "employee.empIdentino"
+		, SUBSTR( E.JNCMP_YMD, 1, 4) || '-'||  SUBSTR( E.JNCMP_YMD, 5, 2)||'-'|| SUBSTR( E.JNCMP_YMD, 7, 2)
+		  AS JNCMPYMD
+		, E.APRV_YN
+		, E.EMP_ROLE
+	FROM
+		EMPLOYEE E
+	INNER JOIN
+		DEPARTMENT D ON (E.DEPT_CODE = D.DEPT_CODE)
+	ORDER BY
+		E.DEPT_CODE
+	
+	</select>
+	
+	<update id="updateOtpNum" parameterType="map">
+		UPDATE employee
+		SET
+		    emp_otp = #{empOtp}
+		WHERE
+		        emp_no = #{empNo}
+	</update>
+	
+	
+</mapper>

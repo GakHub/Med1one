@@ -1,0 +1,35 @@
+package kr.or.ddit.medical.nurse.vo;
+
+import java.time.LocalDate;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 예약 VO
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "resveNum")
+public class ReservationVO {
+	
+	//10분단위로 예약
+	
+	@NotBlank
+	private String resveNum;		//예약번호
+	@NotBlank
+	private String resveDate;		//예약일자 ex)20230801
+	@NotBlank
+	private String resveTime;		//예약시각 ex)0910
+	@NotBlank
+	private String resveEndtime;	//예약종료시각 ex)0920
+	@NotBlank
+	private LocalDate resveRegist;	//등록일자
+	@NotBlank
+	private String patntCode;		//환자코드
+	@NotBlank
+	private String fcltyCode;		//시설코드
+}

@@ -1,0 +1,30 @@
+package kr.or.ddit.Free.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/free/")
+public class FreeUpdateController {
+
+	@GetMapping("freeUpdate.do")
+	public String freeUpdate() {
+		return "free/freeForm";
+	}
+	
+	@GetMapping("freeDelete.do")
+	public String freeDelete() {
+		return "free/freeForm";
+	}
+	
+	@GetMapping("commentUpdate.do")
+	public String commentUpdate() {
+		return "";
+	}
+	
+	@GetMapping("commentDelete.do")
+	public String commentDelete() {
+		return "";
+	}
+}

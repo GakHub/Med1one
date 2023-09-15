@@ -1,0 +1,58 @@
+package kr.or.ddit.medical.clinc.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/clinic/")
+public class ClinicOrderController {
+
+	// 진료 - 상병 검색
+	@GetMapping("diseaseSearch.do")
+	public String ClinicOrderController() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 약품 리스트 조회 
+	@GetMapping("medicineList.do")
+	public String medicineList() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 약품 검색 
+	@GetMapping("medicineSearch.do")
+	public String medicineSearch() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 약품 즐찾리스트
+	@GetMapping("popularMedicineList.do")
+	public String popularMedicineList() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 처방오더
+	@GetMapping("presecriptionOrder.do")
+	public String presecriptionOrder() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 -검사리스트 조회
+	@GetMapping("inspectionList.do")
+	public String inspectionList() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 -검사오더 입력
+	@GetMapping("inspectionOrder.do")
+	public String inspectionOrder() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 입원오더 입력
+	@GetMapping("hosptialOrder.do")
+	public String hosptialOrder() {
+		return "clinic/clinic";
+	}
+}

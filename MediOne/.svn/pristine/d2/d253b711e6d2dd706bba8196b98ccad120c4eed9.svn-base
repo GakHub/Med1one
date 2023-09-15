@@ -1,0 +1,421 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>:: MED1ONE:: 약품관리</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon"> <!-- Favicon-->
+    <!-- plugin css file  -->
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+    <!-- project css file  -->
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/css/ihealth.style.min.css">
+</head>
+
+<style type="text/css">
+.custom-input {
+  width: 100px; /* 원하는 길이로 설정 */
+}
+</style>
+<body>
+
+<div id="ihealth-layout" class="theme-tradewind">
+
+
+    <!-- main body area -->
+    <div class="main px-lg-4 px-md-4">
+        <!-- Body: Body -->       
+        <div class="body d-flex py-lg-3 py-md-2">
+        
+            <div class="container-xxl"> <!-- 컨테이너 -->
+            
+            <!--Row start  -->
+                <div class="row align-items-center">
+                    <div class="border-0 mb-4">
+                        <div class="card-header py-3 no-bg bg-transparent d-flex align-items-center px-0 justify-content-between border-bottom flex-wrap">
+                            <h3 class="fw-bold mb-0">약품관리</h3>
+                            <div class="col-auto d-flex w-sm-100">
+                                <button type="button" class="btn btn-user btn-set-task w-sm-100" data-bs-toggle="modal" data-bs-target="#depadd"><i class="icofont-plus-circle me-2 fs-6"></i>신규등록</button>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Row end  -->
+                
+                
+                   <!--Row start  -->
+                <div class="row clearfix g-3">
+                  <div class="col-sm-12">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <table id="myProjectTable" class="table table-hover align-middle mb-0" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>연번</th>
+                                            <th>약품코드</th>
+                                            <th>효능코드</th> 
+                                            <th>약품명</th> 
+                                            <th>수량</th> 
+                                            <th>단가</th> 
+                                            <th>제조사</th>   
+                                            <th>재고관리</th>  
+                                            <th>발주</th>  
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                           <td><span class="fw-bold">1</span></td>
+                                           <td><span class="fw-bold ms-1">A001</span></td>
+                                           <td><span class="fw-bold ms-1">301</span></td>
+                                           <td>베타정</td>
+                                           <td>100</td>
+                                           <td>1,000</td>
+                                           <td>삼정제약</td>
+                                           <td>
+                                                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#depedit"><i class="icofont-edit text-success"></i></button>
+                                                </div>
+                                           </td>
+                                             <td>
+                                                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                                    <button type="button" class="btn btn-outline-secondary deleterow"><i class="icofont-ui-cart text-success"></i></button>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                           <tr>
+                                           <td><span class="fw-bold">2</span></td>
+                                           <td><span class="fw-bold ms-1">A001</span></td>
+                                           <td><span class="fw-bold ms-1">301</span></td>
+                                           <td>베타정</td>
+                                           <td>100</td>
+                                           <td>1,000</td>
+                                           <td>삼정제약</td>
+                                           <td>
+                                                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#depedit"><i class="icofont-edit text-success"></i></button>
+                                                </div>
+                                           </td>
+                                             <td>
+                                                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                                    <button type="button" class="btn btn-outline-secondary deleterow"><i class="icofont-ui-cart text-success"></i></button>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                           <tr>
+                                           <td><span class="fw-bold">3</span></td>
+                                           <td><span class="fw-bold ms-1">A001</span></td>
+                                           <td><span class="fw-bold ms-1">301</span></td>
+                                           <td>베타정</td>
+                                           <td>100</td>
+                                           <td>1,000</td>
+                                           <td>삼정제약</td>
+                                           <td>
+                                                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#depedit"><i class="icofont-edit text-success"></i></button>
+                                                </div>
+                                           </td>
+                                             <td>
+                                                <div class="btn-group" role="group" aria-label="Basic outlined example">
+                                                    <button type="button" class="btn btn-outline-secondary deleterow"><i class="icofont-ui-cart text-success"></i></button>
+                                                </div>
+                                           </td>
+                                        </tr>
+                                         
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                  </div>
+                </div><!-- 조회창 Row End -->
+                
+                <br> <br> <br>
+                
+                  <!--발주창 Row start  -->
+                <div class="row align-items-center">
+                    <div class="border-0 mb-4">
+                        <div class="card-header py-3 no-bg bg-transparent d-flex align-items-center px-0 justify-content-between border-bottom flex-wrap">
+                            <h3 class="fw-bold mb-0">약품발주</h3>
+                            <div class="col-auto d-flex w-sm-100">
+                                <button type="button" class="btn btn-user btn-set-task w-sm-100" data-bs-toggle="modal" data-bs-target="#depadd2"><i class="icofont-plus-circle me-2 fs-6"></i>발주하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Row end  -->
+                
+                
+                   <!--Row start  -->
+                <div class="row clearfix g-3">
+                  <div class="col-sm-12">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <table id="myProjectTable2" class="table table-hover align-middle mb-0" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>연번</th>
+                                            <th>약품코드</th>
+                                            <th>효능코드</th> 
+                                            <th>약품명</th> 
+                                            <th>주문수량</th> 
+                                            <th>단가</th> 
+                                            <th>제조사</th>   
+                                            <th>총금액</th>  
+                                            <th>담당자</th>  
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                           <tr>
+                                           <td><span class="fw-bold">1</span></td>
+                                           <td><span class="fw-bold ms-1">A001</span></td>
+                                           <td><span class="fw-bold ms-1">301</span></td>
+                                           <td>베타정</td>
+                                           <td>
+                                           		<div class="mb-3">
+                                         		 <input type="number" class="form-control custom-input" id="ps-name" placeholder="10">
+                                           		</div>
+                                           	</td>
+                                           <td>1,000</td>
+                                           <td>삼정제약</td>
+                                           <td>
+                                           		<div class="mb-3">
+                                         		 <input type="number" class="form-control custom-input" id="ps-name" placeholder="10,000">
+                                           		</div>
+                                           </td>
+                                            <td>
+                                                 <div class="mb-3">
+                                           		 <input type="text" class="form-control custom-input" id="ps-email" placeholder="황소희">
+                                       			</div>
+                                           </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                  </div>
+                </div><!-- 발주 Row End -->
+                
+            </div><!--조회/발주 컨테이너  -->
+            
+        </div><!--바디  -->
+       
+       
+        <!-- 약품 신규등록-->
+        <div class="modal fade" id="depadd" tabindex="-1"  aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable">
+            <div class="modal-content">
+            
+                <div class="modal-header">
+                    <h5 class="modal-title  fw-bold" id="depaddLabel">신규등록</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="deadline-form">
+                        <form>
+                            <div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">약품명</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">약품코드</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">효능코드</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">현재수량</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">단가</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">제조사</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                        </form>
+                        
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-primary">등록</button>
+                </div>
+            </div>
+            </div>
+        </div>
+        <!--약품신규등록 end  -->
+
+        <!-- 약품정보수정-->
+        <div class="modal fade" id="depedit" tabindex="-1"  aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title  fw-bold" id="depeditLabel">수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+             	   <div class="modal-body">
+                		<form>
+                            <div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">약품명</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">약품코드</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">효능코드</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">현재수량</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">단가</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">제조사</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                        </form>
+                    </div>
+              
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                </div>
+                  </div> <!--modalcontent end  -->
+            </div>
+        </div>
+            
+            <!--약품 수정 end  -->
+            
+            
+               <!-- 약품 발주하기-->
+        <div class="modal fade" id="depadd2" tabindex="-1"  aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable">
+            <div class="modal-content">
+            
+                <div class="modal-header">
+                    <h5 class="modal-title  fw-bold" id="depaddLabel">발주하기</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="deadline-form">
+                        <form>
+                            <div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">약품명</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">약품코드</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">효능코드</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">주문수량</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">단가</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">총금액</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                    		<div class="mb-3">
+                      	  		<label for="exampleFormControlInput1111" class="form-label">담당자</label>
+                       			<input type="text" class="form-control" id="exampleFormControlInput1111">
+                    		</div>
+                        </form>
+                        
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-primary">발주요청</button>
+                </div>
+            </div>
+            </div>
+        </div>
+        <!--약품발주하기 end  -->
+            
+            
+            
+            
+        </div> <!--메인바디  -->
+</div><!-- 클래스 -->
+
+ 
+ 
+ 
+ 
+<!-- Jquery Core Js -->
+<script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/libscripts.bundle.js"></script>
+
+<!-- Plugin Js-->
+<script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+
+<!-- Jquery Page Js -->
+<script src="<%=request.getContextPath() %>/resources//js/template.js"></script>
+<script>
+    // project data table
+    $(document).ready(function() {
+        $('#myProjectTable')
+        .addClass( 'nowrap' )
+        .dataTable( {
+            responsive: true,
+            columnDefs: [
+                { targets: [-1, -3], className: 'dt-body-right' }
+            ]
+        });
+        $('.deleterow').on('click',function(){
+        var tablename = $(this).closest('table').DataTable();  
+        tablename
+            .row( $(this)
+            .parents('tr') )
+            .remove()
+            .draw();
+
+        } );
+    });
+    
+    
+ // project data table2
+    $(document).ready(function() {
+        $('#myProjectTable2')
+        .addClass( 'nowrap' )
+        .dataTable( {
+            responsive: true,
+            columnDefs: [
+                { targets: [-1, -3], className: 'dt-body-right' }
+            ]
+        });
+        $('.deleterow').on('click',function(){
+        var tablename = $(this).closest('table').DataTable();  
+        tablename
+            .row( $(this)
+            .parents('tr') )
+            .remove()
+            .draw();
+
+        } );
+    });
+    
+</script>
+</body>
+</html>

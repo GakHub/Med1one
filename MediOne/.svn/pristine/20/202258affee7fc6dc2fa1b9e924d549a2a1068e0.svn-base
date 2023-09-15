@@ -1,0 +1,14 @@
+package kr.or.ddit.employee.fixtures.service;
+
+import java.util.List;
+
+import kr.or.ddit.employee.fixtures.vo.FixturesDTLVO;
+import kr.or.ddit.employee.fixtures.vo.FixturesVO;
+
+public interface FixturesService {
+	public List<FixturesVO> retrieveFixList();
+	
+	public List<FixturesDTLVO> retrieveFixDtlList();
+	
+	public List<FixturesVO> retrieveFixwhereDtlList(String fixtureCode);
+}

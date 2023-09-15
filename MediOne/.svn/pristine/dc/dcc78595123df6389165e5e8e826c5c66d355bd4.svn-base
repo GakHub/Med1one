@@ -1,0 +1,173 @@
+package kr.or.ddit.medical.hospital.controller;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.medical.clinc.vo.InspRsltVO;
+import kr.or.ddit.medical.hospital.service.HospitalService;
+import kr.or.ddit.medical.hospital.vo.DietRcdrVO;
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.hospital.vo.IOVO;
+import kr.or.ddit.medical.hospital.vo.SckbdVO;
+import kr.or.ddit.medical.hospital.vo.VitalVO;
+
+@Controller
+@RequestMapping("/hospital/")
+public class HospitalInsertController {
+	
+	@Inject
+	private HospitalService service;
+	
+	// 병동-환자관리 식이 입력
+	@PostMapping(value="dietInsert.do" , produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean dietInsert(
+			@RequestBody DietRcdrVO diet
+			, Model model
+	) {
+			boolean dietRC =service.createDietRecord(diet);
+			model.addAttribute("diet", diet);
+			return dietRC;
+	}
+	
+	//병동 - 환자관리 식이기록 출력
+	@GetMapping(value="dietList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<DietRcdrVO> dietRC(@RequestParam("hsptlzCode") String hsptlzCode) {
+		List<DietRcdrVO> dietDtl = service.retrieveDietDtl(hsptlzCode);
+		return dietDtl;
+	}
+	
+	//병동-환자관리 식이기록 삭제
+	@GetMapping(value="deleteDiet.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean delDiet(@RequestParam("drcdrCode") String drcdrCode) {
+		return service.removeDiet(drcdrCode);
+	}
+	
+	//병동 - 환자관리 바이탈 출력
+	@GetMapping(value="vitalList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<VitalVO> vitalRC(@RequestParam("hsptlzCode") String hsptlzCode) {
+		List<VitalVO> vitalDtl = service.retrieveVitalDtl(hsptlzCode);
+		return vitalDtl;
+	}
+	
+	// 병동-환자관리 바이탈 입력
+	@PostMapping(value="vitalInsert.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean vitalView(
+		@RequestBody VitalVO vital
+		, Model model
+	){
+		boolean vitalRC = service.createVital(vital);
+		model.addAttribute("vital", vital);
+		return vitalRC;
+	}
+	//병동-환자관리 바이탈 삭제
+	@GetMapping(value="deleteVital.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean delVital(@RequestParam("vtCode") String vtCode) {
+		return service.removeVital(vtCode);
+	}
+	
+	//병동-환자관리 IO출력
+	@GetMapping(value="ioList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<IOVO> ioRC(@RequestParam("hsptlzCode") String hsptlzCode){
+		List<IOVO> ioDtl = service.retrieveIO(hsptlzCode);
+		return ioDtl;
+	}
+	
+	// 병동-환자관리 IO 입력
+	@PostMapping(value="IOInsert.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean IOInsert(
+		@RequestBody IOVO io
+		, Model model
+	) {
+		boolean ioRC = service.createIO(io);
+		model.addAttribute("io", io);
+		return ioRC;
+	}
+	
+	//병동-환자관리 IO 삭제
+	@GetMapping(value="deleteIO.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean delIO(@RequestParam("ioCode") String ioCode) {
+		return service.removeIO(ioCode);
+	}
+	
+	//병동-환자관리 검사기록 조회
+	@GetMapping(value="inspRsltList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<InspRsltVO> inspRC(@RequestParam("recCode") String recCode){
+		List<InspRsltVO> inspDtl = service.retrieveInspRslt(recCode);
+		return inspDtl;
+	}
+	
+	//입원대기 환자 입원처리(병동, 병실 배정)
+	@GetMapping(value="hsplzIn.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean hsptlzIn(
+		@RequestParam("recCode") String recCode
+		, @RequestParam("hsptlzTotal") int hsptlzTotal
+		, @RequestParam("docEmpNo") String docEmpNo
+		, @RequestParam("patntCode") String patntCode
+		, @RequestParam("sckbdNo") int sckbdNo
+		, @RequestParam("sckbdRo") String sckbdRo
+		, @RequestParam("hspodCode") String hspodCode
+	) {
+		HospitalizationVO hsptlz = new HospitalizationVO();
+		hsptlz.setRecCode(recCode);
+		hsptlz.setHsptlzTotal(hsptlzTotal);
+		hsptlz.setSckbdNo(sckbdNo);
+		hsptlz.setSckbdRo(sckbdRo);
+		hsptlz.setDocEmpNo(docEmpNo);
+		hsptlz.setPatntCode(patntCode);
+		hsptlz.setHspodCode(hspodCode);
+		
+		SckbdVO sckbd = new SckbdVO();
+		sckbd.setSckbdNo(sckbdNo);
+		sckbd.setSckbdRo(sckbdRo);
+		
+		boolean hspIn = service.createHsptlzIn(hsptlz);
+		boolean patntStat = service.createHspPatnt(recCode);
+		boolean sckbdStat = service.modifySckBD(sckbd);
+		
+		return (hspIn==true) && (patntStat==true) && (sckbdStat==true);
+		
+	}
+	
+	//퇴원처리
+		@GetMapping(value="hospitalOut.do", produces = MediaType.APPLICATION_JSON_VALUE)
+		@ResponseBody
+		public boolean hospitalOut(@RequestParam("hsptlzCode") String hsptlzCode
+									,@RequestParam("recCode") String recCode
+									,@RequestParam("sckbdRo") String sckbdRo
+									,@RequestParam("sckbdNo") int sckbdNo) {
+			boolean stat = service.createRecieveStat(recCode);
+			boolean hspOut = service.modifyHsptlzOutDate(hsptlzCode);
+			boolean skcbd = service.modifySckbdStatY(sckbdRo, sckbdNo);
+			
+			boolean success = false;
+			
+			if((stat==true)&&(hspOut==true)&&(skcbd==true)) {
+				success = true;
+			}
+			return success;
+		}
+	
+	
+}

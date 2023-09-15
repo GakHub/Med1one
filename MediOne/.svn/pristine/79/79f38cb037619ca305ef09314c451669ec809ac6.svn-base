@@ -1,0 +1,484 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<style>
+.top-color {
+  border-top: 3px solid #6aab9c; 
+}
+.swal2-title{
+	font-size: 1.5em;
+}
+
+
+#overflow::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+/* 민트색 버튼 스타일 */
+.mint-btn {
+	/* 	margin-left:10px; */
+	display: inline-block;
+	/*     font-weight: 400; */
+	line-height: 1.5;
+	text-align: center;
+	vertical-align: middle;
+	cursor: pointer;
+	color: #fff; /* 텍스트 색상 */
+	background-color: #6aab9c; /* 배경색 */
+	border-color: #6aab9c; /* 테두리 색상 */
+	user-select: none;
+	padding: 0.375rem 0.75rem;
+	font-size: 1.0em;
+	border-radius: 0.25rem;
+	float: right; /* 버튼을 오른쪽으로 부유(floating)시킴 */
+}
+
+/* 민트색 버튼 호버 효과 */
+.mint-btn:hover {
+	background-color: #5fa192; /* 호버시 배경색 변경 */
+	border-color: #5fa192; /* 호버시 테두리 색상 변경 */
+	/* 다른 호버 효과 (예: 텍스트 색상 변경) 추가 가능 */
+}
+
+/* 민트색 버튼 클릭 효과 */
+.mint-btn:active {
+	background-color: #5fa192; /* 클릭시 배경색 변경 */
+	border-color: #5fa192; /* 클릭시 테두리 색상 변경 */
+}
+
+</style>
+<!-- 입원대기환자 조회 -->
+<div style="display: flex; justify-content: space-between; margin-top:-20px;">
+	<button class="mint-btn" type="button" id="agreeBtn" style="margin-right: 10px;">입퇴원 확인서</button>
+</div>
+<div class="py-4" style=" height:90vh; margin-top:-20px;"> 
+<div class="mb-4 col-md-4 col-lg-6" style="margin-right: 1%; float: left;">
+	<div class="card top-color" style="font-size: xx-small; height: 345px;">
+		<div class="card-header py-3 bg-transparent border-bottom-0 d-flex align-items-center" style="margin-bottom: -17px;">
+  <h6 class="bi bi-chevron-right" style="font-weight: 700; font-size: 16px; color: #173b6c; margin-right: 10px; ">입원대기환자</h6>
+  <span class="fs-6" style="margin-left:53%">성 명 : </span>
+  <input type="search" class="col-form-label-sm" id="searchForm" list="inWaitList" name="waitPatnt" placeholder="환자 검색" autocomplete="off" style="width: auto; margin-top: 10px; margin-left: 15px;" />
+  <datalist id="inWaitList"></datalist>
+</div>
+		<div class="card-body">
+			<table id="myDataTable" class="table table-hover align-middle mb-0">
+							<thead>
+								<tr>
+									<th></th>
+									<th>성 명</th>
+									<th>주민번호</th>
+									<th>재원일</th>
+									<th>병동</th>
+									<th></th>
+									<th>입원</th>
+								</tr>
+							</thead>
+							<tbody id="waitPatnt"></tbody>
+                           </table>
+				</div> <!--cardbody end  -->
+	</div><!--card end  -->
+</div><!-- md-3 -->
+
+<!-- 입원중 환자 list -->
+<div class="mb-4 col-md-4 col-lg-6" style="margin-right: 1%; display: contents;">
+	<div class="card top-color" style="font-size: xx-small; height: 345px;">
+		<div class="card-header py-3 bg-transparent border-bottom-0 d-flex align-items-center justify-content-between" style="margin-top: 9px;">
+		  <h6 class="bi bi-chevron-right" style="font-weight: 700; font-size: 16px; color: #173b6c;">입원 환자</h6>
+			<h6><a id="patntCount" style="float:right; font-size:15px;"></a></h6>
+		</div>
+		<div class="card-body" style=" height: 72px; ">
+			<table id="myDataTable" class="table table-hover align-middle mb-0">
+					<thead>
+						<tr style="border-bottom: 1px solid black;">
+							<th>식별코드</th>
+							<th>성명</th>
+							<th>호실</th>
+							<th>침상번호</th>
+							<th>입원날짜</th>
+							<th>퇴원예정날짜</th>
+						</tr>
+					</thead>
+			</table>
+		</div> <!--cardbody end  -->
+		<div id="overflow"
+			style="height: 276px; width: 100%; overflow-y: scroll;">
+			<table class="table table-hover align-middle mb-0">
+		
+			<tbody id="ingPatnt"></tbody>
+			</table>
+		</div>
+		
+		
+	</div><!--card end  -->
+</div><!-- md-3 -->
+
+<!-- 병동관리 -->
+<div class="col-md-12 col-lg-6" style="width : 100%; margin-right: 30px; display: flex;">
+       <div class="card mb-3 top-color">
+          <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0" style="margin-bottom: -25px;">
+              <h6 class="bi bi-chevron-right" style="font-weight: 700; font-size: 16px; color: #173b6c;">병동 조회</h6>
+              <select id="ward" class="form-select mb-0" style="width: fit-content; margin-left: 10px;">
+					<option value="4room" id="4room"></option>
+						<option value="6room" id="6room"></option>
+						<option value="8room" id="8room"></option>
+				</select>	
+          </div>
+				
+          
+      <div class="card-body" id="wardList">
+              <div class="room_book">
+                  <div id="wardRoom" class="row row-cols-2 row-cols-sm-4 row-cols-md-6 row-cols-lg-6 g-3" >
+         </div>
+        </div>
+      </div>
+  	</div>
+</div>
+</div>
+<!--병동관리 끝-->
+
+<!-- Plugin Js-->
+<script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+
+<!-- Jquery Page Js -->
+<script src="<%=request.getContextPath() %>/resources/js/template.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+
+<script>
+//입원중인 환자 전체 출력
+function ingPatnt(){
+	$.getJSON("<c:url value='ingPatntList.do'/>",{code:'011'}).done(function(resp){
+		let tbody = $('#ingPatnt')
+		tbody.empty();
+		let cnt=0;
+		
+		$(resp).each(function(index, list){
+			let tr = $("<tr>").append(
+					$("<td>").html(list.patntCode)
+					,$("<td>").html(list.patnt.patntNm)
+					,$("<td>").html(list.sckbdRo)
+					,$("<td>").html("bed"+list.sckbdNo)
+					,$("<td>").html(list.hsptlzIn)
+					,$("<td>").html(list.hsptlzOut)
+			);
+			tbody.append(tr);
+			cnt++;
+		});
+		var iconRed = $('<i>').addClass('fas fa-circle fa-xs').css('color', '#EB4646');
+		$("#patntCount").html(iconRed.prop('outerHTML') + "입원환자 " + cnt + "명");
+	});
+}
+
+//입원대기중인 환자 datalist 출력
+function inPatnt(){
+	$.getJSON("<c:url value='waitDataList.do'/>",{code:"010"}).done(function(resp){
+		var datalist = $('#inWaitList');
+		datalist.empty();
+		
+		$(resp).each(function(index,list){
+			var optionValue = list.patnt.patntNm + " " + list.patnt.patntIdentino;
+			var option = $("<option>").attr("value",optionValue);
+			datalist.append(option);
+		});
+	});
+}
+
+//입원 대기환자 출력
+//대기환자 datalist 클릭 후 enter
+var recCode = '';
+var hsptlzTotal = '';
+var docEmpNo = '';
+var patntCode = '';
+var hspodCode = '';
+
+function searchWaitPatnt(){
+	var search = $('#searchForm').val();
+	var searchWord = search.split(' ')[0];
+	
+	$.getJSON("<c:url value='hospitalPatntSearch.do'/>"
+			,{word:searchWord
+				, code:"010"
+			}).done(function(resp){
+		let tbody = $("#waitPatnt")
+		tbody.empty();
+		
+		$(resp).each(function(index, list){
+			let tr = $("<tr>").append(
+					$("<td>").append(
+							$("<input>").addClass("HSPWaitPatnt").attr("id","patntChk").attr("type","checkbox").attr("name","chk")
+					)
+					,$("<td>").html(list.pres.clinic.recept.patnt.patntNm)
+					,$("<td>").html(list.pres.clinic.recept.patnt.patntIdentino)
+					,$("<td>").addClass("hspodTotal").html(list.hspodTotal)
+					,$("<td>").addClass("sckbd").html("병실 선택")
+					,$("<td>").html("")
+					,$("<td>").addClass("recCode").attr("style","display:none;").html(list.pres.clinic.recCode)
+					,$("<td>").addClass("docEmpNo").attr("style","display:none;").html(list.pres.clinic.docEmpNo)
+					,$("<td>").addClass("patntCode").attr("style","display:none;").html(list.pres.clinic.recept.patntCode)
+					,$("<td>").addClass("hspodCode").attr("style","display:none;").html(list.hspodCode)
+					,$("<td>").append(
+						$("<input>").addClass("btn btn-primary").attr("type","button").attr("value","입원").attr("name","hsptlzIn")
+					)
+			);
+			tbody.append(tr);
+		});
+			$(document).on("click", "input:checkbox[name='chk']", function(){
+				var trElement = $(this).closest('tr');
+				//전역변수에 저장할 데이터
+				recCode = trElement.find('.recCode').text();
+				hsptlzTotal = trElement.find('.hspodTotal').text();
+				docEmpNo = trElement.find('.docEmpNo').text();
+				patntCode = trElement.find('.patntCode').text();
+				hspodCode = trElement.find('.hspodCode').text();
+			});
+			
+	});
+}
+
+var sckbdRo = '';
+var sckbdNo = 0;
+
+var chkInB = '';
+
+var lastCheck = null;
+function selectBed(chk){
+	//한번 선택하면 disabled
+ 	$(document).on("change","input:checkbox[name^='No']", function(){
+ 		if($(chk).prop("checked")){
+	 		if($(this).prop("checked")){
+	 			// 이전에 선택한 체크박스(병실)가 있다면 선택 해제
+	            if (lastCheck !== null) {
+	            	lastCheck.prop("checked", false);
+	            	lastCheck.attr("disabled",false);
+	            	
+	            }
+	        	// 현재 선택한 체크박스를 lastSelectedCheckbox에 저장
+	            lastCheck = $(this);
+	            lastCheck.prop("checked", true);
+	 			$(this).attr("disabled",true);
+	 			
+	 			sckbdRo = $(this).parent('div').attr('id');
+	 			sckbdNo = $(this).siblings('label').find('span').attr('value');
+	 			
+	 			chkInB.html(sckbdRo+"호, bed"+sckbdNo);
+ 				
+ 			}
+	 		
+ 		}else if($(chk).prop("checked", false)){
+ 			Swal.fire('입원할 환자를 먼저 선택하세요.');
+ 		}else{
+ 			Swal.fire('입원할 환자를 먼저 선택하세요.');
+ 			if($(this).prop("checked")){
+ 				if (lastCheck !== null) {
+ 		        	lastCheck.prop("checked", false);
+ 		        }
+ 				$(this).prop("checked", false);
+ 		        return false;
+ 			}
+ 		}
+ 	});
+}
+
+//병동 선택(4인실, 6인실, 8인실)
+$(ward).on("change", function(event){
+	
+	var wardSelect = $(this).val();
+	
+	loadWardList(wardSelect);
+});
+
+//전체 병동 병실 list
+function loadWardList(wardSelect){
+	var wardRoom = wardSelect
+	var wardSelect = wardSelect.charAt(0);
+	
+	$.getJSON("<c:url value='/hospital/hospitalSearch.do'/>",{wardSelect:wardSelect}).done(function(resp){
+		let div=$("#wardRoom")
+		div.empty();
+
+		let dtlCnt = 0;
+    	var divContainer = null;
+    	
+		$(resp).each(function(index,dtl){
+			
+			let divH = $("<div>").addClass("card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0").attr("id",dtl.sckbdRo).append(
+						$("<h6>").addClass("mb-0 fw-bold ").text(dtl.sckbdRo+"호")
+					);
+			let div1 = 	$("<div>").append(
+							$("<div>").addClass("room col").attr("id",dtl.sckbdRo).append(
+								$("<input>").attr("type","checkbox").attr("id","No"+dtlCnt).attr("name","No"+dtlCnt)
+								,$("<label>").attr("for","No"+dtlCnt).append(
+									$("<i>").addClass("icofont-patient-bed fs-2")
+									,$("<span>").addClass("text-muted").text("bed"+dtl.sckbdNo).attr("value",dtl.sckbdNo)
+								)
+							)
+					).attr("style","float:left;");
+					
+			if (dtl.availableYm != "Y") { //사용 중인 병실 표시
+                div1.find("input:checkbox").attr("checked","checked").attr("disabled", true);
+            }
+			
+			if(dtlCnt%wardSelect == 0){
+				divContainer = $("<div>").addClass("sward-container");
+				divContainer.append(divH,div1);
+				div.append(divContainer);
+					
+			} else{
+				divContainer.append(div1);
+			}
+			 dtlCnt++;
+		});
+	});
+}
+
+$(document).ready(function() {
+	
+	//호실 인원 카운트
+	 $.getJSON("<c:url value='/hospital/selectSckbdCount.do' />").done(function(resp){
+	    	let cnt4 = 0;
+	    	let cnt6 = 0;
+	    	let cnt8 = 0;
+	    	$(resp).each(function(idx, result){
+	    		let room = result.sckbdRo;
+	    		let avail = result.availableYm;
+	    		
+	    		if (room.startsWith("4")) {
+	    			cnt4++;
+	            } else if (room.startsWith("6")) {
+	            	cnt6++;
+	            } else if (room.startsWith("8")) {
+	            	cnt8++;
+	            }
+	    		
+	    		
+	    	});
+	    	 
+	    	$("#4room").text(cnt4.toString());
+	    	$("#6room").text(cnt6.toString());
+	    	$("#8room").text(cnt8.toString());
+    		
+	    	$("#4room").closest("option").html(`4인실 (\${cnt4}/40)`);
+            $("#6room").closest("option").html(`6인실 (\${cnt6}/30)`);
+            $("#8room").closest("option").html(`8인실 (\${cnt8}/40)`);
+	    });
+});
+
+//입원대기중 -> 입원
+function hsptlIn(){
+	$(document).on("click","input:button[name='hsptlzIn']", function(){
+		//병동 선택 칸 비어있으면 '병실을 선택하세요' alert
+		var trInBtn = $(this).closest('tr');
+	 	chkInB = trInBtn.find('.sckbd');
+	 	chkInput = trInBtn.find('.HSPWaitPatnt');
+	 	
+	 	if((chkInB.text().trim() === "병실 선택") && (chkInput.prop("checked") == true )){
+	 		Swal.fire('병실을 선택하세요.');
+	 	}else if(!chkInput.prop("checked")){
+	 		Swal.fire('입원할 환자를 먼저 선택하세요.');
+	 	}else{
+			Inalert();
+	 	}
+	});
+}
+
+//confirm함수
+function Inalert(){
+	Swal.fire({
+	 title: '입원 처리 하시겠습니까?',
+	 text: "",
+	 icon: 'warning',
+	 showCancelButton: true,
+	 confirmButtonColor: '#3085d6',
+	 cancelButtonColor: '#d33',
+	 confirmButtonText: '확인'
+	}).then((result) => {
+	  if (result.isConfirmed) {
+		  $.getJSON("<c:url value='/hospital/hsplzIn.do'/>",
+					{recCode:recCode
+					, hsptlzTotal:hsptlzTotal
+					, docEmpNo:docEmpNo
+					, patntCode:patntCode
+					, sckbdRo:sckbdRo
+					, sckbdNo:sckbdNo
+					, hspodCode:hspodCode}).done(function(resp){
+						$("#waitPatnt").empty();
+						inPatnt();
+						//입원중인 환자 전체 list
+						ingPatnt();
+					});
+		  Swal.fire(
+			      '입원 완료!',
+			    );
+			    $("#searchForm").val('');
+	  }
+	})
+}
+$(document).ready(function(){
+	//datalist에 출력되는 입원중인 환자 전체 목록
+	inPatnt();
+	
+	//입원 대기중인 환자 검색후 입원대기환자 box에 출력
+	$('#searchForm').on('keyup', function(event){
+		//bacspace 나 delete키 눌렀을때 tbody 초기화
+		if(event.keyCode == 8 || event.keyCode == 46 || $('#searchForm').val() == null || $('#searchForm').val() == ''){
+			$("#waitPatnt").empty();
+		}else{
+			searchWaitPatnt();
+		}
+		
+	});
+	
+	//입원중인 환자 전체 list
+	ingPatnt();
+	
+	//4인실, 6인실, 8인실 select
+	$(ward).trigger('change');
+	
+	//환자 선택 후 병실 선택하면 병동에 병실정보 삽입되는 함수
+	var trElement1 = '';
+	var chk = '';
+	$(document).on("change", "input:checkbox[name='chk']", function(){
+		
+		 // 선택된 chk 개수 확인
+		  var checkedCount = $("input:checkbox[name='chk']:checked").length;
+
+		  // 만약 선택된 chk가 2개 이상이면 알림창 띄우기
+		  if (checkedCount >= 2) {
+			  Swal.fire({
+					text: '한 명만 선택하세요.',  
+					icon: 'error'
+				});
+		    searchWaitPatnt();
+		  }else if(checkedCount = 0){
+			  searchWaitPatnt();
+		  }
+		
+		if($(this).is(":checked")){
+			chk = $(this);
+			trElement1 = $(this).closest('tr');
+	 		chkInB = trElement1.find('.sckbd');
+	 		selectBed(chk);
+		}else if(!$(this).prop("checked")){
+ 			chkInB.empty();
+ 			chkInB.html("병실 선택");
+		}
+ 	});
+	//입원처리
+	hsptlIn();
+ 	
+	
+})
+    // 메일 창
+    $("#agreeBtn").on("click", function() {
+    	
+    	let option = "width=840,height=900,location=no,status=no,scrollbars=yes, left = 600,top =50";
+    	let url = "<%= request.getContextPath() %>/agreePDF.jsp";
+    	popup = window.open(url, 'ajax', option);
+    	
+    	if (popup) {
+            popup.onload = function() {
+            };
+        }
+    })
+
+</script>

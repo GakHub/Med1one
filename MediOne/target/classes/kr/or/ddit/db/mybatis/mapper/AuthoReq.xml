@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.employee.admin.dao.AdminDao">
+	<sql id="searchFrag">
+		<where>
+			<if
+				test="simpleCondition neq null and simpleCondition.searchWord neq null and not simpleCondition.searchWord.isEmpty()">
+				<choose>
+					<when test="simpleCondition.searchType eq 'writer'">
+						INSTR(EMP_NM, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'title'">
+						INSTR(EMP_CODE, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'content'">
+						INSTR(DEPT_NM, #{simpleCondition.searchWord}) > 0
+					</when>
+					<otherwise>
+						INSTR(EMP_NM, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(EMP_CODE, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(DEPT_NM, #{simpleCondition.searchWord}) > 0
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</sql>
+	<select id="selectTotalRecord" resultType="long"
+		parameterType="PaginationInfo">
+		SELECT COUNT(*)
+		FROM AUTHORIZATION_REQ
+		<include refid="searchFrag" />
+	</select>
+
+	<resultMap type="AuthorizationReqVO" id="authComMap" autoMapping="true">
+		<id property="reqCode" column="REQ_CODE" />
+		<association property="emp" javaType="EmployeeVO" autoMapping="true" />
+		<association property="dept" javaType="DepartmentVO" autoMapping="true" />
+	</resultMap>
+	<select id="authComList" parameterType="string" resultMap="authComMap">
+		WITH EMPVIEWS AS (
+		SELECT A.*, EMP.APRV_YN, EMP.EMP_OTP
+		FROM authorization_req A INNER JOIN EMPLOYEE EMP ON (EMP.EMP_NO = A.EMP_NO)
+		)
+            SELECT
+	            REQ_CODE
+	            , EMP_NO
+	            , EMP_NM
+	            , SUBSTR(EMP_IDENTINO, 1, 8) || '******' "empIdentino"
+	            , REQ_STATUS
+	            , AUTHOREQ_DATE
+	            , ATCH_SN
+	            , DEPT.DEPT_CODE
+	            , DEPT.DEPT_NM
+	            , APRV_YN
+	            , REASON
+	            , EMP_OTP
+            FROM EMPVIEWS INNER JOIN DEPARTMENT DEPT ON(EMPVIEWS.DEPT_CODE = DEPT.DEPT_CODE)
+            	WHERE REQ_STATUS = 'D' AND APRV_YN IS NULL
+	            ORDER BY AUTHOREQ_DATE
+	</select>
+	
+	<resultMap type="AuthorizationReqVO" id="authAprvMap" autoMapping="true">
+		<id property="reqCode" column="REQ_CODE" />
+		<association property="emp" javaType="EmployeeVO" autoMapping="true" />
+		<association property="dept" javaType="DepartmentVO" autoMapping="true" />
+	</resultMap>
+	<select id="authAprvList" parameterType="string" resultMap="authAprvMap">
+		WITH EMPVIEWS AS (
+		SELECT A.*, EMP.APRV_YN, EMP.EMP_OTP
+		FROM authorization_req A INNER JOIN EMPLOYEE EMP ON (EMP.EMP_NO = A.EMP_NO)
+		)
+            SELECT
+	            REQ_CODE
+	            , EMP_NO
+	            , EMP_NM
+	            , SUBSTR(EMP_IDENTINO, 1, 8) || '******' "empIdentino"
+	            , REQ_STATUS
+	            , AUTHOREQ_DATE
+	            , ATCH_SN
+	            , DEPT.DEPT_CODE
+	            , DEPT.DEPT_NM
+	            , APRV_YN
+	            , REASON
+	            , EMP_OTP
+            FROM EMPVIEWS INNER JOIN DEPARTMENT DEPT ON(EMPVIEWS.DEPT_CODE = DEPT.DEPT_CODE)
+            	WHERE REQ_STATUS = 'N' AND APRV_YN IS NULL
+	            ORDER BY AUTHOREQ_DATE
+	</select>
+
+	<update id="authUpdate">
+		UPDATE AUTHORIZATION_REQ
+		SET
+		REQ_STATUS = 'Y'
+		WHERE
+		REQ_CODE = #{reqCode}
+		AND
+		EMP_NO = #{empNo}
+	</update>
+	<update id="empAprvUpdate">
+		UPDATE EMPLOYEE
+		SET
+		APRV_YN = 'Y'
+		,ATCH_SN = #{atchSn}
+		WHERE
+		EMP_NO = #{empNo}
+	</update>
+	
+	<update id="empAprvReturn" parameterType="AuthorizationReqVO">
+		UPDATE AUTHORIZATION_REQ
+		SET
+		REQ_STATUS = 'D'
+		,REASON = #{reason,jdbcType=VARCHAR}
+		WHERE
+		REQ_CODE = #{reqCode}
+		AND
+		EMP_NO = #{empNo}
+	</update>
+	
+	<delete id="reqDelete" parameterType="AuthorizationReqVO">
+		DELETE FROM AUTHORIZATION_REQ
+		WHERE
+        REQ_CODE = #{reqCode}
+	</delete>
+
+	<select id="selectDepartmentList" resultType="DepartmentVO">
+		SELECT
+		DEPT_CODE
+		, DEPT_NM
+		FROM
+		DEPARTMENT
+	</select>
+
+	<insert id="insertAuth" parameterType="AuthorizationReqVO">
+		<selectKey order="BEFORE" keyProperty="reqCode" resultType="String">
+			
+			SELECT 'AUTH'||LPAD(REQ_CODE_SEQ.nextval,3,'0')
+			FROM DUAL
+		</selectKey>
+	
+		INSERT INTO AUTHORIZATION_REQ (
+		REQ_CODE
+		, EMP_NO
+		, EMP_NM
+		, EMP_IDENTINO
+		, AUTHOREQ_DATE
+		, DEPT_CODE
+		, ATCH_SN
+		) VALUES (
+			#{reqCode,jdbcType=VARCHAR}
+		, #{empNo,jdbcType=VARCHAR}
+		, #{empNm,jdbcType=VARCHAR}
+		, #{empIdentino,jdbcType=VARCHAR}
+		, SYSDATE
+		, #{deptCode,jdbcType=VARCHAR}
+		, #{atchSn,jdbcType=NUMERIC}
+		)
+	</insert>
+	
+	<select id="checkDuplicateEmpNo" parameterType="String" resultType="AuthorizationReqVO">
+		SELECT
+		REQ_CODE
+		, EMP_NO
+		FROM
+		AUTHORIZATION_REQ
+		WHERE
+		EMP_NO = #{empNo}
+	</select>
+
+	<select id="atchSearch" resultType="AtchFileDtlVO">
+		SELECT
+		D.STRE_FILE_NM
+		, D.ORIGNL_FILE_NM 
+		,D.ATCH_FILE_ID
+		, A.ATCH_SN, A.REQ_CODE
+		FROM ATCH_FILE_DTL D INNER JOIN AUTHORIZATION_REQ A ON(D.ATCH_FILE_ID = A.ATCH_SN)
+		WHERE A.REQ_CODE = #{reqCode}
+	</select>
+
+
+</mapper>

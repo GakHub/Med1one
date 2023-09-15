@@ -1,0 +1,44 @@
+package kr.or.ddit.medical.clinc.controller;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.medical.clinc.service.InspectionService;
+import kr.or.ddit.medical.vo.PatntStatVO;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * 의사 - 검사
+ * @author 
+ *
+ */
+@Controller
+@RequestMapping("/Inspection")       
+@RequiredArgsConstructor
+public class InspectionController {
+	
+	@Inject
+	private final InspectionService service;
+	
+	// 검사실 접근 GET 메서드
+	@GetMapping("InspectionPage.do")
+	public String InspectionPage() {
+		return "medi/inspection";
+	}
+	
+	// 검사대기,검사중 환자 조회
+	@GetMapping(value = "inspPatList.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<PatntStatVO> patientList(){
+		List<PatntStatVO> patntList = service.retrieveInspPatntStat();
+		return patntList;
+	}
+	
+}

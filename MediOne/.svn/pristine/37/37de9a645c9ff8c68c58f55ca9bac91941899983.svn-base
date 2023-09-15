@@ -1,0 +1,17 @@
+package kr.or.ddit.message.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.medical.vo.PatientVO;
+
+@Mapper
+public interface MessageDao {
+
+	/**
+	 * 환자 전체 연락처 조회
+	 * @return
+	 */
+	public List<PatientVO> selectTelNumberList();
+}

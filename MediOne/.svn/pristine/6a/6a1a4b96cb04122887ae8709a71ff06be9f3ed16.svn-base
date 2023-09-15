@@ -1,0 +1,28 @@
+package kr.or.ddit.newfile.vo;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(of = "fileTitle")
+public class NewFileVO {
+
+	@NotBlank
+	private String fileTitle;//제목으로식별
+	@NotBlank
+	private String empNo; //자료담당직원사번
+	private String fileCol1;
+	private String fileCol2;
+	private String fileCol3;
+	private String fileCol4;
+	private String fileCol5;
+	private String fileCol6;
+	private String fileCol7;
+	private String fileCol8;
+	private String fileCol9;
+	private String fileCol10;
+	private String fileCol11;
+	private String newFileId;
+}

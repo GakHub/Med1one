@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd">
+
+<!-- 코드화시스트? 가 안되더라도 쓸수는있지만(나중에 와일드카드로 xml을 쓰기떄문에) 불편함.   -->
+<!-- p:typeAliasesPackage="kr.or.ddit.**.vo" = ** 을 두개쓰면 중간거가 있어도, 없어도 상관없고,  몇개 가되더라도 상관없이 쓸수있어서 -->
+	<!-- data source를 주입받아서  sqlSessionFactory를 가져옴-->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" 
+		p:dataSource-ref="dataSource"
+		p:configLocation="classpath:kr/or/ddit/db/mybatis/Configuration.xml"
+		p:typeAliasesPackage="kr.or.ddit.**.vo"
+		p:mapperLocations="classpath:kr/or/ddit/db/mybatis/mapper/*.xml"
+	/>
+	<!-- SqlSessionTemplate 얘를 사용하면 매번 똑같은 방식 ?? 을 사용안해도 된다. / 오류가나기떄문에 생성자 주입이 필요함.  -->
+	
+	<!-- 얼마든지 dao 구현 가능하지만 왼쪽에서 없애려고 하기때문에 ㅁ -->
+	<bean id="SqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate"
+		c:sqlSessionFactory-ref="sqlSessionFactory"
+	/>
+	
+	<!-- ant path matching wild card : ** -->
+	<!-- dao구현을 최소화 하기위해 이거 사용 -->
+	<mybatis-spring:scan base-package="kr.or.ddit.**.dao"
+		annotation="org.apache.ibatis.annotations.Mapper"
+		factory-ref="sqlSessionFactory"
+	/>
+	
+
+</beans>

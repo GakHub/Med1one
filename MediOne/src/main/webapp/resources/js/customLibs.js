@@ -1,0 +1,204 @@
+
+/*
+ 	제이쿼리 객체 내의 폼 요소(input)들의 값을 수집하여 쉽게 객체로 변환
+	예시 let formData = $("#myForm").getObject();
+ */
+if($){
+	$.fn.getObject=function(){
+		let data = {};
+		this.find(":input[name]").each(function(idx, input){
+			let propName = this.name;
+			let propValue = $(this).val();
+			data[propName] = propValue;
+		});
+		return data;
+	}
+}
+
+
+
+$.fn.serializeObject = function() {
+
+	let data = {};
+	let nameSet = new Set();
+
+	this.find(":input[name]").each((idx, ipt) => {  //여기서 this는 sampleFoem이 아니라 위에 $. 제이쿼리 의미
+		nameSet.add(ipt.name)
+	});
+	let $formThis = this;
+	nameSet.forEach(n => {
+		let $ipt = $($formThis).find(`:input[name=${n}]`); //역슬러시 지워주기(자바스크립트로만 작성해야함)
+		let type = $ipt.attr("type");
+		let value = null;
+		if (type == "radio") {
+			value = $ipt.filter((idx, rdoIpt) => { return rdoIpt.checked; }).val();
+		} else if (type == "checkbox") {
+			value = $ipt.filter((idx, chkIpt) => chkIpt.checked).get().map(i => i.value);
+
+
+		} else if (type == "number") {
+			value = $ipt.val();
+			value = parseInt(value);
+		} else {
+			value = $ipt.val();
+
+		}
+		data[n] = value;
+	});
+	return data;
+}
+
+$.timeFormat = function(time) {
+	//formatting : 1:59
+
+	if ((time || time == 0) && time >= 0) { //있으면서 0보다 크거나 0이면
+		let min = Math.trunc(time / 60);
+		let sec = time % 60;
+		return `${new String(min).padStart(2, '0')} : ${new String(sec).padStart(2, '0')}`;
+
+	} else {//없거나 0보다 작으면 => 에러
+		throw new Error("시간데이터는 0 이상의 값이 필요함");
+	}
+}
+
+const speed = 100;
+$.fn.timer = function() {
+	this.each(function(index, element) {
+		const $element = $(this);
+		const timeout = $element.data("timeout");
+		if (!timeout || !/^\d+$/.test(timeout)) throw new Error(`타이머는(${timeout}) 숫자로 구성됨.`);//없거나 숫자가 아니거나	
+		/*	타이머의 조건
+			1. 타이머의 초기값
+			2. 1초마다 타이머를 차감할 수있어야함
+			  1)차담된 값을 유지할 수 있는 프로퍼티가 있어야함
+			  2) 차감을 시키기 위한 스케줄링 작업 필요
+
+			3. 차감되는 타이머 값은 매 시점마다 타이머의 영역에 출력.	
+			4. 타이머의 값은 02:00 과 같은 형태로 출력	
+			5. optional : 필요하다면 타이머 영역 다음에 메시지 창을 생성함. 해당 메시지는 1분 남은 시점에 렌더링함
+				1) 메시지 영역 프로퍼티 추가
+				2) 메시지 처리를 위한 지연 작업 스케줄링.
+			*/
+
+
+		function TimerInfo(timeout, timerArea, msgFlag = false) {
+			this.timeout = timeout-1;
+			//this.timer = timeout;
+			this.timerArea = timerArea;
+
+			let _makeMessageDiv = function(element) { //생성자 안에서만 사용할 수 있는 함수
+
+				let $messageDiv = $("<div>").addClass("message-area").append(
+					$("<p>").html("세션 연장 여부 확인"),
+					$("<input>").attr({
+						type: "button",
+						value: "예"
+					}).addClass("controlBtn").data("role", "yesBtn"), //데이터() 데이터 꺼낼때 숨질 ㄸㅐ 사용
+					$("<input>").attr({
+						type: "button",
+						value: "아니오"
+					}).addClass("controlBtn").data("role", "noBtn")
+				).on("click", ".controlBtn", function(event) {
+					let $btn = $(event.target); //이때의 target은 controlBtn
+					let role = $btn.data('role');
+
+					if (role == 'yesBtn') {
+						//비동기요청을 사용할 수 있어야 함 (ajax!)
+						
+						$.ajax({
+							url:element.dataset.requestUrl??"", //자바에서 옵셔널, 여기서는 ??
+							method : "head"
+						}).done(()=>{
+						//타이머값도 초기화, 메시지 작업도 초기화
+						element._timerInfo.init();
+							
+						});
+					}
+					$btn.parents(".message-area").remove();//메시지 영역 전체 가져와서 감추기
+					//delete element._timerInfo.$messageArea
+					//delete element._timerInfo.messageJob
+					//delete this.$messageArea
+					//delete this.messageJob
+
+				}).hide().insertAfter(element);
+				return $messageDiv;
+			}
+
+			/*if (msgFlag) {
+				this.$messageArea = _makeMessageDiv(this.timerArea);
+				this.messageJob = setTimeout((function() {
+					this.$messageArea.show(); //여기서 this timeInfo객체?
+
+				}).bind(this), (this.timeout - 60) * speed);
+
+			}
+*/
+			this.init = function() {
+				//전체적으로 이 타이머를 초기화
+				this.timer = timeout;
+				if (msgFlag) {
+					this.$messageArea = _makeMessageDiv(this.timerArea);
+					this.messageJob = setTimeout((function() {
+						this.$messageArea.show(); //여기서 this timeInfo객체?
+					}).bind(this), (this.timeout - 60) * speed);
+				}
+			}
+			
+			this.init();
+			
+			this.destroy = function() {
+				//스케줄링 작업 중단(clearinterval)
+				clearInterval(this.timerJob);
+				if (this.$messageArea) {
+					this.$messageArea.remove(); //remove -> 제이쿼리 함수
+					clearTimeout(this.messageJob);
+				}
+				console.log("delete 전 :", this.timerArea._timerInfo);
+				delete this.timerArea._timerInfo;
+				console.log("delete 후 :", this.timerArea._timerInfo);
+			}
+			this.timerJob = setInterval((function() {
+				if (this.timer <= 0) {
+					this.destroy();
+				} else {
+					this.timerArea.innerHTML = $.timeFormat(--this.timer);
+				}
+			}).bind(this), 1 * speed);
+		}
+		let msgFlag = $element.data("msgFlag");
+		element._timerInfo = new TimerInfo(timeout, element, msgFlag);
+		console.log(element._timerInfo);
+	});
+	return this;
+
+}
+	//$(sampleForm).serializeObject()
+	
+/* 아래 3개 모두 같은 의미
+	$(document).ready(function(){});
+	$(document).on("ready", function(){});
+	*/
+	$(function(){
+		
+	let $span = $("[data-timeout]").timer();
+		
+	});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

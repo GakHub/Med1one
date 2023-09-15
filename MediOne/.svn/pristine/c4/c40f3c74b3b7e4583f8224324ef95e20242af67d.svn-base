@@ -1,0 +1,39 @@
+// Bootstrap v5.0.0-beta3
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+
+// Global
+@import "../scss/global/fonts"; 
+@import "../scss/global/themes";
+@import "../scss/global/variables";
+@import "../scss/global/mixins";
+@import "../scss/global/general";
+@import "../scss/global/rtl-mode";
+
+// Dynamic Color scss
+@import "../dist/assets/plugin/colorpicker/colorpicker.min.scss";
+
+// Custom Bootstrap Components
+@import "../scss/bootstrap/custom";
+
+// Generic
+@import "../scss/generic/helpers";
+@import "../scss/generic/animate";
+@import "../scss/generic/setting-bar";
+
+// Skeleton
+@import "../scss/skeleton/ihealth-layout";
+
+// Plugin scss
+@import "../scss/plugin/calendar";
+@import "../scss/plugin/chat";
+@import "../scss/plugin/calandarclock";
+@import "../scss/plugin/heartbeat";
+@import "../scss/plugin/schedule";
+
+
+// Application widgets
+@import "../scss/widgets/card";
+@import "../scss/widgets/booking";
+@import "../scss/widgets/appointment";
+

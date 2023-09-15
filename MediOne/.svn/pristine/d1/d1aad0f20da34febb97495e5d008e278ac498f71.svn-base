@@ -1,0 +1,46 @@
+package kr.or.ddit.medical.clinc.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/clinic/")
+public class DocumentController {
+
+	// 진료 - 소견서 서식 조회
+	@GetMapping("referralRetrieve.do")
+	public String referralRetrieve() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 소견서 작성
+	@GetMapping("referralInsert.do")
+	public String referralInsert() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 진단서 서식 조회
+	@GetMapping("certificateRetrieve.do")
+	public String certificateRetrieve() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 진단서 서식 작성
+	@GetMapping("certificateInsert.do")
+	public String certificateInsert() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 진료의뢰서 서식 조회
+	@GetMapping("treatmentReqRetrieve.do")
+	public String treatmentReqRetrieve() {
+		return "clinic/clinic";
+	}
+	
+	// 진료 - 진료의뢰서 서식 작성
+	@GetMapping("treatmentReqInsert.do")
+	public String treatmentReqInsert() {
+		return "clinic/clinic";
+	}
+}

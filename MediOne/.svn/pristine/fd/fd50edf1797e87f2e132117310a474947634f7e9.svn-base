@@ -1,0 +1,30 @@
+package kr.or.ddit.Free.vo;
+
+import java.time.LocalDateTime;
+
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+
+import kr.or.ddit.employee.vo.EmployeeVO;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(of = "cmtNo")
+@Data
+public class CommentVO {
+	@NotBlank
+	private String cmtNo;
+	@NotBlank
+	private String cmtContent;
+	@DateTimeFormat(iso = ISO.DATE_TIME)
+	private LocalDateTime cmtRegidate;
+	@NotBlank
+	private String boardNo;
+	@NotBlank
+	private String empNo;
+
+	private EmployeeVO employee;
+	private FreeBoardVO free;
+}

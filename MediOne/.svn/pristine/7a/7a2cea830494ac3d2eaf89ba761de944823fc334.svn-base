@@ -1,0 +1,28 @@
+package kr.or.ddit.message.vo;
+
+import java.util.List;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 문자 VO
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "msgCode")
+public class MessageVO {
+	@NotBlank
+	private String msgCode;		//문자발송코드
+	@NotBlank
+	private String msgSend;		//발송인
+	private String msgRec;		//수신인
+	private String formCode;	//문자양식코드
+	
+	private List<MessageDtlVO> formList; //문자양식리스트
+	
+	private String form;
+}

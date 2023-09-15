@@ -1,0 +1,187 @@
+package kr.or.ddit.medical.hospital.service;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
+import kr.or.ddit.employee.vo.PaginationInfo;
+import kr.or.ddit.medical.clinc.vo.InspRsltVO;
+import kr.or.ddit.medical.clinc.vo.PresDocVO;
+import kr.or.ddit.medical.hospital.vo.DietRcdrVO;
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.hospital.vo.IOVO;
+import kr.or.ddit.medical.hospital.vo.SckbdVO;
+import kr.or.ddit.medical.hospital.vo.VitalVO;
+import kr.or.ddit.medical.vo.PatientVO;
+
+public interface HospitalService {
+
+	
+	/**
+	 * 환자 리스트 검색 
+	 * @param patnt
+	 * @return
+	 */
+	public List<HospitalizationVO> retrievePatientList(String patnt);
+	
+	/**
+	 * 병동 환자 조회  페이징포함
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveHospitalPatientPaging(PaginationInfo<HospitalizationVO> paging);
+
+	/**
+	 * 병동 환자 조회 
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveHospitalPatientList(String code);
+	public List<HospitalizationVO> retrieveHospitalWaitList(String code);
+	
+	/**
+	 * 병동 병실 list
+	 * @param sckbdRo 
+	 * @return
+	 */
+	public List<SckbdVO> retrieveSckbdList(String sckbdRo);
+	
+	/**
+	 * 환자 검색
+	 * @return
+	 */
+	public List<PatientVO> retrieveHospitalList(String word, String code);
+	
+	/**
+	 * 병동 침상 사용가능여부
+	 * @param sckbd
+	 * @return
+	 */
+	public boolean modifySckBD(SckbdVO sckbd);
+	
+	/**
+	 * 입원 insert
+	 * @param hsptl
+	 * @return
+	 */
+	public boolean createHsptlzIn(HospitalizationVO hsptl);
+	
+	/**
+	 * 퇴원 
+	 * @param hsptl
+	 * @return
+	 */
+	public boolean modifyHsptlzOut(HospitalizationVO hsptl);
+	
+	/**
+	 * 환자의 위치상태 코드 insert
+	 * @param patntStat(=recCode)
+	 * @return
+	 */
+	public boolean createHspPatnt(String patntStat);
+	
+	/**
+	 * 입원환자 상세조회
+	 * @param patntCode
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveInPatnt(String patntCode);
+	
+	/**
+	 * 입원 환자의 처방내역
+	 * @param patntCode
+	 * @return
+	 */
+	public List<PresDocVO> retrievePresList(String presCode);
+
+	/**
+	 * 자료실 통계용(월별 입원환자수)
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveMonthHospitalCount();
+	
+	
+	/**
+	 * 자료실 통계용(연도별 입원환자수)
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveYearHospitalCount();
+	
+	/**
+	 * 자료실 통계용(특정 연도/월 입원환자수)
+	 * @return
+	 */
+	public int retrieveTotalHospitalCount(String year, String month);
+	
+	/**
+	 * 환자 바이탈기록
+	 * @param vital
+	 * @return
+	 */
+	public boolean createVital(VitalVO vital);
+	public boolean removeVital(String vtCode);
+	
+	/**
+	 * 해당 입원코드 환자의 바이탈 조회
+	 * @param hsptlzCode
+	 * @return
+	 */
+	public List<VitalVO> retrieveVitalDtl(String hsptlzCode);
+	
+	public boolean createDietRecord(DietRcdrVO diet);
+	public boolean removeDiet(String drcdrCode);
+	public List<DietRcdrVO> retrieveDietDtl(String hsptlzCode);
+	
+	public boolean createIO(IOVO io);
+	public List<IOVO> retrieveIO(String hsptlzCode);
+	public boolean removeIO(String ioCode);
+
+	/**
+	 * 병동 환자 정보 (호 , 침대) - 침대 눌렀을때 나오는용도
+	 * @param sckbdRo
+	 * @param sckbdNo
+	 * @return
+	 */
+	public List<HospitalizationVO> retrievePatntDetail(String sckbdRo, int sckbdNo);
+	
+	
+	/**
+	 * 병동 조회용
+	 * @param sckbdRo
+	 * @return
+	 */
+	public List<HospitalizationVO> retrieveWardDetail(String sckbdRo);
+	
+	/**
+	 * 퇴원할때 환자 상태 수납대기로
+	 * @param recCode
+	 * @return
+	 */
+	public boolean createRecieveStat(String recCode);
+	
+	/**
+	 * 퇴원일자 update
+	 * @param hsptlzCode
+	 * @return
+	 */
+	public boolean modifyHsptlzOutDate(String hsptlzCode);
+	
+	/**
+	 * 침상사용가능 Y로 update
+	 * @param sckbdRo
+	 * @param sckbdNo
+	 * @return
+	 */
+	public boolean modifySckbdStatY(@Param("sckbdRo") String sckbdRo,@Param("sckbdNo") int sckbdNo);
+	
+	/**
+	 * 침상 인원 현황 조회
+	 * @return
+	 */
+	public List<SckbdVO> retrieveSckbdCount();
+	
+	/**
+	 * 검사 기록 있는 입원환자 검사결과 조회
+	 * @return
+	 */
+	public List<InspRsltVO> retrieveInspRslt(String recCode);
+}
+

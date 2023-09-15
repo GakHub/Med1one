@@ -1,0 +1,356 @@
+package kr.or.ddit.medical.clinc.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.employee.vo.CommonCodeVO;
+import kr.or.ddit.medical.clinc.service.ClinicService;
+import kr.or.ddit.medical.clinc.vo.ClinicVO;
+import kr.or.ddit.medical.clinc.vo.DiseaseVO;
+import kr.or.ddit.medical.clinc.vo.HsptlzOrderVO;
+import kr.or.ddit.medical.clinc.vo.InspOrderVO;
+import kr.or.ddit.medical.clinc.vo.InspRsltVO;
+import kr.or.ddit.medical.clinc.vo.InspectionVO;
+import kr.or.ddit.medical.clinc.vo.MedicineVO;
+import kr.or.ddit.medical.clinc.vo.PresDocVO;
+import kr.or.ddit.medical.clinc.vo.PrescriptionVO;
+import kr.or.ddit.medical.vo.PatntStatVO;
+import kr.or.ddit.medical.vo.ReceptionVO;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * 의사 진료실
+ * 
+ * @author PC-10
+ *
+ */
+@Controller
+@RequestMapping("/clinic")
+@RequiredArgsConstructor
+public class DoctorClinicRetrieveController {
+
+	@Inject
+	private final ClinicService service;
+
+	// jsp 접근 GET메서드
+	@GetMapping("clinicRetrieve.do")
+	public String clinicRetrieve(Model model) {
+		List<InspectionVO> genList = service.retrieveGenInsList();
+		List<InspectionVO> equList = service.retrieveEuqInsList();
+
+		model.addAttribute("genInsList", genList);
+		model.addAttribute("equInsList", equList);
+
+		return "clinic/clinic";
+	}
+
+	// 진료 - 상병 검색
+	@GetMapping(value = "diseaseSearch.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<DiseaseVO> diseaseSearch(@RequestParam("what") String disName) {
+		List<DiseaseVO> disList = service.retrieveDiseaseList(disName);
+		return disList;
+	}
+
+	// 진료 - 약품 검색
+	@GetMapping(value = "medicineSearch.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<MedicineVO> medicineSearch(@RequestParam("what") String mediName) {
+		List<MedicineVO> mediList = service.retrieveMedicineList(mediName);
+		service.SearchCnt(mediName);
+		return mediList;
+	}
+
+	// 진료 - 약품 즐찾리스트
+	@GetMapping(value = "popularMedicineList.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<MedicineVO> popularMedicineList() {
+		List<MedicineVO> popList = service.popluarMedicineList();
+		return popList;
+	}
+
+	// 환자 조회 (진료중, 진료대기중)
+	@GetMapping(value = "patientView.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<PatntStatVO> patientView(@RequestParam("fcltyCode") String fcltyCode) {
+		List<PatntStatVO> patient = service.retrievePatntStat(fcltyCode);
+		return patient;
+	}
+
+	// 환자의 과거 처방 내역 조회
+	@GetMapping(value = "pastMediView.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<PresDocVO> pastMediView(@RequestParam("patntCode") String patntCode) {
+		List<PresDocVO> medi = service.retrievePatPastMedi(patntCode);
+		return medi;
+	}
+
+	// 진료대기 -> 진료중 상태 변경
+	@GetMapping(value = "statInsert.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public boolean stateInsert(@RequestParam("recCode") String recCode, @RequestParam("fcltyCode") String fcltyCode) {
+
+		PatntStatVO patnt = new PatntStatVO();
+		patnt.setRecCode(recCode);
+		patnt.setFcltyCode(fcltyCode);
+
+		boolean patntStat = service.createPatntStat(patnt);
+
+		return patntStat;
+
+	}
+
+	// 외래진료 오더 추가(진료내용, 상병)
+	@GetMapping(value = "dssOrderInsert.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public boolean dssOrderInsert(@RequestParam("recCode") String recCode
+								,@RequestParam("dssCode") String dssCode
+								,@RequestParam("dssNo") int dssNo
+								,@RequestParam("clinicContent") String clinicContent
+								,@RequestParam(value = "insYn", required = false) String insYn
+								){
+
+		ClinicVO clinic = new ClinicVO();
+		clinic.setRecCode(recCode);
+		clinic.setDssCode(dssCode);
+		clinic.setDssNo(dssNo);
+		clinic.setClinicContent(clinicContent);
+		if (insYn != null) {
+			clinic.setInsYn(insYn);
+		}
+
+		boolean clinicOrder = service.createDssOrder(clinic);
+
+		return clinicOrder;
+
+	}
+
+	// clinicCode 조회
+	@GetMapping(value = "getClinicCode.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public ClinicVO getClinicCode(@RequestParam("recCode") String recCode) {
+		ClinicVO clinicCode = service.retrieveClinicCd(recCode);
+		return clinicCode;
+	}
+
+	// presCode 조회
+	@GetMapping(value = "getPresCode.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public PrescriptionVO getPresCode(@RequestParam("clinicCode") String clinicCode) {
+		PrescriptionVO presCode = service.retrievePresCd(clinicCode);
+		return presCode;
+	}
+	
+	
+	
+	
+	// 외래진료 처방 오더 추가(의약품)
+	@PostMapping(value = "mediOrderInsert.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public Map<String, Object> presOrderInsert(@RequestBody List<PresDocVO> medis) {
+	    Map<String, Object> result = new HashMap<>();
+	    boolean allSuccess = true;
+	    boolean hasNullPresSepar = false;
+	    boolean hasNonNullPresSepar = false;
+	    
+	    for (PresDocVO prs : medis) {
+	    	
+	    	 if (prs.getPresSepar() == null) {
+	    	        hasNullPresSepar = true;
+	    	    } else {
+	    	        hasNonNullPresSepar = true;
+	    	    }
+	    	
+	        PresDocVO pres = new PresDocVO();
+
+	        pres.setPresCode(prs.getPresCode());
+	        pres.setMediCode(prs.getMediCode());
+	        pres.setPresMAmt(prs.getPresMAmt());
+	        pres.setPresMCo(prs.getPresMCo());
+	        pres.setMediDay(prs.getMediDay());
+	        pres.setRecCode(prs.getRecCode());
+	        pres.setPresdocAmt(prs.getPresdocAmt());
+	        if (prs.getPresSepar() != null) {
+				pres.setPresSepar(prs.getPresSepar());
+			}
+	        
+	        boolean presOrder = service.createPresOrder(pres);
+
+	        if (!presOrder) {
+	            allSuccess = false;
+	            break; // 하나라도 실패하면 더 이상 진행하지 않음
+	        }
+	        
+	        
+	    }
+	    
+	    
+	    if (allSuccess) {
+	        String commonRecCode = null; // 공통 recCode 변수 선언
+
+	        for (PresDocVO prs : medis) {
+	            // 처방 오더 생성 및 기타 처리
+
+	            if (commonRecCode == null) {
+	                commonRecCode = prs.getRecCode(); // 공통 recCode 설정
+	            } else if (!commonRecCode.equals(prs.getRecCode())) {
+	                // recCode가 서로 다른 경우 중단
+	                commonRecCode = null;
+	                break;
+	            }
+	        }
+
+	        if (commonRecCode != null) {
+	        	if (hasNullPresSepar) {
+	        		//환자 위치 정보 변경 (원무과, 수납대기)
+		            service.createReceiveWait(commonRecCode);
+		        }
+	        }
+	    }
+
+	    
+	    
+	    result.put("success", allSuccess);
+	    return result;
+	}
+	
+	//입원 오더 식이 리스트 조회
+	@GetMapping(value = "selectDietList.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<CommonCodeVO> selectDietList(){
+		List<CommonCodeVO> dietList = service.retrievetDietList();
+		return dietList;
+	}
+	
+	//입원 오더
+	@GetMapping(value = "hospitalOrder.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public boolean hospitalOrder(@RequestParam("recCode") String recCode
+									,@RequestParam("hspodTotal") int hspodTotal
+									,@RequestParam("presCode") String presCode
+									,@RequestParam("diet") String diet
+									){
+		HsptlzOrderVO hospital = new HsptlzOrderVO();
+			
+		hospital.setHspodTotal(hspodTotal);
+		hospital.setPresCode(presCode);
+		hospital.setDiet(diet);
+		hospital.setRecCode(recCode);
+			
+		boolean hosOrder = service.createhospitalOrder(hospital);
+		service.createhospitalWait(recCode); //환자위치정보 변경 (병동, 입원대기)
+			
+		return hosOrder;
+		}
+		
+	//검사 오더
+	@PostMapping(value = "inspOrderInsert.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public Map<String, Object> inspOrderInsert(@RequestBody List<InspOrderVO> insps) {
+	    Map<String, Object> result = new HashMap<>();
+	    
+	    boolean allSuccess = true;
+	    
+	    for (InspOrderVO insp : insps) {
+	    	InspOrderVO order = new InspOrderVO();
+
+	    	order.setClinicCode(insp.getClinicCode());
+	    	order.setRecCode(insp.getRecCode());
+	    	order.setInspCode(insp.getInspCode());
+	    	
+	    	boolean inspOrder = service.createInspectionOrder(order);
+	    	
+	        if (!inspOrder) {
+	            allSuccess = false;
+	            break; // 하나라도 실패하면 더 이상 진행하지 않음
+	        }
+	        
+	        
+	    }
+	    
+	    
+	    if (allSuccess) {
+	        String commonRecCode = null; // 공통 recCode 변수 선언
+
+	        for (InspOrderVO insp : insps) {
+
+
+	            if (commonRecCode == null) {
+	                commonRecCode = insp.getRecCode(); // 공통 recCode 설정
+	            } else if (!commonRecCode.equals(insp.getRecCode())) {
+	                // recCode가 서로 다른 경우 중단
+	                commonRecCode = null;
+	                break;
+	            }
+	        }
+
+	        if (commonRecCode != null) {
+	        		//환자 위치 정보 변경 (검사실, 검사대기)
+		            service.createInspWait(commonRecCode);
+	        }
+	    }
+
+	    
+	    
+	    result.put("success", allSuccess);
+	    return result;
+	}
+	
+	//환자 클릭했을때 recCode가져오기
+	@GetMapping(value = "selectPatRecCode.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public ReceptionVO selectPatRecCode(@RequestParam("patntCode") String patntCode){
+		ReceptionVO rec = service.retrievePatRecCode(patntCode);
+		return rec;
+	}
+	
+	//환자 클릭했을때 recCode가져오기
+	@GetMapping(value = "selectPatInspResult.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public List<InspRsltVO> selectPatInspResult(@RequestParam("recCode") String recCode){
+		List<InspRsltVO> result = service.retrievePatInspResult(recCode);
+		return result;
+	}
+	
+	//환자가 이미 clinicCode를 가지고 있는지 확인 
+	@GetMapping(value = "checkGetClinicCode.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public Map<String, Boolean> checkGetClinicCode(@RequestParam("recCode") String recCode){
+		Map<String, Boolean> response = new HashMap<>();
+		boolean ishaved= service.retrieveGetClinicCode(recCode);
+		response.put("ishaved", ishaved);
+		return response;
+	}
+	
+	
+	//이미 clinicCode를 가지고 있으면 update시키기
+	@GetMapping(value = "clinicUpdate.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public boolean clinicUpdate(@RequestParam("clinicCode") String clinicCode
+								,@RequestParam("dssCode") String dssCode
+								,@RequestParam("dssNo") int dssNo
+								,@RequestParam("clinicContent") String clinicContent
+								){
+		ClinicVO clinic = new ClinicVO();
+		clinic.setDssCode(dssCode);
+		clinic.setDssNo(dssNo);
+		clinic.setClinicContent(clinicContent);
+		clinic.setClinicCode(clinicCode);
+		boolean update = service.modifyClinicOrder(clinic);
+			
+		return update;
+	}	
+}

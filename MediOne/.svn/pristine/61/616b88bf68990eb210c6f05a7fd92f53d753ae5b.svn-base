@@ -1,0 +1,57 @@
+package kr.or.ddit.Free.controller;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.fasterxml.jackson.annotation.JsonCreator.Mode;
+
+import kr.or.ddit.Free.service.FreeService;
+import kr.or.ddit.Free.vo.FreeBoardVO;
+
+@Controller
+@RequestMapping("/free/freeInsert.do")
+public class FreeInsertController {
+	
+	@Inject
+	private FreeService service;
+
+	@ModelAttribute("freeBoard")
+	public FreeBoardVO freeboard() {
+		return new FreeBoardVO();
+	}
+	
+	@GetMapping
+	public String getForm() {
+		return "free/freeForm";
+	}
+	
+	@PostMapping
+	public String postForm(Model model
+					, @ModelAttribute("freeBoard")FreeBoardVO board
+					,BindingResult errors		
+			) {
+		String viewName = null;
+		
+		if(!errors.hasErrors()) {
+			boolean boardInput = service.createBoard(board);
+			
+			if(boardInput) {
+				viewName = "redirect:/free/freeView.do?what="+board.getBoardNo();
+			} else {
+				model.addAttribute("message", "게시물 작성 중 문제 발생");
+				viewName = "free/freeForm";
+			}
+		} else {
+			viewName = "free/freeForm";
+		}	
+		
+		return viewName;
+	}
+}

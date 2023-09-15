@@ -1,0 +1,78 @@
+package kr.or.ddit.medical.nurse.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.medical.nurse.dao.NurseDao;
+import kr.or.ddit.medical.nurse.vo.DoctorDtlVO;
+import kr.or.ddit.medical.nurse.vo.DoctorSchdulVO;
+import kr.or.ddit.medical.nurse.vo.NurseDtlVO;
+import kr.or.ddit.medical.nurse.vo.NurseSchdulVO;
+import kr.or.ddit.medical.nurse.vo.NursenoteVO;
+import kr.or.ddit.medical.nurse.vo.ReservationVO;
+
+@Service
+public class NurseServiceImpl implements NurseService {
+
+	@Inject
+	private NurseDao nurseDAO;
+	
+	/**
+	 * 의사 전체 일정 조회
+	 */
+	@Override
+	public List<DoctorDtlVO> retrieveDoctorList() {
+		return nurseDAO.selectDoctorList();
+	}
+
+	/**
+	 * 간호사 전체 일정 조회
+	 */
+	@Override
+	public List<NurseDtlVO> retrieveNurseList() {
+		return nurseDAO.selectNurseList();
+	}
+	
+	/**
+	 * 부서별 의사 조회
+	 */
+	@Override
+	public List<DoctorDtlVO> retrieveDoctorDeptList(String fcltyCode) {
+		return nurseDAO.selectDoctorDeptList(fcltyCode);
+	}
+
+	/**
+	 * 부서별 간호사 조회
+	 */
+	@Override
+	public List<NurseDtlVO> retrieveNurseDeptList(String fcltyCode) {
+		return nurseDAO.selectNurseDeptList(fcltyCode);
+	}
+
+	@Override
+	public List<ReservationVO> retrieveReserList(String fcltyCode) {
+		return nurseDAO.selectReservationList(fcltyCode);
+	}
+
+	//today 간호일지 조회
+	@Override
+	public List<NursenoteVO> retrieveDayNote(String dayNote) {
+		return nurseDAO.selectNurseDayNote(dayNote);
+	}
+
+	//간호일지 기록
+	@Override
+	public boolean createNurseNote(NursenoteVO note) {
+		return nurseDAO.insertNurseNote(note);
+	}
+
+	//모든 간호일지 기록 출력
+	@Override
+	public List<NursenoteVO> retrieveAllNote() {
+		return nurseDAO.selectAllNurseNote();
+	}
+
+}

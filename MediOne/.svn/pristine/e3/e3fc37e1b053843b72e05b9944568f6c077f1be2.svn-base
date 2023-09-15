@@ -1,0 +1,42 @@
+package kr.or.ddit.employee.admin.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.employee.vo.AuthorizationReqVO;
+import kr.or.ddit.employee.vo.DepartmentVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.employee.vo.PaginationInfo;
+
+@Mapper
+public interface AdminDao {
+
+	public long selectTotalRecord(PaginationInfo paging);
+
+	public List<AuthorizationReqVO> authReqList(PaginationInfo paging);
+
+	public int authUpdate(AuthorizationReqVO authReq); // 승인신청 상태 변경
+
+	public int empAprvUpdate(EmployeeVO empAprv); // 직원의 승인여부 상태 변경
+
+	/**
+	 * 사용자 승인 신청 insert
+	 * 
+	 * @param auth
+	 * @return
+	 */
+	public int insertAuth(AuthorizationReqVO auth);
+
+	/**
+	 * 부서 리스트 출력
+	 * 
+	 * @return
+	 */
+
+	public List<DepartmentVO> selectDepartmentList();
+	
+
+	// gpt보고 추가한거
+		public AuthorizationReqVO checkDuplicateEmpNo(String empNo);
+}

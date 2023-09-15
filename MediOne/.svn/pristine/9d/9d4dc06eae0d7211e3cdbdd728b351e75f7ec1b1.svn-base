@@ -1,0 +1,57 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@taglib uri="http://www.springframework.org/tags" prefix="spring"%>
+<script src="${pageContext.request.contextPath }/resources/js/ckeditor/ckeditor.js"></script>
+<h4>글쓰기</h4>
+<form:form modelAttribute="freeBoard" method="post" enctype="multipart/form-data">
+	<table class="table table-bordered">
+		<tr>
+			<th>제목</th>
+			<td>
+			<form:input path="boardTitle" class="form-control" />
+			<form:errors path="boardTitle" class="error" />
+			</td>
+		</tr>
+		<tr>
+			<th>작성자</th>
+			<td>
+			<form:input path="boardWrtr" class="form-control" />
+			<form:errors path="boardWrtr" class="error" />
+			</td>
+		</tr>
+		<tr>
+			<th>사번</th>
+			<td>
+			<form:input path="empNo" class="form-control" />
+			<form:errors path="empNo" class="error" />
+			</td>
+		</tr>
+		<tr>
+			<th>내용</th>
+			<td>
+			<form:textarea path="boardContent"  class="form-control" />
+			<form:errors path="boardContent" class="error" />
+			</td>
+		</tr>
+		<tr>
+			<th>첨부파일</th>
+			<td><input type="file" name="boardFiles" multiple /> 
+			<input type="file" name="boardFiles" multiple /> 
+			<input type="file" name="boardFiles" multiple /></td>
+		</tr>
+		<tr>
+			<td colspan="2"><input type="submit" value="등록" class="btn btn-success" /> 
+			<input type="reset" value="취소" class="btn btn-danger" />
+			</td>
+		</tr>
+	</table>
+</form:form>
+<script>
+	CKEDITOR
+			.replace(
+					'boardContent',
+					{
+						filebrowserImageUploadUrl : '${pageContext.request.contextPath }/board/uploadImage.do',
+					});
+</script>

@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.receive.dao.ReceiveDao">
+	
+	
+	<!-- 외래진료 수납대기 조회 -->
+	<select id="selectPatientList" resultType="PresDocVO">
+		
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT DISTINCT
+                       
+	        CASE 
+		        WHEN SUBSTR(CTE.PATNT_IDENTINO, 1, 1) IN ('0', '1', '2') THEN 
+		            '20' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		        ELSE 
+		            '19' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		    	END AS "rec.patnt.patntIdentino"
+		    ,CTE.PATNT_NM "rec.patnt.patntNm"
+            ,CTE.PATNT_CODE 
+            ,CTE.REC_CODE
+		    ,P.STAT_CODE
+		    ,C.REC_CODE
+		    ,CTE.STAT_CODE
+		    ,CTE.STAT_TIME
+		    ,P.FCLTY_CODE
+            ,D.PRES_DATE
+            ,COALESCE(SUM(D.PRESDOC_AMT) OVER (PARTITION BY C.REC_CODE), 0) "presdocAmt"
+            ,I.INSP_COST
+            ,COALESCE(SUM(I.INSP_COST) OVER (PARTITION BY C.REC_CODE), 0) "pre.clinic.ins.insp.inspCost"
+		FROM
+		    CTE
+            INNER JOIN PATNT_STAT P ON (CTE.REC_CODE = P.REC_CODE)
+            INNER JOIN CLINIC C ON (P.REC_CODE = C.REC_CODE)
+            INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+            INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+            LEFT OUTER JOIN INSP_ORDER IO ON (C.REC_CODE = IO.REC_CODE)
+            LEFT OUTER JOIN INSPECTION I ON(IO.INSP_CODE = I.INSP_CODE)
+		WHERE
+		    CTE.RN = 1 AND P.STAT_CODE = '015' AND CTE.STAT_CODE != '016' AND P.FCLTY_CODE != 'J'
+        ORDER BY
+            D.PRES_DATE ASC
+		
+	</select>
+	
+	<!-- 검진 수납대기 환자 조회 -->
+	<select id="selectMdexList" resultType="MdexmnVO">
+		
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+			)
+	    SELECT
+	         CASE 
+		        WHEN SUBSTR(CTE.PATNT_IDENTINO, 1, 1) IN ('0', '1', '2') THEN 
+		            '20' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		        ELSE 
+		            '19' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		    	END AS "recep.patnt.patntIdentino"
+			    ,CTE.PATNT_NM "recep.patnt.patntNm"
+	            ,CTE.PATNT_CODE 
+	            ,CTE.REC_CODE
+	            ,CTE.STAT_CODE
+			    ,CTE.STAT_TIME
+	            ,P.STAT_CODE
+	            ,P.FCLTY_CODE
+	            ,M.MDEXMN_CODE
+	            ,M.MDEXMN_DATE
+	            ,M.REC_CODE
+	            ,MR.MDEXMN_CODE
+	            ,MR.INSP_NM "MdexmnRsVO.inspNm"
+	            ,C.CODE_ID
+	            ,C.CODE_NM
+	            ,C.CODE_VAL "MdexmnRsVO.com.codeVal"
+	    FROM CTE
+	        INNER JOIN PATNT_STAT P ON (CTE.REC_CODE = P.REC_CODE)
+	        INNER JOIN MDEXMN M ON (CTE.REC_CODE = M.REC_CODE)
+	        LEFT OUTER JOIN MDEXMN_RSTLT MR ON(M.MDEXMN_CODE = MR.MDEXMN_CODE)
+        	LEFT OUTER JOIN COMMON_CODE C ON(C.CODE_ID = MR.INSP_NM)
+	    WHERE
+			CTE.RN = 1 AND P.FCLTY_CODE = 'G' AND P.STAT_CODE='015' AND CTE.STAT_CODE != '016'
+		 ORDER BY MR.MDEXMN_DATE ASC
+	</select>
+	
+	<!-- 병동 수납대기인 환자리스트 조회 -->
+	<select id="selectHospitalList" resultType="HospitalizationVO">
+	
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT DISTINCT
+                       
+            CASE 
+		        WHEN SUBSTR(CTE.PATNT_IDENTINO, 1, 1) IN ('0', '1', '2') THEN 
+		            '20' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		        ELSE 
+		            '19' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		    	END AS "patnt.patntIdentino"
+		    ,CTE.PATNT_NM "patnt.patntNm"
+            ,CTE.PATNT_CODE 
+            ,CTE.REC_CODE
+		    ,P.STAT_CODE
+		    ,C.REC_CODE
+		    ,CTE.STAT_CODE
+		    ,CTE.STAT_TIME
+		    ,P.FCLTY_CODE
+            ,D.PRES_DATE
+            ,COALESCE(SUM(D.PRESDOC_AMT) OVER (PARTITION BY C.REC_CODE), 0) "clinic.pres.presd.presdocAmt"
+            ,I.INSP_COST
+            ,COALESCE(SUM(I.INSP_COST) OVER (PARTITION BY C.REC_CODE), 0) "clinic.ins.insp.inspCost" 
+            ,H.REC_CODE
+            ,H.HSPTLZ_CODE
+            ,TO_CHAR(TO_DATE(H.HSPTLZ_IN, 'YYYYMMDD'), 'YYYY-MM-DD') "hsptlzIn"
+            ,H.HSPTLZ_TOTAL
+            ,H.HSPTLZ_OUT_DATE
+            ,H.SCKBD_RO
+            ,CO.CODE_ID
+            ,CO.CODE_VAL "com.codeVal"
+		FROM
+		    CTE
+            INNER JOIN PATNT_STAT P ON (CTE.REC_CODE = P.REC_CODE)
+            INNER JOIN CLINIC C ON (P.REC_CODE = C.REC_CODE)
+            INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+            INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+            LEFT OUTER JOIN INSP_ORDER IO ON (C.REC_CODE = IO.REC_CODE) 
+            LEFT OUTER JOIN INSPECTION I ON(IO.INSP_CODE = I.INSP_CODE)
+            INNER JOIN HOSPITALIZATION H ON (P.REC_CODE = H.REC_CODE)
+            INNER JOIN COMMON_CODE CO ON (H.SCKBD_RO = CO.CODE_ID) 
+		WHERE
+		    CTE.RN = 1 AND P.STAT_CODE = '015' AND P.FCLTY_CODE = 'J' AND CTE.STAT_CODE != '016'
+        ORDER BY
+            H.HSPTLZ_OUT_DATE ASC
+			
+	</select>
+	
+	<!-- 선택한 환자의 처방내역. 검사. 소견  -->
+	<select id="selectPatientClinicOrder" resultType="PresDocVO">
+		
+		WITH CTE AS (
+		    SELECT 
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT CTE.PATNT_NM
+                , P.STAT_CODE
+                , P.FCLTY_CODE
+                , C.REC_CODE
+                , M.MEDI_CODE 
+				, CTE.PATNT_CODE "rec.patnt.patntCode"
+				, C.CLINIC_CONTENT "pre.clinic.clinicContent"
+				, M.MEDI_NM "medi.mediNm"
+				, D.PRES_DATE
+                , C.DSS_CODE "pre.clinic.dssCode"
+                , C.INS_YN "pre.clinic.insYn"
+                , DSS.DSS_NM "pre.clinic.disease.dssNm"
+                , I.INSP_CODE "pre.clinic.ins.inspCode"
+                , ISP.INSP_NM "pre.clinic.ins.insp.inspNm"
+                , P.FCLTY_CODE 
+                , F.FCLTY_NM "rec.patStat.fcInfo.fcltyNm"
+                , SUBSTR(CTE.PATNT_IDENTINO, 1, 8) || '-******'  "rec.patnt.patntIdentino"
+		FROM CTE
+			INNER JOIN PATNT_STAT P ON(CTE.REC_CODE = P.REC_CODE)
+            INNER JOIN FCLTY_INFO F ON(P.FCLTY_CODE = F.FCLTY_CODE)
+			INNER JOIN CLINIC C ON(P.REC_CODE = C.REC_CODE)
+            INNER JOIN DISEASE DSS ON (C.DSS_CODE = DSS.DSS_CODE)
+			INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+			INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+			LEFT OUTER JOIN MEDICINE M ON (D.MEDI_CODE = M.MEDI_CODE)
+            LEFT OUTER JOIN INSP_ORDER I ON(C.CLINIC_CODE = I.CLINIC_CODE)
+            LEFT OUTER JOIN INSPECTION ISP ON(I.INSP_CODE = ISP.INSP_CODE)
+		WHERE
+		    CTE.RN = 1  AND P.STAT_CODE = '006' and D.REC_CODE = #{recCode}
+		ORDER BY
+		    CTE.REC_CODE
+		
+	</select>
+	
+	<select id="selectHospitalClinicOrder" resultType="HospitalizationVO">
+	
+		 WITH CTE AS (
+		    SELECT 
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT CTE.PATNT_NM
+                , P.STAT_CODE
+                , P.FCLTY_CODE
+                , C.REC_CODE
+                , M.MEDI_CODE
+				, CTE.PATNT_CODE 
+				, C.CLINIC_CONTENT "clinic.clinicContent" 
+				, M.MEDI_NM "clinic.pres.presd.medi.mediNm" 
+				, D.PRES_DATE
+                , C.DSS_CODE "clinic.disease.dssCode" 
+                , DSS.DSS_NM "dss.dssNm" 
+                , I.INSP_CODE "clinic.ins.inspCode" 
+                , ISP.INSP_NM "clinic.ins.insp.inspNm" 
+                , P.FCLTY_CODE 
+                , F.FCLTY_NM "re.patStat.fcInfo.fcltyNm"
+                , SUBSTR(CTE.PATNT_IDENTINO, 1, 6) || '-******' "patnt.patntIdentino"  
+                , H.SCKBD_RO 
+                , H.HSPTLZ_TOTAL
+                , C.INS_YN "clinic.insYn"
+                , CD.CODE_ID "com.codeId"
+                , CD.CODE_NM "com.codeNm"
+		FROM CTE
+			INNER JOIN PATNT_STAT P ON(CTE.REC_CODE = P.REC_CODE)
+            INNER JOIN FCLTY_INFO F ON(P.FCLTY_CODE = F.FCLTY_CODE)
+			INNER JOIN CLINIC C ON(P.REC_CODE = C.REC_CODE)
+            INNER JOIN DISEASE DSS ON (C.DSS_CODE = DSS.DSS_CODE)
+			INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+			INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+			LEFT OUTER JOIN MEDICINE M ON (D.MEDI_CODE = M.MEDI_CODE)
+            LEFT OUTER JOIN INSP_ORDER I ON(C.CLINIC_CODE = I.CLINIC_CODE)
+            LEFT OUTER JOIN INSPECTION ISP ON(I.INSP_CODE = ISP.INSP_CODE)
+            INNER JOIN HOSPITALIZATION H ON (P.REC_CODE = H.REC_CODE)
+            INNER JOIN COMMON_CODE CD ON(H.SCKBD_RO = CD.CODE_ID)
+		WHERE
+		    CTE.RN = 1 AND P.STAT_CODE = '006'  AND P.REC_CODE = #{recCode}
+		ORDER BY
+		    CTE.REC_CODE
+		    
+	</select>
+	
+	<!-- 검진 환자의 내역 -->
+	<select id="selectMdexClinicOrder" resultType="MdexmnVO">
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+			)
+	    SELECT
+	           SUBSTR(CTE.PATNT_IDENTINO, 1, 6) || '-******' "recep.patnt.patntIdentino"
+			    ,CTE.PATNT_NM "recep.patnt.patntNm"
+	            ,CTE.PATNT_CODE "recep.patnt.patntCode"
+	            ,CTE.REC_CODE
+	            ,CTE.STAT_CODE
+			    ,CTE.STAT_TIME
+	            ,P.STAT_CODE
+	            ,P.FCLTY_CODE 
+	            ,M.MDEXMN_CODE
+	            ,M.MDEXMN_DATE
+	            ,M.REC_CODE
+	            ,MR.MDEXMN_CODE
+	            ,MR.INSP_NM "MdexmnRsVO.inspNm"
+	            ,C.CODE_ID
+	            ,C.CODE_NM "mdexmnRsVO.com.codeNm"
+	            ,C.CODE_VAL "mdexmnRsVO.com.codeVal"
+	    FROM CTE
+	        INNER JOIN PATNT_STAT P ON (CTE.REC_CODE = P.REC_CODE)
+	        INNER JOIN MDEXMN M ON (CTE.REC_CODE = M.REC_CODE)
+	        LEFT OUTER JOIN MDEXMN_RSTLT MR ON(M.MDEXMN_CODE = MR.MDEXMN_CODE)
+        	LEFT OUTER JOIN COMMON_CODE C ON(C.CODE_ID = MR.INSP_NM)
+	    WHERE
+			CTE.RN = 1 AND P.FCLTY_CODE = 'G' AND P.REC_CODE = #{recCode}
+		
+	</select>
+	
+	<!-- 수납 insert -->
+	<insert id="insertReceive" parameterType="ReceiveVO">
+		<selectKey order="BEFORE" keyProperty="rcvmtCode" resultType="String">
+			SELECT 'RCVMT' || LPAD(RCVMT_CODE_SEQ.nextval,4,'0')
+			FROM DUAL
+		</selectKey>
+		INSERT INTO RECEIVE (
+		    RCVMT_CODE
+		    , TOTALAMT
+		    , RECVMT_DAY
+		    , RECVMT_MTh
+		    , REC_CODE
+		) VALUES (
+		  #{rcvmtCode,jdbcType=VARCHAR}
+		, #{totalamt,jdbcType=NUMERIC}
+		, SYSDATE
+		, #{recvmtMth,jdbcType=VARCHAR}
+		, #{recCode,jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<!-- 영수증 창에 금액 정보 조회 -->	
+	<select id="selectReceiveAmount" resultType="ReceptionVO">
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT DISTINCT
+		    CTE.PATNT_NM "patnt.patntNm"
+            ,CTE.PATNT_CODE "patnt.patntCode"
+            ,CTE.REC_CODE 
+		    ,P.STAT_CODE "patStat.statCode"
+		    ,P.FCLTY_CODE
+            ,COALESCE(SUM(D.PRESDOC_AMT) OVER (PARTITION BY C.REC_CODE), 0) "clinic.pres.presd.presdocAmt"
+            ,C.INS_YN "clinic.insYn"
+            ,C.CLINIC_DATE "clinic.clinicDate"
+            ,D.PRES_SEPAR "clinic.pres.presd.presSepar"
+            ,MR.INSP_NM "mdexmn.mdexmnRsVO.inspNm"
+            ,MR.MDEXMN_DATE "mdexmn.mdexmnRsVO.mdexmnDate" 
+            ,COM.CODE_VAL "mdexmn.mdexmnRsVO.com.codeVal"
+            ,H.SCKBD_RO "hos.sckbdRo"
+            ,H.HSPTLZ_TOTAL "hos.hsptlzTotal"
+            ,TO_CHAR(TO_DATE(H.HSPTLZ_IN , 'YYYYMMDD'), 'YYYY-MM-DD') "hos.hsptlzIn" 
+            ,H.HSPTLZ_OUT_DATE "hos.hsptlzOutDate"
+            ,COM2.CODE_VAL "hos.com.codeVal"
+            ,COM3.CODE_NM "horder.comm.codeNm"
+            ,COM3.CODE_VAL "horder.comm.codeVal"
+            ,IO.INSP_CODE "clinic.ins.inspCode"
+            ,I.INSP_COST "clinic.ins.insp.inspCost"
+            ,I.FCLTY_CODE "clinic.ins.insp.fc.fcltyCode"
+		FROM
+		    CTE
+            INNER JOIN PATNT_STAT P ON (CTE.REC_CODE = P.REC_CODE)
+            LEFT OUTER JOIN CLINIC C ON (P.REC_CODE = C.REC_CODE)
+            LEFT OUTER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+            LEFT OUTER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+            LEFT OUTER JOIN INSP_ORDER IO ON (C.REC_CODE = IO.REC_CODE)
+            LEFT OUTER JOIN INSPECTION I ON(IO.INSP_CODE = I.INSP_CODE)
+            LEFT OUTER JOIN MDEXMN M ON (P.REC_CODE = M.REC_CODE)
+            LEFT OUTER JOIN MDEXMN_RSTLT MR ON (M.MDEXMN_CODE = MR.MDEXMN_CODE)
+            LEFT OUTER JOIN COMMON_CODE COM ON(MR.INSP_NM = COM.CODE_ID)
+            LEFT OUTER JOIN HOSPITALIZATION H ON(P.REC_CODE = H.REC_CODE)
+            LEFT OUTER JOIN COMMON_CODE COM2 ON(H.SCKBD_RO = COM2.CODE_ID)
+            LEFT OUTER JOIN HSPTLZ_ORDER HO ON(H.REC_CODE = HO.REC_CODE)
+            LEFT OUTER JOIN COMMON_CODE COM3 ON(HO.DIET = COM3.CODE_ID)
+		WHERE
+		    CTE.RN = 1 AND P.STAT_CODE = '015'  AND P.REC_CODE= #{recCode}
+        ORDER BY
+            CTE.REC_CODE
+	</select>
+	
+	
+	
+	<!-- 통계자료실(연/월) 매출액 -->	
+	<select id="selectTotalAmount" resultType="ReceiveVO">
+	SELECT TO_CHAR(RECVMT_DAY, 'YYYY') AS YEAR,
+       TO_CHAR(RECVMT_DAY, 'MM') AS MONTH,
+       SUM(TOTALAMT) AS totalAmount
+	FROM RECEIVE
+		GROUP BY TO_CHAR(RECVMT_DAY, 'YYYY'), TO_CHAR(RECVMT_DAY, 'MM')
+		ORDER BY TO_CHAR(RECVMT_DAY, 'YYYY'), TO_CHAR(RECVMT_DAY, 'MM')
+	</select>
+	
+	<!-- 수납대기 환자의 제증명 확인 -->
+	<select id="selectDocument" resultType="ReceptionVO">
+	
+	SELECT
+		 R.REC_CODE
+		 ,P.PATNT_NM "patnt.patntNm"
+		 ,P.GEN "patnt.gen"
+		,CASE WHEN SUBSTR(P.PATNT_IDENTINO, 8, 1) IN ('1', '2')
+		   THEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE('19' || SUBSTR(P.patnt_identino, 1, 2),'YYYY'))
+		   WHEN SUBSTR(P.PATNT_IDENTINO, 8, 1) IN ('3', '4')
+		   THEN EXTRACT(YEAR FROM SYSDATE) - EXTRACT(YEAR FROM TO_DATE('20' || SUBSTR(P.patnt_identino, 1, 2),'YYYY'))
+		   END AS "patnt.patntAge"
+		,TO_CHAR(
+	        CASE
+	            WHEN SUBSTR(P.patnt_identino, 1, 2) BETWEEN '69' AND '99' THEN
+	                TO_DATE('19' || SUBSTR(P.patnt_identino, 1, 6), 'YYYYMMDD')
+	            ELSE
+	                TO_DATE('20' || SUBSTR(P.patnt_identino, 1, 6), 'YYYYMMDD')
+	        END, 'YYYY-MM-DD') "patnt.patntIdentino"
+		,P.PATNT_ADDR1 "patnt.patntAddr1"
+		,SUBSTR(P.PATNT_TELNO, 1, 3) || '-' ||
+		    SUBSTR(P.PATNT_TELNO, 4, 4) || '-' ||
+		    SUBSTR(P.PATNT_TELNO, 8, 4) AS "patnt.patntTelno"
+		,C.DSS_CODE "clinic.dssCode"
+		,C.DSS_NO "clinic.dssNo"
+		,DIS.DSS_NM "clinic.disease.dssNm"
+		,M.MEDI_NM "medi.mediNm"
+		,PD.PRES_DATE "clinic.pres.presd.presDate"
+        ,PD.PRES_M_CO "clinic.pres.presd.presMCo"
+		,PD.PRES_M_AMT "clinic.pres.presd.presMAmt"
+        ,PD.MEDI_DAY "clinic.pres.presd.mediDay"
+		,C.DOC_EMP_NO "clinic.docEmpNo"
+        ,DDTL.DOC_EMP_NM "ddtl.docEmpNm"
+        ,DDTL.DOCTR_NUM "ddtl.doctrNum"
+		,C.CLINIC_CONTENT "clinic.clinicContent"
+	FROM RECEPTION R
+		INNER JOIN PATIENT P ON (R.PATNT_CODE = P.PATNT_CODE)
+		INNER JOIN CLINIC C ON (R.REC_CODE = C.REC_CODE)
+		INNER JOIN DOCTOR_DTL DDTL ON (C.DOC_EMP_NO = DDTL.DOC_EMP_NO)
+		INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+		INNER JOIN PRES_DOC PD ON (PRE.PRES_CODE = PD.PRES_CODE)
+		INNER JOIN MEDICINE M ON (PD.MEDI_CODE = M.MEDI_CODE)
+		INNER JOIN DISEASE DIS ON ((C.DSS_CODE = DIS.DSS_CODE) AND (C.DSS_NO = DIS.DSS_NO))
+		INNER JOIN PATNT_STAT PS ON (R.REC_CODE = PS.REC_CODE)
+	WHERE PS.STAT_CODE = '015' AND PS.REC_CODE = #{recCode}
+	
+	</select>
+	
+	<!-- 외래진료 수납대기 검색 -->
+	<select id="searchPatientList" resultType="PresDocVO">
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT DISTINCT
+                       
+	        CASE 
+		        WHEN SUBSTR(CTE.PATNT_IDENTINO, 1, 1) IN ('0', '1', '2') THEN 
+		            '20' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		        ELSE 
+		            '19' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		    	END AS "rec.patnt.patntIdentino"
+		    ,CTE.PATNT_NM "rec.patnt.patntNm"
+            ,CTE.PATNT_CODE 
+            ,CTE.REC_CODE
+		    ,P.STAT_CODE
+		    ,C.REC_CODE
+		    ,CTE.STAT_CODE
+		    ,CTE.STAT_TIME
+		    ,P.FCLTY_CODE
+            ,D.PRES_DATE
+            ,COALESCE(SUM(D.PRESDOC_AMT) OVER (PARTITION BY C.REC_CODE), 0) "presdocAmt"
+            ,I.INSP_COST
+            ,COALESCE(SUM(I.INSP_COST) OVER (PARTITION BY C.REC_CODE), 0) "pre.clinic.ins.insp.inspCost"
+		FROM
+		    CTE
+            INNER JOIN PATNT_STAT P ON (CTE.REC_CODE = P.REC_CODE)
+            INNER JOIN CLINIC C ON (P.REC_CODE = C.REC_CODE)
+            INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+            INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+            LEFT OUTER JOIN INSP_ORDER IO ON (C.REC_CODE = IO.REC_CODE)
+            LEFT OUTER JOIN INSPECTION I ON(IO.INSP_CODE = I.INSP_CODE)
+		WHERE
+		    CTE.RN = 1 AND P.STAT_CODE = '015' AND CTE.STAT_CODE != '016' AND P.FCLTY_CODE != 'J' AND CTE.PATNT_NM LIKE '%' || #{patntNm} || '%'
+        ORDER BY
+            D.PRES_DATE ASC
+	</select>
+	
+	<!--  외래진료 수납대기인 환자 검색 (날짜) -->
+	<select id="searchPatientDate" resultType="PresDocVO">
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT DISTINCT
+                       
+	        CASE 
+		        WHEN SUBSTR(CTE.PATNT_IDENTINO, 1, 1) IN ('0', '1', '2') THEN 
+		            '20' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		        ELSE 
+		            '19' || SUBSTR(CTE.PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(CTE.PATNT_IDENTINO, 5, 2)
+		    	END AS "rec.patnt.patntIdentino"
+		    ,CTE.PATNT_NM "rec.patnt.patntNm"
+            ,CTE.PATNT_CODE 
+            ,CTE.REC_CODE
+		    ,P.STAT_CODE
+		    ,C.REC_CODE
+		    ,CTE.STAT_CODE
+		    ,CTE.STAT_TIME
+		    ,P.FCLTY_CODE
+            ,D.PRES_DATE
+            ,COALESCE(SUM(D.PRESDOC_AMT) OVER (PARTITION BY C.REC_CODE), 0) "presdocAmt"
+            ,I.INSP_COST
+            ,COALESCE(SUM(I.INSP_COST) OVER (PARTITION BY C.REC_CODE), 0) "pre.clinic.ins.insp.inspCost"
+		FROM
+		    CTE
+            INNER JOIN PATNT_STAT P ON (CTE.REC_CODE = P.REC_CODE)
+            INNER JOIN CLINIC C ON (P.REC_CODE = C.REC_CODE)
+            INNER JOIN PRESCRIPTION PRE ON (C.CLINIC_CODE = PRE.CLINIC_CODE)
+            INNER JOIN PRES_DOC D ON (PRE.PRES_CODE = D.PRES_CODE)
+            LEFT OUTER JOIN INSP_ORDER IO ON (C.REC_CODE = IO.REC_CODE)
+            LEFT OUTER JOIN INSPECTION I ON(IO.INSP_CODE = I.INSP_CODE)
+		WHERE
+		    CTE.RN = 1 AND P.STAT_CODE = '015' AND CTE.STAT_CODE != '016' AND P.FCLTY_CODE != 'J' 
+		    AND D.PRES_DATE BETWEEN TO_DATE( #{recDate} || '12:00:00', 'YYYY-MM-DD HH24:MI:SS')
+                         AND TO_DATE( #{recDate} || '23:59:59', 'YYYY-MM-DD HH24:MI:SS')
+        ORDER BY
+            D.PRES_DATE ASC
+	</select>
+</mapper>

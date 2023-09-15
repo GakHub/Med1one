@@ -1,0 +1,17 @@
+package kr.or.ddit.medical.receive.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+@Mapper
+public interface ReceiveDao {
+	
+	/**
+	 * 수납대기인 환자리스트 조회
+	 * @return
+	 */
+	public List<PatntStatVO> selectPatientList();
+}

@@ -1,0 +1,5 @@
+package kr.or.ddit.medical.examinate.service;
+
+public class MdexmnServiceImpl implements MdexmnService {
+
+}

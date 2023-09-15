@@ -1,0 +1,27 @@
+package kr.or.ddit.medical.receive.service;
+
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.medical.receive.dao.ReceiveDao;
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+@Service
+public class ReceiveServiceImpl implements ReceiveService {
+	
+	@Inject
+	private ReceiveDao receiveDao;
+
+	/**
+	 * 수납대기인 환자리스트 조회
+	 */
+	@Override
+	public List<PatntStatVO> retrievePatientList() {
+		return receiveDao.selectPatientList();
+	}
+	
+	
+}

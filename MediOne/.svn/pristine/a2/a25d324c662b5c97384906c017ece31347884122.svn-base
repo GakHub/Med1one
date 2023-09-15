@@ -1,0 +1,616 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" buffer="8kb"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<!-- Favicon-->
+
+<!-- plugin css file  -->
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/plugin/owlcarousel/owl.carousel.min.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/plugin/fullcalendar/main.min.css">
+<!-- project css file  -->
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/css/ihealth.style.min.css">
+
+<!--부트스트랩 자바스크립트 코드  -->
+<link href="<%=request.getContextPath()%>/resources/js/bootstrap5/css/bootstrap.min.css" rel="stylesheet">
+
+
+
+<style type="text/css">
+
+.top-color {
+  border-top: 3px solid #6aab9c; 
+}
+
+.card-body {
+	height: 200px;
+}
+
+tr, td, th.sorting {
+	font-size: 16px;
+	text-align: center; /* 텍스트 정렬을 가운데로 설정 */
+}
+
+a.page-link {
+	/*   font-size: xx-small; */
+	
+}
+
+li.pagelink {
+	width: 50px;
+	text-align: center; /* 텍스트 정렬을 가운데로 설정 */
+}
+
+label {
+	/*     font-size: 14px; /* 텍스트 크기 설정 */ */
+	
+}
+
+input[type="search"] {
+	width: 100px !important; /* 입력칸의 길이 설정 */
+}
+
+ui {
+	width: 50px;
+	font-size: xx-small;;
+	text-align: center; /* 텍스트 정렬을 가운데로 설정 */
+}
+
+/* 민트색 버튼 스타일 */
+.mint-btn {
+	margin-left: 10px;
+	display: inline-block;
+	font-weight: 500;
+	line-height: 1.5;
+	text-align: center;
+	vertical-align: middle;
+	cursor: pointer;
+	color: #fff; /* 텍스트 색상 */
+	background-color: #6aab9c; /* 배경색 */
+	border-color: #6aab9c; /* 테두리 색상 */
+	user-select: none;
+	padding: 0.375rem 0.75rem;
+	font-size: 1.2em;
+	border-radius: 0.25rem;
+	float: right; /* 버튼을 오른쪽으로 부유(floating)시킴 */
+}
+
+/* 민트색 버튼 호버 효과 */
+.mint-btn:hover {
+	background-color: #5fa192; /* 호버시 배경색 변경 */
+	border-color: #5fa192; /* 호버시 테두리 색상 변경 */
+	/* 다른 호버 효과 (예: 텍스트 색상 변경) 추가 가능 */
+}
+
+/* 민트색 버튼 클릭 효과 */
+.mint-btn:active {
+	background-color: #5fa192; /* 클릭시 배경색 변경 */
+	border-color: #5fa192; /* 클릭시 테두리 색상 변경 */
+}
+
+/* CSS 스타일 */
+.owl-carousel .item img {
+	width: 300px !important; /* 원하는 가로 크기(px)로 설정 */
+}
+
+.img-thumbnail{
+	width:360px;
+	height:360px;
+}
+</style>
+
+
+<div class="body d-flex py-3">
+
+	<div class="container-xxl">
+
+		<div class="row g-3 mb-3"
+			style="height: 90vh; margin-left: -310px; margin-right: -500px; margin-top:-100px">
+			<!-- 세로로 길게 배치된 card1 -->
+			<div class="col-md-4 col-lg-4"
+				style="width: 20%; height: 100%; margin-right: 1%;">
+				<div class="card top-color" style="height: 100%; margin-left:-10px; margin-right:-20px">
+					<div
+						class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+						<h6 class="mb-0 fw-bold">검사대기목록</h6>
+						<select id="fcltySelect" class="form-select" style="width:150px">
+							<option value="H">일반검사실</option>
+							<option value="K">CT실</option>
+							<option value="L">MRI실</option>
+							<option value="M">초음파실</option>
+							<option value="N">내시경실</option>
+							<option value="O">임상병리검사실</option>
+						</select>
+					</div>
+					<div class="card-body">
+						<table class="table" > 
+							<thead>
+								<tr>
+									<th>접수코드</th>
+									<th style="width:100px">환자명</th>
+									<th>소견</th>
+									<th>상태</th>
+								<td><input type="hidden" id="recCd" name="recCode" /></td>
+								</tr>
+							</thead>
+							<tbody id="patTbody">
+							
+							</tbody>
+						</table>
+								
+
+					</div>
+				</div>
+			</div>
+			<!-- 나머지 카드들 (2행부터) -->
+			<div class="col-md-8 col-lg-8"
+				style="display: flex; flex-direction: column; width: 50%;">
+				<!-- 2행 1열 카드 시작 -->
+				<div class="row g-3 mb-3" style="flex: 1; display: flex;">
+					<div class="col-md-4 col-lg-4"
+						style="width: 30%; margin-right: 1%; flex-grow: 1;">
+						<div class="card h-100 top-color">
+							<div
+								class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+								<h6 class="mb-0 fw-bold">환자 정보</h6>
+							</div>
+							<div class="card-body">
+								<h4 id="patName"></h4>
+								<table class="table">
+									<thead>
+										<tr>
+											<th>검사코드</th>
+											<th>검사이름</th>
+											<th>검사실</th>
+											<th></th>
+											<th></th>
+										</tr>
+									</thead>
+									<tbody id="patInspInfo">
+										
+									</tbody>
+								</table>
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- 2행 1열 카드 종료 -->
+				<!-- 2행 2열 카드 시작 -->
+				<div class="row g-3 mb-3" style="flex: 1; display: flex;">
+					<div class="col-md-4 col-lg-4"
+						style="width: 30%; margin-right: 1%; flex-grow: 1;">
+						<div class="card h-100 top-color">
+							<div style="height:30%">
+								<div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+									<h6 class="mb-0 fw-bold">진료 이력</h6>
+								</div>
+								<table class="table">
+									<thead>
+										<tr>
+											<th>진료코드</th>
+											<th>진단병명</th>
+											<th>진료소견</th>
+											<th>진단일시</th>
+										</tr>
+									</thead>
+									<tbody id="patientClinic">
+										
+									</tbody>
+								</table>
+							</div>
+							<div style="height:66%">
+								<div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+									<h6 class="mb-0 fw-bold">과거 내역</h6>
+								</div>
+								<div style="overflow: auto; width: 1000px; height: 250px;">
+								<table class="table">
+									<thead>
+										<tr>
+											<th>처방코드</th>
+											<th>소견</th>
+											<th>처방약품</th>
+											<th>처방날짜</th>
+											<th>총투약일</th>
+										</tr>
+									</thead>
+									<tbody id="patientPast">
+										
+									</tbody>
+								</table>
+								</div>
+								</div>
+						</div>
+						
+					</div>
+				</div>
+			</div>
+
+
+			<!-- 세로로 길게 배치된 card3 -->
+			<div class="col-md-4 col-lg-4"
+				style="width: 20%; height: 100%; margin-right: 1%;">
+				<div class="card top-color" style="height: 100%;">
+					<div
+						class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+						<h6 class="mb-0 fw-bold">검사 결과</h6>
+					</div>
+					<div class="card-body">
+						<div class="team_members video-list" style="height:50%" id="imageArea">
+						</div>
+						<div class="card" style="height: 50%;">
+							<div
+								class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+								<h6 class="mb-0 fw-bold">검사소견</h6>
+							</div>
+							<div class="card-body" style="font-size: x-small;">
+								<textarea class="form-control mb-3" style="height: 200px; font-size: large;" placeholder="검사소견 작성" id="resultArea"></textarea>
+								<button type="button" class="mint-btn mt-1 fw-bold" id="resultBtn">등록</button>
+								<button type="reset" class="mint-btn mt-1 fw-bold">취소</button>
+							</div>
+							<!--cardBody end  -->
+						</div>
+						<!--card end  -->
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<!-- 2열 end -->
+	</div>
+	<!--컨테이너  -->
+</div>
+<!--바디  -->
+
+<!-- 바코드 api -->
+<script src="<%=request.getContextPath()%>/resources/js/cdn.jsdelivr.net_npm_jsbarcode@3.11.0_dist_JsBarcode.all.min.js"></script>
+<!-- <!--부트스트랩 자바스크립트 코드  --> 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Jquery Core Js -->
+<script src="<%=request.getContextPath()%>/resources/dist/assets/bundles/libscripts.bundle.js"></script>
+
+
+
+<!-- Plugin Js-->
+<script src="<%=request.getContextPath()%>/resources/dist/assets/plugin/fullcalendar/main.min.js"></script>
+<script src="<%=request.getContextPath()%>/resources/dist/assets/bundles/apexcharts.bundle.js"></script>
+<script src="<%=request.getContextPath()%>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+<script src="<%=request.getContextPath()%>/resources/dist/assets/plugin/owlcarousel/owl.carousel.js"></script>
+
+<!-- Jquery Page Js -->
+<script src="<%=request.getContextPath()%>/resources/js/template.js"></script>
+<script src="<%=request.getContextPath()%>/resources/js/page/doctor-profile.js"></script>
+<script src="<%=request.getContextPath()%>/resources/js/page/virtual.js"></script>
+
+<script>
+	
+	
+	
+	let defaultFcltyCode = "H"; 
+	
+	// 페이지 로딩 시 기본값으로 데이터 로드
+	loadPatientData(defaultFcltyCode);
+	
+	$("#fcltySelect").on("change", function() {
+	    let fcltyCode = $(this).val();
+	    loadPatientData(fcltyCode);
+	});
+	
+	//환자 조회 
+	function loadPatientData(fcltyCode) {
+		$.getJSON("<c:url value='/Inspection/inspPatList.do' />",{fcltyCode:fcltyCode}).done(function(resp){
+			let tbody = $("#patTbody");
+			tbody.empty();
+			if(resp.length>0){
+				$(resp).each(function(idx,patient){
+					
+					if(patient.recept.patStat.statCode === '007') {
+						let tr = $("<tr>").append(
+								$("<td>").html(patient.recCode)
+								,$("<td>").html(patient.recept.patnt.patntNm).data("patntCode",patient.recept.patntCode) 	
+								,$("<td>").html(patient.clinicContent) 
+								,$("<span>").addClass("badge bg-secondary").text("대기중")
+												.attr("data-rec-code", patient.recCode)
+	    					    				.attr("data-fclty-code", patient.recept.patStat.fcltyCode)
+						);
+						
+						
+						tbody.append(tr);
+						
+					} else if(patient.recept.patStat.statCode === '008'){
+						let tr = $("<tr>").append(
+								$("<td>").html(patient.recCode)
+								,$("<td>").html(patient.recept.patnt.patntNm).data("patntCode",patient.recept.patntCode) 
+								,$("<td>").html(patient.clinicContent) 
+								,$("<span>").addClass("badge bg-primary").text("검사중")
+						);
+						tbody.prepend(tr);
+					}
+				});
+			}else{
+				tbody.append(
+					$("<tr>").html(
+						$("<td colspan='4'>").html("검사 중인 환자가 없습니다.")		
+					)		
+				);
+			}
+		});
+	}
+	
+$(document).ready(function() {<!-- document.ready start -->
+
+
+	
+	
+	
+	//진료대기 누르면 진료중으로 INSERT
+	$("#patTbody").on("click", "span.badge.bg-secondary", function() {
+		let recCode = $(this).data("rec-code");
+		let fcltyCode = $(this).data("fclty-code");
+		
+		$.getJSON("<c:url value='/Inspection/inspPatStatInsert.do' />",{recCode:recCode,fcltyCode:fcltyCode }).done(function(resp){
+			alert("검사대기중인 환자를 호출하였습니다.");
+			let fcltyCode = $("#fcltySelect").val();
+			loadPatientData(fcltyCode);
+		});
+	});	
+	
+	
+	
+	
+	//환자이름 클릭하면 검사목록 나오게 검사실코드에 따라서 출력되는게 다름
+	//일반검사실: select박스로 검사실 보내기
+	//나머지: 검사 결과 나오는 체크박스
+	$("#patTbody").on("click", "td:nth-child(2)", function() {
+	    let recCode = $(this).closest("tr").find("td:first-child").html();
+	    let patntNm = $(this).html();
+	    let patntCode = $(this).data("patntCode");
+	    
+	    $("#patName").data("recCode", recCode);
+	    $("#patName").html(patntNm + "님의 검사목록");
+		
+	    //환자 검사목록 출력
+	    $.getJSON("<c:url value='/Inspection/inspList.do' />", { recCode: recCode }).done(function(resp) {
+	    	console.log(resp);
+	    	
+	        let tbody = $("#patInspInfo");
+	        tbody.empty();
+	        $(resp).each(function(idx, inspec) {
+	            let inspCode = inspec.inspCode;
+	            let clinicCode = inspec.clinicCode;
+	        	$.getJSON("<c:url value='/Inspection/selectInsRstYn.do' />",{recCode:recCode, inspCode:inspCode}).done(function(result){
+					if(!result.completed){
+	            	let tr = $("<tr>").append(
+		    	                $("<td>").html(inspec.inspCode)
+		    	                ,$("<td>").html(inspec.insp.inspNm)
+		    	                ,$("<td>").html(inspec.insp.fc.fcltyNm)
+		    	                ,$("<td>").append(
+	    	                		$("<select>").attr({
+	    	                    		class: "inspSelect"
+	    	                		}).append(
+	    	                			$("<option>").text("선택")	
+	    	                			,$("<option>").attr("value", "H").text("일반검사실") 
+			    	                    ,$("<option>").attr("value", "K").text("CT")
+			    	                    ,$("<option>").attr("value", "L").text("MRI")
+			    	                    ,$("<option>").attr("value", "M").text("초음파실")
+			    	                    ,$("<option>").attr("value", "N").text("내시경실")
+			    	                    ,$("<option>").attr("value", "O").text("임상병리검사실")
+	    	               		 ))
+	    	               		,$("<td>").append(
+	    							$("<input>").attr({
+	    								type: "checkbox"
+	    								,class: "inspCheck"
+	    								,value: inspec.recCode
+	    							})		
+	    						)
+	    	            );
+	            	tbody.append(tr);
+	   	 			
+	            	//셀렉트 박스 change 이벤트
+	            	 tr.find(".inspSelect").on("change", function() {
+	                    let fcltyCode = $(this).val();
+						let fcltyNm = $(this).find("option:selected").text();
+						
+						if (confirm(fcltyNm+"로 오더를 전송하시겠습니까?")) {
+							$.getJSON("<c:url value='/Inspection/fcltyInfoInsert.do' />",{fcltyCode:fcltyCode, recCode:recCode}).done(function(){
+								alert("해당 검사실로 오더가 전송되었습니다.");
+								$("#patName").empty();
+								tbody.empty();
+								loadPatientData("H");
+							});
+						}
+	                 }); <!--셀렉트박스 이벤트 end-->
+	            	
+	            	//체크 박스 이벤트
+	            	tr.find(".inspCheck").on("click", function() {
+	            		
+	            		let inspCode = $(this).closest("tr").find("td:first-child").html();
+	            		let imageArea = $("#imageArea");
+	            		
+	            		if (inspCode === 'I04' || inspCode === 'I05' || inspCode === 'I39') {
+	            	        let imgSrc = "<%=request.getContextPath()%>/resources/images/CT1.png"; 
+	            	        let img = $("<img>").attr("src", imgSrc)
+	            	                            .addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+	            	        imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I11'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/CT3.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I15'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/mri.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I02' || inspCode === 'I03' || inspCode === 'I12'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/brainCT.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I01'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/bodyCT.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I06' || inspCode === 'I07' || inspCode === 'I10' ){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/baeCT.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I08' || inspCode === 'I09'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/heart.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I27'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/boneCT.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I13' || inspCode === 'I14' ){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/brainMri.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I16'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/ultrasound1.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I17' || inspCode === 'I18'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/ultrasound2.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I19' || inspCode === 'I20' || inspCode === 'I21' || inspCode === 'I38'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/ultrasound3.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I22' || inspCode === 'I23' || inspCode === 'I24' || inspCode === 'I25' || inspCode === 'I26' ){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/stom.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)  
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else if(inspCode === 'I34'){
+	            	    	let imgSrc = "<%=request.getContextPath()%>/resources/images/sim.png";
+	            	    	let img = $("<img>").attr("src", imgSrc)
+                            			.addClass("rounded-3 mb-3 img-thumbnail shadow-sm");
+       					 	imageArea.empty().append(img);
+	            	    } else{
+	            	    	let img = $("<img>").addClass("barcode");
+	            	    	imageArea.empty().append(img);
+	            	    	<!--js바코드-->
+	            	    	JsBarcode(".barcode") 
+	            	    	.options({font: "OCR-B"})
+	            	    	.EAN13("1234567890128", {fontSize: 18, textMargin: 0})
+	            	    	.render();
+	            	    }
+	            		
+	            		//등록 버튼 눌렀을때
+	            		$("#resultBtn").on("click", function() {
+	            			let inspCode = $(".inspCheck:checked").closest("tr").find("td:first-child").html();
+	            			let inspRsltCn = $("#resultArea").val();
+	            			let fclty = $("#fcltySelect").val();
+	            			// recCode , clinicCode 가져오고있음
+		            			$.getJSON("<c:url value='/Inspection/resultInsert.do' />", {inspCode:inspCode
+									            				,inspRsltCn:inspRsltCn
+									            				, recCode:recCode
+									            				,clinicCode:clinicCode }).done(function(){
+		            				alert("검사 결과를 입력하였습니다.");
+		            				//리로드시키기 ->현재 진료실로
+		            				inspRsltCn.val("");
+		            				$("#imageArea").empty();
+		            				location.reload();
+		            				loadPatientData(fclty);     
+		            			}).fail(function(){
+		       					 alert("결과가 제대로 전송되지 않았습니다. 다시 시도해주세요.");
+		       				 });
+	            			
+	            		});
+	            		
+	            	}); <!--체크박스 이벤트 end -->
+	            	
+	            	
+	            	
+					}else if(!result.completed==0 ){
+						tbody.append(
+								$("<tr>").html(
+									$("<td colspan='5'>").html("검사를 마쳤습니다.")		
+								)		
+							);
+					}
+	            
+	        	});	 <!--검사 목록 확인 end-->
+	            	
+	            	
+	       	 }); <!--검사목록출력 end-->
+	        
+		});
+	    
+	    //환자 진료내역 조회
+	    $.getJSON("<c:url value='/Inspection/clinicView.do' />" ,{recCode:recCode}).done(function(resp){
+	    	let cbody = $("#patientClinic");
+	    	cbody.empty();
+	    	
+	    	let tr = $("<tr>").append(
+	    				$("<td>").html(resp.clinicCode)	
+	    				,$("<td>").html(resp.disease.dssNm)
+	    				,$("<td>").html(resp.clinicContent)
+	    				,$("<td>").html(resp.clinicDate)
+	    	);
+	    	cbody.append(tr);
+	    	
+	    });
+	    
+	    
+	    //환자 과거내역 조회 
+	    $.getJSON("<c:url value='/Inspection/pastPresView.do' />" ,{patntCode:patntCode}).done(function(resp){
+	    	let pbody = $("#patientPast");
+	    	pbody.empty();
+	    	if(resp.length>0){
+	    		$(resp).each(function(idx,medi){
+	    			let tr = $("<tr>").append(
+	                        $("<td>").html(patntCode)
+	                        ,$("<td>").html(medi.pre.clinic.clinicContent)
+	                        ,$("<td>").html(medi.medi.mediNm)
+	                        ,$("<td>").html(medi.presDate)
+	                        ,$("<td>").html(medi.mediDay)
+	                        
+	                    );
+	    			pbody.append(tr);
+	    		});
+	    	}else{
+	    		pbody.append(
+	    			$("<tr>").html(
+	    	            $("<td colspan='5'>").html("과거 진료 정보가 존재하지 않습니다.")
+	    	         )	
+	    		);
+	    	}
+	    });
+	    
+	});  <!--end-->
+	
+	// 환자 진료실로 오더 전송
+	 $("#patTbody").on("click", "span.badge.bg-primary", function() {
+		 let recCode = $(this).closest("tr").find("td:first-child").text();
+		 let fclty = $("#fcltySelect").val();
+	     $.getJSON("<c:url value='/Inspection/clinicSearch.do' />",{recCode:recCode}).done(function(resp){
+	    	 let fcltyCode = resp.fcltyCode;
+	    	 if (confirm("검사를 모두 진행하였습니다. 진료실로 오더를 전송하시겠습니까?")) {
+				 $.getJSON("<c:url value='/Inspection/insertClinicRoomBack.do' />",{recCode:recCode, fcltyCode:fcltyCode}).done(function(res){
+					 alert("해당 진료실로 오더를 전송하였습니다.");
+					 //현재 진료실로 리로드..
+					 $("#patInspInfo").empty();
+					 $("#patName").empty();
+					 loadPatientData(fclty);
+					 
+				 });
+			 }
+	     
+	     });
+	  });
+	
+		
+}); <!-- document.ready end -->
+</script>

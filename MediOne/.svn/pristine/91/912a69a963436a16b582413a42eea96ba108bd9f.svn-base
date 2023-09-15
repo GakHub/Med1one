@@ -1,0 +1,5 @@
+package kr.or.ddit.medical.examinate.dao;
+
+public interface MdexmnDao {
+
+}

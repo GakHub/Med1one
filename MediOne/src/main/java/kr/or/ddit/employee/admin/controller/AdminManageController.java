@@ -1,0 +1,137 @@
+package kr.or.ddit.employee.admin.controller;
+
+import java.util.List;
+
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import kr.or.ddit.File.vo.AtchFileDtlVO;
+import kr.or.ddit.employee.admin.service.AdminService;
+import kr.or.ddit.employee.vo.AuthorizationReqVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.employee.vo.PaginationInfo;
+import kr.or.ddit.employee.vo.SimpleCondition;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Controller
+@RequestMapping("/admin/")
+public class AdminManageController {
+
+	private final AdminService service;
+
+	// ui 출력용
+	@GetMapping("authRequestList.do")
+	public String authRequestCheck() {
+		return "auth/authReqList";
+	}
+
+	// 반려 목록 조회(status : D)
+	@GetMapping(value = "authComList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<AuthorizationReqVO> authComList(
+			@RequestParam(name="aprvYn", required = true, defaultValue = "N") String aprvYn
+		) {
+
+		List<AuthorizationReqVO> authList = service.retrieveAuthComList(aprvYn);
+
+		return authList;
+	}
+	
+	// 승인대기 리스트데이터 담기(status : N)
+	@GetMapping(value = "authAprvList.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<AuthorizationReqVO> authAprvList(
+			@RequestParam(name="aprvYn", required = true) String aprvYn
+	) {
+		List<AuthorizationReqVO> authList = service.retrieveAuthAprvList(aprvYn);
+		
+		return authList;
+	}
+
+	// 승인버튼 누르면
+	@RequestMapping(value = "authReqApprv.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public boolean authReqApprv(
+			@RequestParam("who") String empNo
+			, @RequestParam("reqCode") String reqCode
+			, @RequestParam("atchSn")int atchSn
+			,Model model) {
+		AuthorizationReqVO authReq = new AuthorizationReqVO();
+		authReq.setEmpNo(empNo);
+		authReq.setReqCode(reqCode);
+		
+		EmployeeVO empAprv = new EmployeeVO();
+		empAprv.setEmpNo(empNo);
+		empAprv.setAtchSn(atchSn);
+
+		boolean result1 = service.modifyAuthReq(authReq);
+		boolean result2 = service.modifyEmpAprv(empAprv);
+
+		return (result1 == true) && (result2 == true);
+	}
+	
+	//반려버튼 누르면
+	@PostMapping(value="authReturn.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean authReturn(
+			@RequestBody AuthorizationReqVO authReturn
+			, BindingResult errors
+			,Model model
+	) {
+		boolean result = false;
+	    
+	    if (!errors.hasErrors()) {
+	        result = service.modifiyRetrun(authReturn);
+	    }
+	    
+	    return result;
+	}
+	
+	//(반려페이지에서)승인 신청 삭제 버튼 누르면
+	@GetMapping(value="reqDelete.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public boolean delReq(
+		@RequestParam("reqCode") String reqCode
+	) {
+		return service.removeReq(reqCode);
+	}
+
+	@GetMapping("nurScheduleView.do")
+	public String nurScheduleView() {
+		return "medi/schedule";
+	}
+
+	@GetMapping("docScheduleView.do")
+	public String docScheduleView() {
+		return "medi/schedule";
+	}
+
+	@GetMapping("nurScheduleInsert.do")
+	public String nurScheduleInsert() {
+		return "medi/schedule";
+	}
+
+	@GetMapping("docScheduleInsert.do")
+	public String docScheduleInsert() {
+		return "medi/schedule";
+	}
+
+	@GetMapping(value = "fileNameSearch.do", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@ResponseBody
+	public AtchFileDtlVO selectFileName(@RequestParam("reqCode") String reqCode) {
+		AtchFileDtlVO name = service.retrieveatchSearch(reqCode);
+
+		return name;
+	}
+
+}

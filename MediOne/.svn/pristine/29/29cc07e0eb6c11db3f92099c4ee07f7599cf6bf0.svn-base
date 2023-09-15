@@ -1,0 +1,39 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+    <%-- modul page(제이쿼리 사용을 위해 필요한 스크립트만 넣은) --%>
+ <link rel="stylesheet"	href="${pageContext.request.contextPath}/resources/dist/assets/css/ihealth.style.min.css">
+
+<%-- <!--부트스트랩 자바스크립트 코드  -->
+<link href="<%=request.getContextPath()%>/resources/js/bootstrap5/css/bootstrap.min.css" rel="stylesheet"> --%>
+
+ 
+<script src="<%=request.getContextPath() %>/resources/js/jquery-3.7.0.min.js"></script>
+<script src="<%=request.getContextPath() %>/resources/js/customLibs.js"></script>
+<script src="<%=request.getContextPath() %>/resources/js/popper.min.js"></script>	
+<script src="<%=request.getContextPath() %>/resources/js/bootstrap5/js/bootstrap.bundle.min.js"></script>
+<!-- 로딩스피너 -->
+<script type="text/javascript" src="<%=request.getContextPath()%>/resources/js/loadingoverlay.min.js"></script>
+<!-- plugin css file  -->
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/plugin/owlcarousel/owl.carousel.min.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+<!-- project css file  -->
+<link rel="stylesheet" href="<%=request.getContextPath()%>/resources/dist/assets/css/ihealth.style.min.css">
+
+
+<script>
+
+	<c:if test="${not empty message }">
+		alert("${message}");
+		<c:remove var="message" scope="session" /> //memberDeleteController Flash Attribute(RedirectAttributes, FlashMap)
+	</c:if>
+
+
+	$(document).on("ajaxError", function(jqXHR, settings, errorText){
+		console.log("XMLHttpRequest : ", jqXHR);
+		console.log("settings : ", settings);
+		console.log("error : ", errorText);
+	});
+
+</script>

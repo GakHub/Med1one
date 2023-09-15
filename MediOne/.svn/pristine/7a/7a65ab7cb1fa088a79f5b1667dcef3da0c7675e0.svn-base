@@ -1,0 +1,4 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<h4>병동환자</h4>
+<h4>회진일정 조회</h4>

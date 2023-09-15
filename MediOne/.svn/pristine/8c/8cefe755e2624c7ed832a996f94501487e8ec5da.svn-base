@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.employee.fixtures.dao.FixturesDao">
+	
+	<sql id="where">
+		<if test="fxtrsLclas != null and !fxtrsLclas.isEmpty()">
+			F.FXTRS_LCLAS = #{fxtrsLclas}
+		</if>
+	</sql>
+	
+	<!-- 비품 분류 리스트 -->
+	<select id="selectFixDtlList" resultType="FixturesDTLVO">
+		SELECT
+			FXTRS_SE_CODE, FXTRS_SE
+		FROM FIXTURES_DTL
+	</select>
+	
+	<!-- 비품 전체 리스트 -->
+	<select id="selectFixList" resultType="FixturesVO">
+	SELECT 
+		F.FXTRS_CODE
+		, D.FXTRS_SE
+		, D.FXTRS_SE_CODE
+		, F.FXTRS_NM
+		, F.FXTRS_UNTPC
+		, F.FXTRS_INV
+		, F.FXTRS_MFBIZ
+		, F.FXTRS_LCLAS
+	FROM 
+		FIXTURES F
+	INNER JOIN 
+		FIXTURES_DTL D ON(F.FXTRS_LCLAS = D.FXTRS_SE_CODE)
+		<include refid="where" />
+	ORDER BY F.FXTRS_INV ASC
+	</select>
+	
+	<!-- 분류별 비품 리스트 -->
+	<resultMap type="FixturesVO" id="SelectFixures" autoMapping="true">
+		<id property="fxtrsCode" column="FXTRS_CODE" />
+		<association property="fixtureDtl" javaType="FixturesDTLVO" autoMapping="true">
+			<id property="fxtrsSeCode" column="FXTRS_SE_CODE" />
+		</association>
+	</resultMap>
+	
+	<select id="selectFixwhereDtlList" resultMap="SelectFixures">
+		SELECT
+		    FXTRS_CODE
+		  , FXTRS_NM
+		  , FXTRS_UNTPC
+		  , FXTRS_INV
+		  , FXTRS_MFBIZ
+		  , FXTRS_LCLAS
+		  , FXTRS_SE
+		FROM
+    		FIXTURES 
+		INNER JOIN FIXTURES_DTL 
+			ON(FXTRS_LCLAS = FXTRS_SE_CODE)
+		WHERE FXTRS_LCLAS = #{fxtrsLclas}
+	</select>
+	
+	<!-- 비품 수정 -->
+	<update id="updateFixList" parameterType="FixturesVO">
+		UPDATE 
+			FIXTURES
+		<set>
+			<if test="fxtrsNm != null">FXTRS_NM = #{fxtrsNm},</if>
+			<if test="fxtrsCode != null">FXTRS_CODE = #{fxtrsCode},</if>
+			<if test="fxtrsUntpc != null">FXTRS_UNTPC = #{fxtrsUntpc},</if>
+			<if test="fxtrsInv != null">FXTRS_INV = #{fxtrsInv},</if>
+			<if test="fxtrsMfbiz != null">FXTRS_MFBIZ = #{fxtrsMfbiz},</if>
+			<if test="fxtrsLclas != null">FXTRS_LCLAS = #{fxtrsLclas},</if>
+		</set>
+			WHERE FXTRS_SE_CODE = #{fxtrsSeCode}
+	</update>
+
+	
+	<!--비품 발주 리스트 삽입 -->
+	<insert id="insertFixOrderList" parameterType="FixturesReqVO">
+		<selectKey order="BEFORE" keyProperty="fxtrsOrdCode" resultType="String">
+			SELECT 'FXTR' || LPAD(FXTRS_ORD_CODE_SEQ.nextval,3,'0') FROM DUAL			<!-- 시퀀스 삽입 -->
+		</selectKey>
+		INSERT INTO fixtures_req (
+		    fxtrs_ord_code
+		    , fxtrs_date
+		    , fxtrs_count
+		    , fxtrs_code
+		    , emp_no
+		    , fxtrs_se_code
+		    , fxtrs_sttus
+		   
+		) VALUES (
+			  #{fxtrsOrdCode,jdbcType=VARCHAR}
+			, SYSDATE
+			, #{fxtrsCount,jdbcType=NUMERIC}
+			, #{fxtrsCode,jdbcType=VARCHAR}
+			, #{empNo,jdbcType=VARCHAR}
+			, #{fxtrsSeCode,jdbcType=VARCHAR}
+			, CASE WHEN #{fxtrsSttus,jdbcType=CHAR} = '1' THEN 1 ELSE 0 END
+    		, CASE WHEN #{fxtrsSttus,jdbcType=CHAR} = '1' THEN SYSDATE ELSE NULL END
+			, '0'
+			
+		)
+	</insert>
+	
+	<!-- 발주 신청리스트 -->
+	<select id="selectFixOrdList" resultType="FixturesReqVO">
+	SELECT
+	    FR.FXTRS_CODE
+	    , FD.FXTRS_SE
+	    , F.FXTRS_NM
+	    , FR.FXTRS_COUNT
+	    , F.FXTRS_UNTPC
+	    , F.FXTRS_MFBIZ
+	    , E.EMP_NM
+	    , FR.FXTRS_DATE
+	    , FR.EMP_NO
+        , D.DEPT_NM
+        , FR.FXTRS_ORD_CODE
+        , CASE
+		WHEN FXTRS_STTUS = '1' 
+			THEN '지급완료'
+		WHEN FXTRS_STTUS = '0' 
+			THEN '지급대기'
+		ELSE FXTRS_STTUS
+	END AS FXTRS_STTUS
+		, FXTRS_GV_DATE
+	FROM
+	    FIXTURES_REQ FR
+	LEFT JOIN
+	    FIXTURES F ON FR.FXTRS_CODE = F.FXTRS_CODE    
+	LEFT JOIN
+	    FIXTURES_DTL FD ON FR.FXTRS_SE_CODE = FD.FXTRS_SE_CODE
+	LEFT JOIN
+	    EMPLOYEE E ON FR.EMP_NO = E.EMP_NO
+    LEFT JOIN
+	    DEPARTMENT D ON D.DEPT_CODE = E.DEPT_CODE
+	WHERE
+		FXTRS_STTUS = '0'
+	ORDER BY
+        FR.FXTRS_DATE DESC
+	</select>
+	
+	<!-- 비품 이름 검색 -->
+	<select id="searchFixList" resultType="FixturesVO">
+	
+		SELECT 
+			F.FXTRS_CODE
+			, D.FXTRS_SE
+			, D.FXTRS_SE_CODE
+			, F.FXTRS_NM
+			, F.FXTRS_UNTPC
+			, F.FXTRS_INV
+			, F.FXTRS_MFBIZ
+			, F.FXTRS_LCLAS
+		FROM 
+			FIXTURES F
+		INNER JOIN 
+			FIXTURES_DTL D ON(F.FXTRS_LCLAS = D.FXTRS_SE_CODE)
+		WHERE F.FXTRS_NM LIKE '%' || #{fxtrsNm} || '%'
+	
+	</select>
+	
+	<!-- 지급상태 변경(주문하기) -->
+	<update id="updateFixSttus" parameterType="FixturesReqVO">
+        UPDATE 
+        	FIXTURES_REQ
+        SET 
+        	FXTRS_STTUS = '1',
+            FXTRS_GV_DATE = SYSDATE
+        WHERE 
+        	FXTRS_STTUS = '0' 
+        AND 
+        	FXTRS_ORD_CODE = #{fxtrsOrdCode}
+    </update>
+	
+	<!-- 나의 발주 신청내역 -->
+	<select id="selectFixOrdWhereEmpNm" resultType="FixturesReqVO">
+		SELECT
+		    FR.FXTRS_CODE
+		    , FD.FXTRS_SE
+		    , F.FXTRS_NM "fix.fxtrsNm"
+		    , FR.FXTRS_COUNT
+		    , F.FXTRS_UNTPC "fix.fxtrsUntpc"
+		    , F.FXTRS_MFBIZ "fix.fxtrsMfbiz"
+		    , E.EMP_NM
+		    , FR.FXTRS_DATE
+		    , FR.EMP_NO
+	        , FR.FXTRS_ORD_CODE
+	        , FR.FXTRS_STTUS
+	        , FR.FXTRS_GV_DATE
+		FROM
+		    FIXTURES_REQ FR
+		LEFT JOIN
+		    FIXTURES F ON FR.FXTRS_CODE = F.FXTRS_CODE    
+		LEFT JOIN
+		    FIXTURES_DTL FD ON FR.FXTRS_SE_CODE = FD.FXTRS_SE_CODE
+		LEFT JOIN
+		    EMPLOYEE E ON FR.EMP_NO = E.EMP_NO
+	   WHERE FR.EMP_NO = #{empNo}
+		ORDER BY
+	        FR.FXTRS_DATE DESC
+	</select>
+</mapper>

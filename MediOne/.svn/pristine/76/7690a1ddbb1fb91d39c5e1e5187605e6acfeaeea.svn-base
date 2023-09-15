@@ -1,0 +1,31 @@
+package kr.or.ddit.medical.clinc.vo;
+
+import java.time.LocalDate;
+
+import javax.validation.constraints.NotBlank;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * 외래진료 VO
+ * CLINIC
+ * @author PC-10
+ *
+ */
+@Data
+@EqualsAndHashCode(of = "clinicCode")
+public class ClinicVO {
+	@NotBlank
+	private String clinicCode; //외래진료코드 (시퀀스)
+	@NotBlank
+	private String recCode; //접수코드 RECEPTION
+	@NotBlank
+	private String docEmpNo; //의사사번 DOCTOR_DTL
+	@NotBlank
+	private String disisCode; //상병진단코드 DIAGNOSIS
+	@NotBlank
+	private String clinicContent; //진료내용
+	@NotBlank
+	private LocalDate clinicDate; //진료일자 sysdate
+}

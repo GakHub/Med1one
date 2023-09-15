@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.administ.dao.AdministDao">
+
+<!-- 환자 검색 -->
+<select id="selectPatientList" resultType="PatientVO">
+	SELECT 
+		  PATNT_CODE
+		, PATNT_NM
+		, SUBSTR(PATNT_IDENTINO,1, 8)||'******' AS PATNT_IDENTINO
+		, PATNT_TELNO
+		, PATNT_ADDR1
+		, PATNT_ADDR2
+		, PATNT_ZIPCODE
+		, HEIGHT
+		, WEIGHT
+		, GEN
+		, PAT_EMAIL
+	 FROM PATIENT
+	WHERE PATNT_NM  LIKE '%' ||  #{patntNm} || '%'
+</select>
+
+<!-- 초진환자 등록 -->
+<insert id="insertPatient" parameterType="PatientVO">
+	<selectKey order="BEFORE" resultType="String" keyProperty="patntCode">
+		SELECT 'PNT' || LPAD(PATNT_CODE_SEQ.NEXTVAL,4,'0')
+		FROM DUAL
+	</selectKey>
+	INSERT INTO PATIENT (
+	  	PATNT_CODE
+		, PATNT_NM
+		, PATNT_IDENTINO
+		, PATNT_TELNO
+		, PATNT_ADDR1
+		, PATNT_ADDR2
+		, PATNT_ZIPCODE
+		, HEIGHT
+		, WEIGHT
+		, GEN
+		, PATNT_REGIST
+		, PAT_EMAIL
+	) VALUES (
+		  #{patntCode,jdbcType=VARCHAR}
+		, #{patntNm,jdbcType=VARCHAR}
+		, #{patntIdentino,jdbcType=VARCHAR}
+		, #{patntTelno,jdbcType=VARCHAR}
+		, #{patntAddr1,jdbcType=VARCHAR}
+		, #{patntAddr2,jdbcType=VARCHAR}
+		, #{patntZipcode,jdbcType=VARCHAR}
+		, #{height,jdbcType=VARCHAR}
+		, #{weight,jdbcType=VARCHAR}
+		, #{gen,jdbcType=CHAR}
+		, SYSDATE
+		, #{patEmail,jdbcType=VARCHAR}
+	)
+</insert>
+
+<!-- 접수 코드 여부 -->
+<select id="selectRecCodeYN" parameterType="string" resultType="PatntStatVO">
+		SELECT P.PATNT_CODE, P.PATNT_NM, R.REC_CODE
+		FROM PATIENT P
+		LEFT OUTER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+		WHERE P.PATNT_CODE = #{patntCode}
+</select>
+
+<!-- 수납완료(016) 여부 -->
+<select id="selectStorageYN" parameterType="string" resultType="PatntStatVO">
+		SELECT P.PATNT_CODE, P.PATNT_NM, R.REC_CODE, S.STAT_CODE, S.STAT_TIME
+		FROM PATIENT P
+		LEFT OUTER JOIN RECEPTION R ON (P.PATNT_CODE = R.PATNT_CODE)
+		LEFT OUTER JOIN PATNT_STAT S ON (R.REC_CODE = S.REC_CODE)
+		WHERE P.PATNT_CODE = #{patntCode} AND R.PATNT_CODE IS NOT NULL AND S.STAT_CODE = '016'
+		  AND S.STAT_TIME = (
+		    SELECT MAX(PS.STAT_TIME)
+		    FROM PATNT_STAT PS
+		    WHERE PS.REC_CODE = R.REC_CODE
+		  )
+		ORDER BY R.REC_CODE DESC
+</select>
+
+<!-- 환자 접수 등록(증상 입력) -->
+<insert id="insertPatientReceipt" parameterType="ReceptionVO">
+	<selectKey order="BEFORE" resultType="String" keyProperty="recCode">
+		SELECT 'REC' || LPAD(REC_CODE_SEQ.NEXTVAL,4,'0')
+		FROM DUAL
+	</selectKey>
+	INSERT INTO RECEPTION (
+		 REC_CODE
+		, SYMPTOM
+		, RECEIPT_DATE
+		, PATNT_CODE
+	) VALUES (
+		  #{recCode,jdbcType=VARCHAR}
+		, #{symptom,jdbcType=VARCHAR}
+		, SYSDATE
+		, #{patntCode,jdbcType=VARCHAR}
+	)
+	
+</insert>
+
+<!-- 접수 한 사람들  -->
+<insert id="insertReceipt" parameterType="PatntStatVO">
+	INSERT INTO PATNT_STAT (
+		  STAT_CODE
+		, REC_CODE
+		, FCLTY_CODE
+		, STAT_TIME 
+	) VALUES (
+		  '002'
+		, #{recCode,jdbcType=VARCHAR}
+		, 'I'
+		, SYSDATE
+	)
+</insert>
+
+<!-- 상태 코드  환자 조회 -->
+<select id="selectPatntStatList" resultType="PatntStatVO" parameterType="string">
+	<![CDATA[
+	 
+    WITH CTE AS (
+    SELECT
+        P.patnt_nm,
+        R.rec_code,
+        S.stat_code,
+        S.stat_time,
+        S.fclty_code,
+        R.symptom,
+        P.gen,
+        SUBSTR(P.PATNT_IDENTINO, 1, 2) AS birth_year,
+        CASE
+            WHEN TO_NUMBER(SUBSTR(P.PATNT_IDENTINO, 1, 1)) BETWEEN 0 AND 2 THEN TO_NUMBER('20' || SUBSTR(P.PATNT_IDENTINO, 1, 2))
+            ELSE TO_NUMBER('19' || SUBSTR(P.PATNT_IDENTINO, 1, 2))
+        END AS full_birth_year,
+        EXTRACT(YEAR FROM SYSDATE) - TO_NUMBER(CASE
+            WHEN TO_NUMBER(SUBSTR(P.PATNT_IDENTINO, 1, 1)) BETWEEN 0 AND 2 THEN TO_NUMBER('20' || SUBSTR(P.PATNT_IDENTINO, 1, 2))
+            ELSE TO_NUMBER('19' || SUBSTR(P.PATNT_IDENTINO, 1, 2))
+        END) - (CASE WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'MMDD')) < TO_NUMBER(SUBSTR(P.PATNT_IDENTINO, 3, 4)) THEN 1 ELSE 0 END) AS patnt_identino,
+        ROW_NUMBER() OVER (PARTITION BY R.rec_code ORDER BY S.stat_time DESC) AS RN
+    FROM
+        PATIENT P
+        INNER JOIN RECEPTION R ON P.patnt_code = R.patnt_code
+        INNER JOIN PATNT_STAT S ON S.rec_code = R.rec_code
+)
+SELECT
+    patnt_nm "recep.patnt.patntNm",
+    rec_code,
+    stat_code,
+    stat_time,
+    fclty_code,
+    symptom "RECEP.SYMPTOM",
+    gen "recep.patnt.gen",
+    patnt_identino"recep.patnt.patntIdentino"
+FROM
+    CTE
+WHERE
+    RN = 1
+ORDER BY
+    rec_code
+     ]]>
+</select>
+
+<!-- 환자 상태 변경(대기 중, 005) -->
+<insert id="insertPatntStat" parameterType="PatntStatVO">
+	INSERT INTO PATNT_STAT (
+		 STAT_CODE
+		, REC_CODE
+		, FCLTY_CODE
+		, STAT_TIME 
+	) VALUES (
+		 '005'
+		, #{recCode,jdbcType=VARCHAR}
+		, #{fcltyCode,jdbcType=VARCHAR}
+		, SYSDATE
+	)
+</insert>
+
+<!-- 환자 상태 변경(건강검진, 013) -->
+<insert id="insertcheckupStat" parameterType="PatntStatVO">
+	INSERT INTO PATNT_STAT (
+		 STAT_CODE
+		, REC_CODE
+		, FCLTY_CODE
+		, STAT_TIME 
+	) VALUES (
+		 '013'
+		, #{recCode,jdbcType=VARCHAR}
+		, #{fcltyCode,jdbcType=VARCHAR}
+		, SYSDATE
+	)
+</insert>
+
+<!-- 부서 조회 -->
+<select id="fcltyList" resultType="PatntStatVO">
+	WITH CTE AS (
+		    SELECT
+		        P.patnt_nm ,
+		        R.rec_code,
+		        S.stat_code,
+		        S.stat_time,
+		        S.fclty_code,
+                R.symptom,
+                
+		        ROW_NUMBER() OVER (PARTITION BY R.rec_code ORDER BY S.stat_time DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.patnt_code = R.patnt_code
+		        INNER JOIN PATNT_STAT S ON S.rec_code = R.rec_code
+		)
+		SELECT
+		    patnt_nm "recep.patnt.patntNm",
+		    rec_code,
+		    stat_code,
+		    stat_time,
+		    fclty_code,
+            symptom "RECEP.SYMPTOM"
+		FROM
+		    CTE
+		WHERE
+			RN = 1 AND
+		    FCLTY_CODE=#{fcltyCode} AND (STAT_CODE='005' OR STAT_CODE='006' OR STAT_CODE='013')
+		ORDER BY
+		    rec_code
+
+</select>
+
+
+
+
+<!-- 관리자 통계용 : 등록환자수 -->
+	<select id="selectPatntCount" resultType="int">
+	SELECT
+		COUNT(*) AS TOTALCOUNT
+	FROM
+		PATIENT
+	</select>
+	
+	
+	<!-- 관리자 통계용 : 지역별 환자 수  -->
+	<select id="selectLocalPatntCount" resultType="PatientVO">
+	SELECT
+	CASE
+	WHEN patnt_addr1 LIKE '%강원%' THEN '강원' 
+    WHEN patnt_addr1 LIKE '%서울%' THEN '서울' 
+    WHEN patnt_addr1 LIKE '%경기%' THEN '경기' 
+    WHEN patnt_addr1 LIKE '%부산%' THEN '부산' 
+    WHEN patnt_addr1 LIKE '%대전%' THEN '대전'
+    WHEN patnt_addr1 LIKE '%대구%' THEN '대구' 
+    WHEN patnt_addr1 LIKE '%인천%' THEN '인천' 
+    WHEN patnt_addr1 LIKE '%충청남도%' THEN '충청남도' 
+    WHEN patnt_addr1 LIKE '%충청북도%' THEN '충청북도' 
+    WHEN patnt_addr1 LIKE '%경상남도%' THEN '경상남도' 
+    WHEN patnt_addr1 LIKE '%경상북도%' THEN '경상북도' 
+    WHEN patnt_addr1 LIKE '%전라남도%' THEN '전라남도' 
+    WHEN patnt_addr1 LIKE '%전라북도%' THEN '전라북도' ELSE '기타'
+	END AS LOCAL,
+	COUNT(*) AS LOCALCOUNT
+	FROM
+	PATIENT GROUP BY CASE 
+	WHEN patnt_addr1 LIKE '%강원%' THEN '강원' 
+    WHEN patnt_addr1 LIKE '%서울%' THEN '서울' 
+    WHEN patnt_addr1 LIKE '%경기%' THEN '경기' 
+    WHEN patnt_addr1 LIKE '%부산%' THEN '부산' 
+    WHEN patnt_addr1 LIKE '%대전%' THEN '대전'
+    WHEN patnt_addr1 LIKE '%대구%' THEN '대구' 
+    WHEN patnt_addr1 LIKE '%인천%' THEN '인천' 
+    WHEN patnt_addr1 LIKE '%충청남도%' THEN '충청남도' 
+    WHEN patnt_addr1 LIKE '%충청북도%' THEN '충청북도' 
+    WHEN patnt_addr1 LIKE '%경상남도%' THEN '경상남도' 
+    WHEN patnt_addr1 LIKE '%경상북도%' THEN '경상북도' 
+    WHEN patnt_addr1 LIKE '%전라남도%' THEN '전라남도' 
+    WHEN patnt_addr1 LIKE '%전라북도%' THEN '전라북도' ELSE '기타' 
+    END
+	</select>
+	
+
+<!-- 관리자 통계용 : 월별 환자수 조회 -->
+	<select id="selectMonthPatntCount" resultType="PatientVO">
+    SELECT
+    	EXTRACT(YEAR FROM PATNT_REGIST) AS YEAR,
+    	EXTRACT(MONTH FROM PATNT_REGIST) AS MONTH,
+    	COUNT(*) AS MONTHCOUNT
+	FROM
+    	PATIENT
+	GROUP BY
+    	EXTRACT(YEAR FROM PATNT_REGIST),
+    	EXTRACT(MONTH FROM PATNT_REGIST)
+	ORDER BY YEAR, MONTH
+	</select>
+	
+	
+
+
+
+</mapper>

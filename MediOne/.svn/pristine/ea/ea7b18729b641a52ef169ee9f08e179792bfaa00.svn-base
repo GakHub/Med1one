@@ -1,0 +1,212 @@
+package kr.or.ddit.sales.controller;
+
+import java.util.List;
+import javax.inject.Inject;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import kr.or.ddit.employee.service.EmployeeService;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.medical.administ.service.AdministService;
+import kr.or.ddit.medical.hospital.service.HospitalService;
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.patient.service.PatientService;
+import kr.or.ddit.medical.receive.service.ReceiveService;
+import kr.or.ddit.medical.receive.vo.ReceiveVO;
+import kr.or.ddit.medical.vo.PatientVO;
+import kr.or.ddit.medical.vo.PatntStatVO;
+import kr.or.ddit.sales.service.SalesService;
+import kr.or.ddit.sales.vo.SalesVO;
+
+@Controller
+@RequestMapping("/sales")
+public class SalesChartController {
+
+
+	@Inject
+	private ReceiveService recService;
+	@Inject
+	private	SalesService salesService;
+	
+	@Inject
+	private	AdministService adService;
+	
+	@Inject
+	private	EmployeeService empService;
+	
+	@Inject
+	private	PatientService cntService;
+	
+	@Inject
+	private HospitalService hospitalService;
+	
+	@GetMapping("chartView.do")
+	public String chartView() {
+		return "sales/salesChart";
+	}
+	
+	@GetMapping(value = "salesChart.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<SalesVO> salesChart() {
+		
+		List<SalesVO> totalQuarterSales = salesService.retrieveQuarterSales();
+		System.out.println("totalQuarterSales>>>>>>>>>>>>>>"+totalQuarterSales);
+			return totalQuarterSales;
+			
+	}
+	
+	@GetMapping(value = "salesMonthChart.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<SalesVO> salesMonthChart() {
+		
+		List<SalesVO> totalMonthSales = salesService.retrieveMonthSales();
+		System.out.println("totalMonthSales>>>>>>>>>>>>>>"+totalMonthSales);
+			return totalMonthSales;
+			
+	}
+	
+
+	@GetMapping(value = "salesMonthChart2.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<ReceiveVO> salesMonthChart2() {
+		
+		List<ReceiveVO> totalMonthSales = recService.retrieveTotalAmount();
+		System.out.println("totalMonthSales>>>>>>>>>>>>>>"+totalMonthSales);
+			return totalMonthSales;
+			
+	}
+	
+	
+	@GetMapping(value = "deptSalesChart.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<SalesVO> empQuarterSalesChart() {
+		
+		List<SalesVO> empQuarterSales = salesService.retrieveEmpQuarterSales();
+		System.out.println("empQuarterSales>>>>>>>>>>>>>>"+empQuarterSales);
+
+	  	  
+			
+			return empQuarterSales;
+	}
+
+	  
+
+	@GetMapping(value = "allSalesChart.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<SalesVO> allSalesChart() {
+		
+		List<SalesVO> allSales = salesService.retrieveSales();
+		System.out.println("allSales>>>>>>>>>>>>>>"+allSales);
+			return allSales;
+	}
+
+	
+	@GetMapping(value = "deptEmpChart.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<EmployeeVO> deptEmpChart() {
+		
+		List<EmployeeVO> deptEmpList = empService.retrieveDeptEmp(); //부서별 직원수
+		System.out.println("deptEmpList>>>>>>>>>>>>>>"+deptEmpList);
+			return  deptEmpList;
+	}
+	
+	
+	@GetMapping(value = "jobEmpChart.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<EmployeeVO> jobEmpChart() {
+		
+		List<EmployeeVO> jobEmpList = empService.retrieveJobEmp(); //직군별 직원수
+		System.out.println("jobEmpList>>>>>>>>>>>>>>"+jobEmpList);
+			return  jobEmpList;
+	}
+	
+	
+	@GetMapping(value = "countMonth.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<PatntStatVO> monthChart() {
+		
+		List<PatntStatVO> countMonthList = cntService.retrieveMonthPatntCount(); //월별 환자수
+		System.out.println(" countMonthList>>>>>>>>>>>>>>"+ countMonthList);
+			return countMonthList;
+	}
+	
+	//월별환자수
+	@GetMapping(value = "countMonth2.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<PatientVO> monthChart2() {
+		
+		List<PatientVO> countMonthList = adService.retrieveMonthPatntCount(); //월별 환자수
+		System.out.println(" countMonthList>>>>>>>>>>>>>>"+ countMonthList);
+			return countMonthList;
+	}
+	
+	
+	@GetMapping(value = "countYear.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<PatntStatVO> countYearChart() {
+		List<PatntStatVO> countyearList = cntService.retrieveYearPatntCount(); //연도별 환자수
+		System.out.println("countyearList>>>>>>>>>>>>>>"+countyearList);
+	   
+			return countyearList;
+	}
+	
+	
+	@GetMapping(value = "monthHospital.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<HospitalizationVO> monthHospitalChart() {
+		List<HospitalizationVO> monthHospitalList = hospitalService.retrieveMonthHospitalCount(); //연도월별환자수
+		System.out.println("monthHospitalList>>>>>>>>>>>>>>"+monthHospitalList);
+	   
+			return monthHospitalList;
+	}
+	
+	@GetMapping(value = "yearHospital.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<HospitalizationVO> yearHospitalChart() {
+		List<HospitalizationVO> yearHospitalList = hospitalService.retrieveYearHospitalCount(); //연도별 환자수
+		System.out.println("yearHospitalList>>>>>>>>>>>>>>"+yearHospitalList);
+	   
+			return yearHospitalList;
+	}
+	
+	
+	@GetMapping(value = "totalHospital.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public int totalHospitalChart(@RequestParam("year") String year, @RequestParam("month") String month) {
+	
+		int monthCount = hospitalService.retrieveTotalHospitalCount(year, month);//특정연도월 입원환자수
+		System.out.println("monthCount>>>>>>>>>>>>>>"+monthCount);
+	   
+			return monthCount;
+	}
+	
+	
+	@GetMapping(value = "totalPatnt.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public int totalPatntChart() {
+	
+		int patentCount = adService.retrievePatntCount();
+		System.out.println("patentCount>>>>>>>>>>>>>>"+patentCount);
+	   
+			return patentCount;
+	}
+	
+	
+
+	@GetMapping(value = "localCount.do", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseBody
+	public List<PatientVO> localCountlChart() {
+	
+		List<PatientVO> localCount= adService.retrieveLocalPatntCount();
+		System.out.println("localCount>>>>>>>>>>>>>>"+localCount);
+	   
+			return localCount;
+	}
+	
+	
+	
+	
+}

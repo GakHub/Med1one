@@ -1,0 +1,28 @@
+package kr.or.ddit.medical.receive.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/receive")
+public class ReceiveController {
+	
+	// 수납 jsp 접근
+	@GetMapping("receiveSearch.do")
+	public String receiveSearch() {
+		return "administ/receive";
+	}
+	
+	// 수납 
+	@GetMapping("receiveInsert.do")
+	public String receiveInsert() {
+		return "";
+	}
+	
+	// 제증명
+	@GetMapping("document.do")
+	public String document() {
+		return "";
+	}
+}

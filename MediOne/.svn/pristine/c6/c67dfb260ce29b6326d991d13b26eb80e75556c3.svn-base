@@ -1,0 +1,66 @@
+package kr.or.ddit.rez.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import kr.or.ddit.medical.nurse.vo.ReservationVO;
+
+@Mapper
+public interface RezDAO {
+	
+	/**
+	 * 전체예약정보조회
+	 * @return
+	 */
+	public List<ReservationVO> selectAllRez();
+	
+	/**
+	 * 진료실 전체예약정보조회
+	 * @return
+	 */
+	public List<ReservationVO> selectClinicAllRez();
+	
+	/**
+	 * 검사실 전체예약정보조회
+	 * @return
+	 */
+	public List<ReservationVO> selectExamAllRez();
+	
+	/**
+	 * 진료과별 예약정보조회
+	 * @param fcltyCode
+	 * @return
+	 */
+	public List<ReservationVO> selectFcltyRez(String fcltyCode);
+
+	/**
+	 * 예약환자 상세정보
+	 * @param patntCode
+	 * @return
+	 */
+	public List<ReservationVO> selectPatientRez(String patntCode);
+	
+	/**
+	 * 예약일자별, 진료과별 예약테이블
+	 * @param resevDate
+	 * @param fcltyCode
+	 * @return
+	 */
+	public List<ReservationVO> selectTimeRez(@Param("resveDate") String resevDate, @Param("fcltyCode") String fcltyCode);
+	
+	/**
+	 * 예약일자별 진료과 타임테이블
+	 * @param resevDate
+	 * @return
+	 */
+	public List<ReservationVO> selectClinicTimeTable(String resveDate);
+	/**
+	 * 예약일자별 검사과 타임테이블
+	 * @param resevDate
+	 * @return
+	 */
+	public List<ReservationVO> selectExamTimeTable(String resevDate);
+
+}

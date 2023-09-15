@@ -1,0 +1,54 @@
+.room_book {
+  .room {
+    position: relative;  
+    min-width: 100px;
+    input[type=checkbox] {
+      position: absolute;
+      opacity: 0;
+    }
+    input[type=checkbox]:checked {
+      + label {
+        i{
+            color: #8dbfb3; 
+            padding-top: 5px;
+            display: block;
+        }
+      }
+    }
+    input[type=checkbox]:disabled {
+      + label {
+        cursor: not-allowed;
+        i{
+            color: var(--color-400); 
+            padding-top: 5px;
+            display: block;
+        }
+        span{
+            display: block;
+            color: var(--text-color);
+            padding-top: 5px;
+        }
+      }
+    }
+    label {    
+      display: block;
+      position: relative;    
+      text-align: center;
+      font-size: 14px;
+      padding: 4px 0;
+      border-radius: 5px;
+      cursor: pointer;
+      i{
+        color: #ff9691;
+        padding-top: 5px;
+        display: block;
+      }
+      span{
+          display: block;
+          color: var(--text-color);
+          padding-top: 5px;
+      }
+    }
+  }
+}
+  

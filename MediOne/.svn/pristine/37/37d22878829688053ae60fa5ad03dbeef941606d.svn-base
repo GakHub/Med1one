@@ -1,0 +1,5 @@
+package kr.or.ddit.medical.receive.dao;
+
+public interface ReceiveDao {
+
+}

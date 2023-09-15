@@ -1,0 +1,108 @@
+<%@page import="java.util.List"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+   pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<script src='<%=request.getContextPath() %>/resources/fullcalendar-6.1.8/dist/index.global.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+
+  body {
+    margin: 40px 10px;
+    padding: 0;
+    font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+    font-size: 14px;
+  }
+
+  #calendar {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+</style>
+</head>
+<body>
+
+  <select id="employee"> <!-- 옵션 만들어주기 -->
+<!--      <option value="">선택</option> -->
+     <option value="doctor">의사</option>
+     <option value="nurse">간호사</option>
+  </select>
+
+  
+  <div id='calendar' ></div>
+
+</body>
+
+<script>
+// eventSources 변수를 선언하고 위에서 만든 옵션들을 Map형태로 만들어줌(어떤 것을 선택했냐에 따라서 데이터를 바꿔주기 위해)
+let eventSources = {
+      doctor:
+      { 
+         id: "doctor",
+         url: "<c:url value='docScheduleList.do'/>",
+         color:'pink',
+         textColor: 'black',
+      },
+      nurse:
+         {
+         id: "nurse",
+         url: "<c:url value='nurScheduleList.do'/>",
+         color:'lightblue',
+         textColor: 'black'
+         }
+}
+document.addEventListener('DOMContentLoaded', function() {
+   var calendarEl = document.getElementById('calendar');
+   var calendar = new FullCalendar.Calendar(calendarEl, {
+
+	   
+			initialView : 'dayGridMonth',
+			locale : 'ko', // 한국어 설정
+		    headerToolbar : {
+		          start : "",
+		          center : "prev title next",
+		          end : 'dayGridMonth,dayGridWeek,dayGridDay'
+		            },
+		    selectable : true,
+		    droppable : true,
+		    editable : true,
+			eventSources : []
+
+      
+         initialView : 'dayGridMonth',
+         locale : 'ko', // 한국어 설정
+          headerToolbar : {
+                start : "dayGridMonth,dayGridWeek,dayGridDay",
+                center : "title",
+                end : 'prev next'
+                  },
+          selectable : true,
+          droppable : true,
+          editable : true,
+         eventSources : [] // 위에서 만든 eventSources랑 이어짐(?) 캘린더를 눌렀을 때 의사 캘린더가 먼저 나오는 이유는 옵션에 '의사'를 먼저 넣어주었기 때문에 여기에 데이터값이 들어감
+         });
+         calendar.render(); // 캘린더 렌더링
+         empSel.data("relCalendar", calendar); // 
+         empSel.trigger('change'); // 'employee' id를 가진 요소에 대해 'change'이벤트 강제 발생
+   });
+   
+ let empSel = $("#employee").on('change', function(event){
+      event.preventDefault(); 
+      var result = $("#employee option:selected").val(); // 선택한 옵션 값 가져오기
+      
+      let calendar = $(this).data("relCalendar");
+      
+      calendar.getEventSources().forEach((tmpes)=>tmpes.remove());
+      
+      calendar.addEventSource(eventSources[result]) 
+      calendar.render();
+}); 
+</script>
+</html>
+
+   

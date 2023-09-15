@@ -1,0 +1,388 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" buffer="8kb"%>
+
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>:: I-Health::  Dashboard </title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon"> <!-- Favicon-->
+    <!-- plugin css file  -->
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+    <!-- project css file  -->
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/css/ihealth.style.min.css">
+<!-- Google Code  -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-264428387-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'UA-264428387-1');
+    </script>
+
+</head>
+<body>
+
+ <!-- 템플릿 -->
+<div id="ihealth-layout" class="theme-tradewind">
+    
+    <!-- main body area -->
+    <div class="main px-lg-4 px-md-4">
+    
+        <!-- Body: Body -->
+        <div class="body d-flex py-3">
+
+		<!--컨테이너  -->
+            <div class="container-xxl">
+            
+             <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+              <h4 class="mb-0 fw-bold" style="color: #6aab9c;">병동 조회</h4>
+              </div>
+              
+             <!--대기실 2개 컨테이너  -->
+                <div class="row g-3 mb-3">
+                
+                  <!-- 병동현황-->
+                    <div class="col-md-12 col-lg-6" style="width : 48%; margin-right: 30px">
+                         <div class="card mb-3">
+                            <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">전체목록</h6>
+                            </div>
+                            <div class="card-body">
+                                <table id="myDataTable" class="table table-hover align-middle mb-0" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>접수코드</th>
+                                            <th>환자명</th>
+                                            <th>생년월일</th>
+                                            <th>배정병실</th>
+                                           	<th>입원시작일</th>
+                                           	<th>입원종료일</th>
+                                            <th>환자상태</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                        	<td>20230801</td>
+                                            <td>정지현</td>
+                                            <td>801012</td>
+                                            <td>404호</td>
+                                            <td>230801</td>
+                                            <td>230802</td>
+                                            <td><span class="badge bg-success">입원중</span></td>
+                                        </tr>
+                                       <tr>
+                                         	<td>20230801</td>
+                                        	<td>황소희</td>
+                                            <td>801012</td>
+                                            <td>-</td>
+                                            <td>230805</td>
+                                            <td>230806</td>
+                                            <td><span class="badge bg-success">입원대기</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                     <!--대기실-->
+                         <!-- 대기실 -->
+                    <div class="col-md-12 col-lg-6" style="width : 48%; margin-right: 30px">
+                         <div class="card mb-3">
+                            <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">병동환자</h6>
+                            </div>
+                            <div class="card-body">
+                                <table id="myDataTable2" class="table table-hover align-middle mb-0" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>접수코드</th>
+                                            <th>환자명</th>
+                                          <th>배정병실</th>
+                                           	<th>입원시작일</th>
+                                           	<th>입원종료일</th>
+                                            <th>담당의</th>
+                                            <th>환자관리</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                        	<td>20230801</td>
+                                            <td>정지현</td>
+                                            <td>404호</td>
+                                            <td>230801</td>
+                                            <td>230802</td>
+                                            <td>황소희</td>
+                                            <td><span class="badge bg-success">작성대기</span></td>
+                                        </tr>
+                                       <tr>
+                                         	<td>20230801</td>
+                                            <td>정지현</td>
+                                            <td>404호</td>
+                                            <td>230801</td>
+                                            <td>230802</td>
+                                            <td>유송빈</td>
+                                            <td><span class="badge bg-success">작성완료</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                     <!--대기실-->
+                     
+                     
+                     
+                </div>
+           <!--1행 대기실, 진료실 끝 -->
+  
+           
+              <!--2행 시작 -->
+                <div class="row g-3 mb-3">
+                   <!-- 병동관리 -->
+                    <div class="col-md-12 col-lg-6" style="width : 100%; margin-right: 30px;">
+                         <div class="card mb-3">
+                            <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">병동관리</h6>
+                            </div>
+                            
+                        <div class="card-body">
+                                <div class="room_book">
+                                    <div class="row row-cols-2 row-cols-sm-4 row-cols-md-6 row-cols-lg-6 g-3">
+                                        <div class="room col">
+                                        <input type="checkbox" id="1A" checked/>
+                                        <label for="1A"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room A-101</span></label>
+                                        </div>
+                                    
+                                        <div class="room col">
+                                        <input type="checkbox" id="1B" />
+                                        <label for="1B"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room B-102</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="1C" />
+                                        <label for="1C"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room C-103</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" disabled id="1D" />
+                                        <label for="1D"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Occupied</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="1E" />
+                                        <label for="1E"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room D-104</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="1F" checked/>
+                                        <label for="1F"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room E-105</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2A" />
+                                        <label for="2A"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room F-106</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2B" />
+                                        <label for="2B"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room G-107</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2C" checked/>
+                                        <label for="2C"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room H-108</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2D" />
+                                        <label for="2D"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room I-109</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2E" checked/>
+                                        <label for="2E"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room J-110</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="2F" />
+                                        <label for="2F"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room K-111</span></label>
+                                        </div>
+                                        
+                                        <div class="room col">
+                                        <input type="checkbox" id="3A" checked/>
+                                        <label for="3A"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room L-112</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3B" />
+                                        <label for="3B"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room M-113</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3C" />
+                                        <label for="3C"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room N-114</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3D" />
+                                        <label for="3D"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room O-115</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3E" checked/>
+                                        <label for="3E"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room P-116</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3F" />
+                                        <label for="3F"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room Q-117</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3A" checked/>
+                                        <label for="3A"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room L-112</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3B" />
+                                        <label for="3B"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room M-113</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3C" />
+                                        <label for="3C"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room N-114</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3D" />
+                                        <label for="3D"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room O-115</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3E" checked/>
+                                        <label for="3E"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room P-116</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3F" />
+                                        <label for="3F"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room Q-117</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3A" checked/>
+                                        <label for="3A"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room L-112</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3B" />
+                                        <label for="3B"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room M-113</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3C" />
+                                        <label for="3C"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room N-114</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3D" />
+                                        <label for="3D"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room O-115</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3E" checked/>
+                                        <label for="3E"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room P-116</span></label>
+                                        </div>
+                                        <div class="room col">
+                                        <input type="checkbox" id="3F" />
+                                        <label for="3F"><i class="icofont-patient-bed fs-2"></i><span class="text-muted">Room Q-117</span></label>
+                                        </div>
+                           </div>
+                          </div>
+                        </div>
+                    </div>
+                     <!--병동관리-->
+                
+                    <!--2행 달력 -->
+                      <div class="col-md-12 col-lg-6" style="width: 30%">
+                        <div class="card mb-3" >
+                            <div class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                                <h6 class="mb-0 fw-bold ">진료예약</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="wrapper">                               
+                                    <div id="calendar"> 
+                                    <div class="monthChange"></div>
+                                    <div class='timepicker'>
+                                        <div class="owl">
+                                          <div>06:00</div>
+                                          <div>07:00</div>
+                                          <div>08:00</div>
+                                          <div>09:00</div>
+                                          <div>10:00</div>
+                                          <div>11:00</div>
+                                          <div>12:00</div>
+                                          <div>13:00</div>
+                                          <div>14:00</div>
+                                          <div>15:00</div>
+                                          <div>16:00</div>
+                                          <div>17:00</div>
+                                          <div>18:00</div>
+                                          <div>19:00</div>
+                                          <div>20:00</div>
+                                        </div>
+                                        <div class="fade-l"></div>
+                                        <div class="fade-r"></div>
+                                      </div>
+                                  </div>
+                              
+                                  
+                                  <div class="inner-wrap">
+                                    <form>
+                                        <div class="mb-3">
+                                          <input type="text" class="form-control" id="ps-name" placeholder="환자명">
+                                        </div>
+                                        <div class="mb-3">
+                                            <input type="text" class="form-control" id="ps-code" placeholder="환자코드">
+                                        </div>
+                                        <select class="form-select mb-3" aria-label="Default select example">
+                                            <option selected>진료과</option>
+                                            <option value="1">호흡기내과</option>
+                                            <option value="2">소화기내과</option>
+                                            <option value="3">영상의학과</option>
+                                            <option value="4">심장내과</option>
+                                            <option value="5">감염내과</option>
+                                            <option value="6">내분비과</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-user disabled request"> 진료예약 <span>On</span>
+                                            <span class="day fw-bold text-white"></span>
+                                            <span>At</span>
+                                            <span class="time fw-bold text-white"></span>
+                                            <i class="icofont-dotted-right fs-3"></i>
+                                            </button>
+                                      </form>
+                                  </div>
+                              </div>
+                            </div>
+                            <!--카드 바디 달력끝  -->
+                        </div><!--카드전체  -->
+                    </div>
+               <!--달력끝  -->  
+                   </div>
+
+             </div><!--컨테이너  -->
+        </div> <!--바디  -->   
+    </div> <!--메인바디  -->
+</div> <!--템플릿  -->
+
+<!-- Jquery Core Js -->
+<script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/libscripts.bundle.js"></script>
+
+<!-- Plugin Js -->
+<script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/apexcharts.bundle.js"></script>
+<script src="<%=request.getContextPath() %>/resources/dist/assets/plugin/jqueryuicalandar/jquery-ui.min.js"></script>
+<script src="<%=request.getContextPath() %>/resources/dist/assets/plugin/owlcarousel/owl.carousel.js"></script>
+<script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/dataTables.bundle.js"></script>      
+
+<!-- Jquery Page Js -->
+<script src="<%=request.getContextPath() %>/resources/js/template.js"></script>
+<script src="<%=request.getContextPath() %>/resources/js/page/index.js"></script>
+ <script>
+      $('#myDataTable')
+      .addClass( 'nowrap' )
+      .dataTable( {
+          responsive: true,
+          columnDefs: [
+              { targets: [-1, -3], className: 'dt-body-right' }
+          ]
+      });
+      
+      $('#myDataTable2')
+      .addClass( 'nowrap' )
+      .dataTable( {
+          responsive: true,
+          columnDefs: [
+              { targets: [-1, -3], className: 'dt-body-right' }
+          ]
+      });
+ </script>
+</body>
+</html> 

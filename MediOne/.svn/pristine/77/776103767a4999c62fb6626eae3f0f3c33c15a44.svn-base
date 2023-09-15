@@ -1,0 +1,40 @@
+package kr.or.ddit.sales.controller;
+
+import java.util.List;
+import javax.inject.Inject;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import kr.or.ddit.sales.service.SalesService;
+import kr.or.ddit.sales.vo.SalesVO;
+
+@Controller
+@RequestMapping("/sales")
+public class SalesChartController {
+
+
+	@Inject
+	private	SalesService salesService;
+	
+	
+	@RequestMapping("salesChart.do")
+	public void salesChart( 
+			Model model
+	) {
+		System.out.println("컨트롤러는 타는거니");
+		
+		List<SalesVO> sales = salesService.retrieveSales();
+		List<SalesVO> totalQuarterSales = salesService.retrieveQuarterSales();
+		List<SalesVO> empQuarterSales = salesService.retrieveEmpQuarterSales();
+		System.out.println("쎄일즈???"+sales);
+		System.out.println("쿼터ㅠㅠㅠ??"+totalQuarterSales);
+		System.out.println("엠뿌ㅠㅠ???"+empQuarterSales);
+		model.addAttribute("sales",sales);
+		model.addAttribute("totalQuarterSales",totalQuarterSales);
+		model.addAttribute("empQuarterSales",empQuarterSales);
+		
+
+	}
+
+}

@@ -1,0 +1,18 @@
+package kr.or.ddit.medical.clinc.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+@Mapper
+public interface InspectionDao {
+	
+	/**
+	 * 검사대기(007) 검사중(008) 인 환자 조회
+	 * @return
+	 */
+	public List<PatntStatVO> selectInspPatntStat();
+	
+}

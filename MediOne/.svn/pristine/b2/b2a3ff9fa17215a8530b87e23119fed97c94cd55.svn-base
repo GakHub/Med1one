@@ -1,0 +1,32 @@
+package kr.or.ddit.stat.vo;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(of = "statId")
+@Data
+public class PageRank {
+	
+	private String statId;
+	private String statRank;
+    private String statPage;
+
+    public PageRank() {
+    }
+
+    public PageRank(String statId, String statRank, String statPage) {
+        this.statId = statId;
+        this.statRank = statRank;
+        this.statPage = statPage;
+    }
+
+    public String getStatId() {
+        return statId;
+    }
+
+    public String getStatPage() {
+        return statPage;
+    }
+   
+
+}

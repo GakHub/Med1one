@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.receive.dao.ReceiveDao">
+	
+	<select id="selectPatientList" resultType="PatntStatVO">
+		
+		WITH CTE AS (
+		    SELECT
+		        P.PATNT_NM 
+		        ,P.PATNT_CODE
+                ,P.PATNT_IDENTINO
+		        ,R.REC_CODE
+                ,R.SYMPTOM
+		        ,S.STAT_CODE
+		        ,S.STAT_TIME
+		        ,S.FCLTY_CODE
+		        ,ROW_NUMBER() OVER (PARTITION BY R.REC_CODE ORDER BY S.STAT_TIME DESC) AS RN
+		    FROM
+		        PATIENT P
+		        INNER JOIN RECEPTION R ON P.PATNT_CODE = R.PATNT_CODE
+		        INNER JOIN PATNT_STAT S ON S.REC_CODE = R.REC_CODE
+		)
+		SELECT
+                       
+            SUBSTR(PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(PATNT_IDENTINO, 5, 2) "RECEP.PATNT.PATNTIDENTINO"
+		    ,PATNT_NM "RECEP.PATNT.PATNTNM"
+		    ,PATNT_CODE "RECEP.PATNTCODE"
+		    ,REC_CODE
+		    ,STAT_CODE
+		    ,STAT_TIME
+		    ,FCLTY_CODE
+            ,SYMPTOM "RECEP.SYMPTOM"
+		FROM
+		    CTE
+		WHERE
+		    RN = 1 AND STAT_CODE = '015'
+		ORDER BY
+		    REC_CODE
+		
+	</select>
+	
+</mapper>

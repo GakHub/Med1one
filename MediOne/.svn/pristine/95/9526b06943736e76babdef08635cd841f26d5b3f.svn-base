@@ -1,0 +1,572 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+
+<!-- 첨부파일 탭 클릭용 Bootstrap JavaScript 추가 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
+
+
+<style>
+
+
+.nextContentBtn {
+margin-top : 20px;
+position: fixed;
+}
+
+.preContentBtn {
+position: fixed;
+margin-top : 20px;
+}
+
+/*댓글  */
+#overflow {
+	width: 850px;
+	height: 320px;
+	overflow-y: scroll;
+}
+
+#overflow::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+
+#resizeable-card {
+   overflow-y: auto;
+   resize: both;
+   min-height: 250px;
+   max-height: 400px;
+   border: 1px solid #ccc;
+   padding: 10px;
+   
+   height: 250px;
+   margin-top: 20px;
+}
+
+#resizeable-card::-webkit-scrollbar {
+   display: none;
+}
+
+
+/* 첨부파일 */
+#overflow3 {
+	width: 100%;
+	height: 250px;
+	overflow-y: scroll;
+	margin-top: 20px;
+	text-align: center;
+}
+
+#overflow3::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+#overflow4 {
+	width: 490px;
+	height: 200px;
+	overflow-y: scroll;
+}
+
+#overflow4::-webkit-scrollbar {
+	display: none; /* 크롬, 사파리, 오페라, 엣지 */
+}
+
+.freeViewBtn {
+	width: 250px !important;
+}
+
+.freeTabs{
+color: black !important;
+}
+
+</style>
+
+<!-- 1행 카드 -->
+<div class="row" style="margin-top: -13px;">
+	<table class="table table-border" style="border: white;">
+		<tr>
+			<th>제목</th>
+			<td style="width: 240px;">${freeBoard.boardTitle }<span class="text-danger">(${totalRecord}/${freeBoard.boardReadcount})</span></td>
+			<th>작성자</th>
+			<td>${freeBoard.boardWrtr }(${freeBoard.empNo })</td>
+			<th>작성일자</th>
+			<td>${freeBoard.boardRegidateDisplay}</td>
+			
+			<td>
+			
+	<div class="row">
+		<!--로그인계정(loginUserd)와 작성자(empNo)를 비교하여 게시글 수정/삭제 노출 결정 -->
+		<c:choose>
+			<c:when
+				test="${loginUser.empNo ne freeBoard.empNo and loginUser.empNo ne 'admin01' }">
+				<!--로그인계정(loginUserd)와 작성자(empNo)가 다를 경우 표시될 부분-->
+			</c:when>
+			<c:otherwise>
+				<table style="text-align: right; margin-top: 1px;">
+					<tr>
+						<td><c:url value='/free/freeUpdate.do' var="updateURL">
+								<c:param name="what" value="${freeBoard.boardNo }" />
+							</c:url>
+							<button class="btn btn-success freeUpdateBtn"
+								data-ucode="${freeBoard.boardNo }">
+								<i class="icofont-edit" style="size: 100px;"></i>&nbsp;
+								<!--게시글 Edit -->
+							</button>
+							<button type="button" class="btn btn-danger freeDeleteBtn"
+								style="margin-right: 33px;" data-fdcode="${freeBoard.boardNo }">
+								<i class="icofont-ui-delete" style="size: 100px;"></i>
+							</button> <!-- 게시글 삭제-->
+							</td>
+					</tr>
+				</table>
+			</c:otherwise>
+		</c:choose>
+		<!--로그인계정(loginUserd)와 작성자(empNo)를 비교하여 게시글 수정/삭제 노출 결정 -->
+	</div>
+	
+			</td>
+		</tr>
+	</table>
+</div>
+
+
+<!-- 2행 카드 -->
+<div class="row" style="margin-top: -10px;">
+
+<!-- 탭 네비게이션 -->
+<ul class="nav nav-tabs" id="myfTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active freeTabs" id="tab1-tab" data-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">본문</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link freeTabs" id="tab2-tab" data-toggle="tab" href="#tab2" role="tab" aria-controls="tab2" aria-selected="false">첨부파일 &nbsp;&nbsp;<i class="icofont-download"></i>
+        </a>
+    </li>
+</ul>
+
+<!-- 탭 컨텐츠 -->
+<div class="tab-content" id="myTabsContent">
+    <!-- 탭 1 컨텐츠 -->
+    <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+       <div class="row">
+       <!--첨부파일이 있으면 본문영역과 첨부파일 영역을 2개로 분리해서 보여줌  -->
+        <c:if test="${not empty freeBoard.fileGroup and not empty freeBoard.fileGroup.detailList }">
+        <!-- 첫 번째 카드 영역 (1/2) -->
+        <div class="col-md-6">
+            <div class="card mb-2 resizeable-card" id="resizeable-card" style="margin-right: 10px;">
+                <div class="card-header">
+                    <a style="margin-top: 10px;">${freeBoard.boardContent}</a>
+                </div>
+            </div>
+        </div>
+      
+        <!-- 두 번째 카드 영역 (1/2) -->
+        <div class="col-md-6">
+         <div class="card mb-2" id="overflow3">
+			   <div class="card-header">
+                        <c:forEach items="${freeBoard.fileGroup.detailList}" var="fileDetail">
+                		<img src="/MediOne/board/download.do?atchFileId=${fileDetail.atchFileId}&fileSn=${fileDetail.fileSn}"
+                   		 alt="Attached Image" style="max-width: 90%; max-height: 232px;" />
+            </c:forEach>
+                
+				</div>
+            </div>
+        </div>
+        </c:if>
+          <!--첨부파일이 없으면 본문영역만 보여줌  -->
+         <c:if test="${empty freeBoard.fileGroup.detailList }">
+       <!-- 첫 번째 카드 영역 (1/2) -->
+        <div class="col-md-12">
+            <div class="card mb-2 resizeable-card" id="resizeable-card">
+                <div class="card-header">
+                    <a style="margin-top: 10px;">${freeBoard.boardContent}</a>
+                </div>
+            </div>
+        </div>
+        </c:if>
+        
+        
+    </div>
+</div>
+
+    <!-- 탭 2 컨텐츠 -->
+    <div class="tab-pane fade" id="tab2" role="tabpanel" aria-labelledby="tab2-tab">
+        <div class="row">
+            <!-- 탭 2 내용 -->
+            <div class="col-md-12 col-lg-12">
+            	<div class="card mb-2" id="overflow3">
+			   <div class="card-header">
+                        <c:forEach items="${freeBoard.fileGroup.detailList}" var="fileDetail">
+                <img src="/MediOne/board/download.do?atchFileId=${fileDetail.atchFileId}&fileSn=${fileDetail.fileSn}"
+                    alt="Attached Image" style="max-width: 90%; max-height: 200px;" />
+            </c:forEach>
+                   <!-- 탭 2 이미지 -->
+            <div class="col-md-12 col-lg-12 py-3">
+                 <c:if test="${not empty freeBoard.fileGroup and not empty freeBoard.fileGroup.detailList }">
+							<c:forEach items="${freeBoard.fileGroup.detailList }"
+								var="fileDetail">
+								<c:url value="/board/download.do" var="downloadURL">
+									<c:param name="atchFileId" value="${fileDetail.atchFileId }" />
+									<c:param name="fileSn" value="${fileDetail.fileSn }" />
+								</c:url>
+								<a href="${downloadURL }">${fileDetail.orignlFileNm }</a>
+								<i class="icofont-download"></i> &nbsp;&nbsp;
+							</c:forEach>
+							
+							<!--첨부파일이 있을 때만 다운로드 아이콘 표시  -->
+						</c:if> 
+						<c:if test="${empty freeBoard.fileGroup.detailList }">
+						<span class="text-muted">No Attachments</span>
+					<!--첨부파일이 없으면 nofile 표시  -->
+						</c:if>
+						</div>
+						</div>
+            </div>
+                
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('#myTabs a').click(function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+        });
+    });
+</script>
+<%-- 
+	<div class="row">
+		<!--로그인계정(loginUserd)와 작성자(empNo)를 비교하여 게시글 수정/삭제 노출 결정 -->
+		<c:choose>
+			<c:when
+				test="${loginUser.empNo ne freeBoard.empNo and loginUser.empNo ne 'admin01' }">
+				<!--로그인계정(loginUserd)와 작성자(empNo)가 다를 경우 표시될 부분-->
+			</c:when>
+			<c:otherwise>
+				<table style="text-align: right; margin-top: 1px;">
+					<tr>
+						<td><c:url value='/free/freeUpdate.do' var="updateURL">
+								<c:param name="what" value="${freeBoard.boardNo }" />
+							</c:url>
+							<button class="btn btn-success freeUpdateBtn"
+								data-ucode="${freeBoard.boardNo }">
+								<i class="icofont-edit" style="size: 100px;"></i>&nbsp;
+								<!--게시글 Edit -->
+							</button>
+							<button type="button" class="btn btn-danger freeDeleteBtn"
+								style="margin-right: 50px;" data-fdcode="${freeBoard.boardNo }">
+								<i class="icofont-ui-delete" style="size: 100px;"></i>
+							</button> <!-- 게시글 삭제-->
+							</td>
+					</tr>
+				</table>
+			</c:otherwise>
+		</c:choose>
+		<!--로그인계정(loginUserd)와 작성자(empNo)를 비교하여 게시글 수정/삭제 노출 결정 -->
+	</div>
+ --%>
+ </div>
+<div class="row">
+	<br>
+	<!--댓글목록 영역  -->
+	<div class="card mb-1" style="width: 850px; margin-top: 20px;">
+		<div class="card-header bg-light d-flex align-items-center">
+			<i class="icofont-speech-comments fa-2x mr-2"></i>
+			<h6 class="mb-0">&nbsp;Comment</h6>
+		</div>
+	</div>
+	<div id="overflow" class="card mb-2">
+		<%--   <jsp:include page="freeCommentList.jsp" /> --%>
+
+		<div class="card-body">
+			<ul class="list-group list-group-flush">
+				<li class="list-group-item">
+					<table class="table">
+						<tbody>
+							<c:set var="commentList" value="${cmtPaging.dataList }" />
+							<c:if test="${empty commentList }">
+								<tr>
+									<td colspan="6">등록된 댓글이 없습니다</td>
+								</tr>
+							</c:if>
+							<c:if test="${not empty commentList }">
+								<c:forEach items="${commentList }" var="commentList">
+									<c:url value="/free/freeView.do" var="viewURL">
+										<c:param name="who" value="${commentList.empNo }"></c:param>
+										<c:param name="cmtNo" value="${commentList.cmtNo }"></c:param>
+									</c:url>
+									<tr>
+										<td colspan="2" style="width: 220px;">${commentList.deptNm}
+											${commentList.empNm}(${commentList.empNo})</td>
+										<td colspan="2" style="width: 280px;">${commentList.cmtContent}</td>
+										<td style="width: 150px; font-size: 11px; color: grey;">${commentList.cmtRegidateDisplay}</td>
+										
+										<!--로그인계정(loginUserd)와 댓글 작성자(empNo)를 비교하여 댓글 수정/삭제 노출 결정 -->
+										
+										<c:choose>
+											<c:when
+												test="${loginUser.empNo ne commentList.empNo and loginUser.empNo ne 'admin01'}">
+												
+												
+												<!--로그인계정(loginUserd)와 댓글 작성자(empNo)가 다를 경우 표시될 부분-->
+											</c:when>
+											<c:otherwise>
+												<td style="width: 120px; text-align: center;">
+													<!-- 수정 버튼 클릭 시 모달 팝업을 열도록 설정 --> <a>
+														<button type="button" class="btn btn-success"
+															data-bs-toggle="modal" data-bs-target="#exampleModalXl"
+															onclick="openCommentEditModal('${commentList.cmtNo}', '${commentList.cmtContent}', '${commentList.boardNo}', '${commentList.empNo}');">
+															<i class="icofont-edit" style="size: 100px;"></i>
+															<!--댓글 Edit -->
+														</button>
+
+														<button type="button" class="btn btn-danger cmtDeleteBtn"
+															data-dcode="${freeBoard.boardNo }"
+															data-ccode="${commentList.cmtNo }">
+															<i class="icofont-ui-delete" style="size: 100px;"></i>
+														</button> <!--댓글 delete -->
+												</a>
+
+												</td>
+											</c:otherwise>
+										</c:choose>
+										<!--로그인계정(loginUserd)와 작성자(empNo)를 비교하여 수정/삭제 노출 결정 -->
+									</tr>
+								</c:forEach>
+							</c:if>
+						</tbody>
+					</table>
+
+				</li>
+			</ul>
+		</div>
+
+
+
+		<!--댓글 작성 영역  -->
+		<form:form id="commentForm" method="post" action="cmtInsert.do"
+			modelAttribute="freeComment">
+
+			<div class="card-body">
+				<ul class="list-group list-group-flush">
+					<li class="list-group-item">
+						<table
+							style="text-align: center; margin-left: 100px; width: 600px;">
+							<tr>
+								<th style="width: 20px;">
+								<form:hidden path="boardNo" class="form-control" value="${freeBoard.boardNo}" /> 
+								
+								<label for="replyId" style="margin-top: -20px;">
+									<i class="bi bi-person-circle fs-4" ></i>
+								</label>
+								
+								
+								</th>
+								<th colspan="2" style="text-align: left !important;">
+									&nbsp;&nbsp;${loginUser.dept.deptNm}&nbsp;${loginUser.empNm}(${loginUser.empNo})님
+								</th>
+								<td><form:hidden path="empNo" class="form-control"
+										value="${loginUser.empNo}" /></td>
+								<th colspan="3"></th>
+							</tr>
+							<tr>
+								<th colspan="6"><form:textarea path="cmtContent"
+										class="form-control mt-2" rows="2" placeholder="댓글을 작성해주세요" />
+									<form:errors path="cmtContent" class="error" /></th>
+							</tr>
+							<tr>
+								<th colspan="6"><input type="button" value="등록"
+									class="btn btn-success mt-3 commentBtn"
+									style="margin-right: 10px;" />
+									<button type="reset" class="btn btn-danger mt-3" style="margin-right: 22px;">취소</button></th>
+							</tr>
+						</table>
+					</li>
+				</ul>
+			</div>
+		</form:form>
+		<!--댓글 작성 영역  -->
+	</div><!--overflow  -->
+
+<div style="margin-top: 410px; position: fixed;">
+	<!--이전게시물, 다음게시물 버튼 클릭 영역  -->
+	<table>
+		<tr>
+			<td>
+				<c:set var="currentIndex" value="-1" /> 
+				<c:forEach items="${boardList}" var="board" varStatus="status">
+					<c:if test="${board.boardNo eq freeBoard.boardNo}">
+						<c:set var="currentIndex" value="${status.index}" />
+					</c:if>
+				</c:forEach> 
+				<c:if test="${currentIndex gt 0}">
+					<!-- 이전글 -->
+					<c:url value='/free/freeView.do' var="prevURL">
+						<c:param name="what" value="${boardList[currentIndex - 1].boardNo}" />
+					</c:url>
+					
+					<button type="button" class="btn preContentBtn" data-precode="${boardList[currentIndex - 1].boardNo}" style=" font-size: 16px; font-weight: 800;">
+					◀ 이전글</button>
+					</c:if> 
+					
+					<!-- 다음글 -->
+					<c:if test="${currentIndex lt fn:length(boardList) - 1}">
+					<c:url value='/free/freeView.do' var="nextURL">
+						<c:param name="what" value="${boardList[currentIndex + 1].boardNo}" />
+					</c:url>
+					
+					<button type="button" class="btn nextContentBtn" data-nextcode="${boardList[currentIndex + 1].boardNo}" style=" font-size: 16px; font-weight: 800; margin-left:100px;">
+					<span class="nextContent">다음글 ▶</span>
+					
+					</button>
+				
+				</c:if></td>
+		</tr>
+	</table>
+
+	<!--이전게시물, 다음게시물 버튼 클릭 영역  -->
+</div>
+
+
+</div>
+
+
+
+<%-- 
+
+<!-- 게시물 삭제 확인 Modal 영역 -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<a class="modal-title" id="exampleModalLabel" >게시물 삭제</a>
+				<button type="button" class="btn-close" data-bs-dismiss="modal"
+					aria-label="Close"></button>
+			</div>
+			
+			
+			
+			<form method="post" action="<c:url value='/free/freeDelete.do' />">
+				<div class="modal-body">
+					<input type="hidden" name="boardNo" value="${freeBoard.boardNo }" />
+					<input type="hidden" name="empNo" value="${freeBoard.empNo }" />
+					<h5>이 글을 삭제하시겠습니까?</h5>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal">취소</button>
+					<button type="button" class="btn btn-danger freeDeleteBtn" data-dcode="${freeBoard.boardNo }">삭제</button>
+				</div>
+			</form>
+			
+			
+			
+		</div>
+	</div>
+</div> --%>
+
+
+<!-- 수정 모달 팝업 -->
+<div class="modal fade" id="exampleModalXl" tabindex="-1" role="dialog"
+	aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-xl" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">댓글 수정</h5>
+				<button type="button" class="close" data-bs-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<form id="commentUpdateForm" method="post"
+				action="<c:url value='/free/cmtUpdate.do' />">
+				<div class="modal-body">
+					<!-- 댓글 수정 내용 입력 폼 -->
+					<input type="hidden" id="editCmtNo" name="cmtNo"> <input
+						type="hidden" id="editEmpNo" name="empNo"> <input
+						type="hidden" id="editboardNo" name="boardNo">
+					<textarea id="editCmtContent" name="cmtContent"
+						class="form-control"></textarea>
+				</div>
+
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary"
+						data-bs-dismiss="modal">닫기</button>
+					<button type="button" class="btn btn-primary commentUpdateBtn">수정</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+	// 댓글 수정 모달 팝업 열기
+	function openCommentEditModal(cmtNo, cmtContent, boardNo, empNo) {
+		document.getElementById("editCmtNo").value = cmtNo;
+		document.getElementById("editCmtContent").value = cmtContent;
+		document.getElementById("editEmpNo").value = empNo;
+		document.getElementById("editboardNo").value = boardNo;
+
+		// 모달창 열릴 때 기존 댓글 내용을 입력 폼에 표시
+		var editCmtContentTextarea = document.getElementById("editCmtContent");
+		editCmtContentTextarea.value = cmtContent;
+
+		$('#exampleModalXl').modal('show');
+	}
+	
+	
+	
+	document.addEventListener('DOMContentLoaded', function () {
+	    const resizeableCard = document.getElementById('resizeable-card'); // 카드 엘리먼트의 ID를 가져옵니다.
+	    let isResizing = false;
+	    let originalHeight;
+	    let originalY;
+
+	    // 카드를 클릭하고 드래그를 시작할 때 높이를 기록합니다.
+	    resizeableCard.addEventListener('mousedown', function (e) {
+	        if (e.target === resizeableCard) {
+	            isResizing = true;
+	            originalHeight = resizeableCard.clientHeight;
+	            originalY = e.clientY;
+	        }
+	    });
+
+	    // 마우스를 드래그하면 카드의 높이를 조절합니다.
+	    document.addEventListener('mousemove', function (e) {
+	        if (isResizing) {
+	            const deltaY = e.clientY - originalY;
+	            const newHeight = originalHeight + deltaY;
+	            if (newHeight > 0) {
+	                resizeableCard.style.height = newHeight + 'px';
+	            }
+	        }
+	    });
+
+	    // 마우스 버튼을 놓으면 높이 조절을 종료합니다.
+	    document.addEventListener('mouseup', function () {
+	        isResizing = false;
+	    });
+	});
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</script>
+
+
+
+

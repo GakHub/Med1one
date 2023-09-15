@@ -1,0 +1,30 @@
+package kr.or.ddit.Free.controller;
+
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import kr.or.ddit.Free.service.FreeService;
+import kr.or.ddit.Free.vo.FreeBoardVO;
+
+@Controller
+public class FreeDeleteController {
+	
+	@Inject
+	private FreeService service;
+	
+	@PostMapping("/free/freeDelete.do")
+	public String boardDelete(FreeBoardVO board) {
+		boolean success = service.removeFreeBoard(board.getBoardNo());
+		String viewName = null;
+		if(success) {
+			viewName ="redirect:/free/freeList.do";
+		} else {
+			viewName = "redirect:/free/freeView.do?what="+board.getBoardNo();
+		}
+		return viewName;
+	}
+}

@@ -1,0 +1,13 @@
+package kr.or.ddit.medical.patient.service;
+
+import java.util.List;
+
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+public interface PatientService {
+
+	public List<PatntStatVO> retrievePatntStat(String fcltyCode); //대기 환자 조회
+	
+	public boolean createtPatntStat(PatntStatVO patntStat); //환자 상태 변경
+	
+}

@@ -1,0 +1,203 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8" buffer="8kb"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="form"%>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="<%=request.getContextPath()%>/resources/js/loadingoverlay.min.js"></script>
+<link rel="stylesheet"
+	href="<%=request.getContextPath()%>/resources/dist/assets/plugin/datatables/dataTables.bootstrap5.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<%=request.getContextPath() %>/resources/dist/assets/plugin/datatables/responsive.dataTables.min.css">
+<style>
+.card.mb-3.top-color {
+    text-align: center;
+}
+
+.card-body {
+	width: 100px;
+	hieght: 100px;
+}
+
+.form-control {
+	border-radius: 1cm;
+	background-color: #f0f0f0;
+}
+
+.form-select {
+	border-radius: 1cm;
+	background-color: #f0f0f0;
+}
+
+.form-label {
+	color: #5fa192;
+	font-weight: bold;
+}
+
+.btn-primary {
+	display:right;
+}
+
+th{
+	color: #5fa192;
+}
+</style>
+
+<div id="ihealth-layout" class="theme-tradewind">
+    
+    <!-- main body area -->
+    <div class="main px-lg-4 px-md-4">
+    
+        <!-- Body: Body -->
+        <div class="body d-flex py-3">
+
+      <!--컨테이너  -->
+            <div class="container">
+            <div class="row">
+    	<h3 style="text-align: center; color: #5fa192; font-weight: bold;">건강검진 결과 전송</h3>
+    	<br>
+    	<br>
+    	<br>
+    	<div class="center-form" style="display: flex; justify-content: center; ">
+     		<form:form method="post" enctype="multipart/form-data"> 
+    <table>
+        <tr>
+            <th>성명</th>
+            <td>
+                <div class="col mb-3">
+                    <input class="form-control" type="text" id="patntNm"/>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>주소</th>
+            <td>
+                <div class="col mb-3">
+                    <input class="form-control" type="text" id="patntAddr" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>전화번호</th>
+            <td>
+                <div class="col mb-3">
+                    <input class="form-control" type="text" id="patntTelno"/>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>이메일</th>
+            <td>
+                <div class="col mb-3">
+                    <input class="form-control" type="text" id="email" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>발신자</th>
+            <td>
+                <div class="col mb-3">
+                    <input class="form-control" type="text" placeholder="MED1ONE" id="sender" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>내용</th>
+            <td>
+                <div class="col mb-3">
+                    <textarea class="form-control" id="content"></textarea>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>파일</th>
+            <td>
+                <div class="col mb-3">
+                    <input class="form-control" type="file" id="files" accept="pdf/*" />
+                </div>
+            </td>
+        </tr>
+    </table>
+ </form:form>
+ </div> 
+
+<div class="col-md-6 mb-3 text-end" style="display: flex; justify-content: flex-end; margin-left:203px;">
+    <button class="btn btn-primary" onclick="sendEmail()" id="send">제출하기</button>
+</div> 
+    </div>
+</div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+$(document).ready(function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var patntCode = urlParams.get('patntCode');
+    
+    
+    // 환자 정보를 서버에 요청하고 가져와서 화면에 출력
+    $.ajax({
+        url: '${pageContext.request.contextPath}/examinate/checkupPatient.do',
+        type: 'GET', // 또는 POST, 서버에서 정의한 방식과 일치해야 함
+        data: { patntCode: patntCode },
+        success: function(data) {
+        	var patntNm = data[0].patntNm; 
+        	var patntAddr = data[0].patntAddr1;
+            var patntTelno = data[0].patntTelno;
+            var patEmail = data[0].patEmail;
+            
+            $('#patntNm').val(patntNm);
+            $('#patntAddr').val(patntAddr);
+            $('#patntTelno').val(patntTelno);
+            $('#email').val(patEmail);
+          
+        },
+        error: function() {
+        }
+    });
+});
+
+function sendEmail() {
+    var email = $("#email").val();
+    var sender = $("#sender").val();
+    var content = $("#content").val();
+    var files = $("#files")[0].files; // files 배열에 선택한 파일들이 들어갑니다.
+    
+    var formData = new FormData();
+    formData.append('email', email);
+    formData.append('sender', sender);
+    formData.append('content', content);
+    for (var i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+    }
+
+   
+    
+ // LoadingOverlay 라이브러리 실행
+    $.LoadingOverlay("show", {
+         image: "<%=request.getContextPath() %>/resources/images/mainSpinnerIcon.gif", // 로딩 중에 표시될 이미지 경로
+         imageAnimation: false // 빙글빙글 돌아가는 것 막음
+     });
+
+    $.ajax({
+        url: "${pageContext.request.contextPath}/examinate/sendEmail.do", 
+        type: "POST",
+        contentType: false, // 중요: 파일 업로드 시 false로 설정
+        processData: false, // 중요: FormData를 사용하면 데이터 처리가 필요 없음
+        dataType: "json", 
+        data: formData,
+        success: function(response) {
+            alert("이메일이 성공적으로 전송되었습니다.");
+            $.LoadingOverlay("hide");
+            window.close();
+        },
+        error: function(xhr, status, error) {
+            alert("이메일 전송에 실패하였습니다.");
+            $.LoadingOverlay("hide");
+        }
+    });
+}
+</script>

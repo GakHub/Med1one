@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.message.dao.MessageDao">
+
+<select id="selectTelNumberList" resultType="PatientVO">
+	SELECT 
+	PATNT_NM
+	, PATNT_TELNO
+	,CASE 
+         WHEN SUBSTR(PATNT_IDENTINO, 1, 1) IN ('0', '1', '2') THEN 
+           '20' || SUBSTR(PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(PATNT_IDENTINO, 5, 2)
+         ELSE 
+           '19' || SUBSTR(PATNT_IDENTINO, 1, 2) || '-' || SUBSTR(PATNT_IDENTINO, 3, 2) || '-' || SUBSTR(PATNT_IDENTINO, 5, 2)
+         END AS PATNT_IDENTINO
+	FROM PATIENT
+</select>
+
+<select id="selectMessageFormList" resultType="MessageDtlVO">
+	SELECT 
+	FORM_CODE
+	, FORM 
+	FROM MESSAGE_DTL
+</select>
+
+<insert id="insertMsg" parameterType="MessageVO">
+	<selectKey order="BEFORE" keyProperty="msgCode" resultType="String">
+		SELECT 'MSG' || LPAD(MSG_CODE_SEQ.nextval,3,'0')
+		FROM DUAL
+	</selectKey>
+	INSERT INTO MESSAGE (
+		  MSG_CODE
+		, MSG_REC
+		, FORM_CODE
+		, FORM
+		, MSG_INS_DATE
+	) VALUES (
+		  #{msgCode,jdbcType=NUMERIC}
+		, #{msgRec,jdbcType=VARCHAR}
+		, #{formCode,jdbcType=VARCHAR}
+		, #{form,jdbcType=VARCHAR}
+		, SYSDATE
+	)
+</insert>
+
+<select id="selectMsgHistroy" resultType="MessageVO">
+	SELECT  M.MSG_CODE, M.MSG_REC, D.FORM, M.MSG_INS_DATE, P.PATNT_NM "patient.patntNm"
+	FROM MESSAGE M
+	INNER JOIN
+	MESSAGE_DTL D ON(M.FORM_CODE = D.FORM_CODE)
+    INNER JOIN PATIENT P ON(M.MSG_REC = P.PATNT_TELNO)
+    ORDER BY M.MSG_INS_DATE DESC  
+</select>
+
+
+<!-- 환자검색 -->
+<select id="searchTelNumberList" resultType="PatientVO">
+
+	SELECT 
+		PATNT_NM
+		, PATNT_TELNO
+		,TO_CHAR(
+	        CASE
+	            WHEN SUBSTR(PATNT_IDENTINO, 1, 2) BETWEEN '69' AND '99' THEN
+	                TO_DATE('19' || SUBSTR(PATNT_IDENTINO, 1, 6), 'YYYYMMDD')
+	            ELSE
+	                TO_DATE('20' || SUBSTR(PATNT_IDENTINO, 1, 6), 'YYYYMMDD')
+	        END,
+	        'YYYY-MM-DD'
+		    ) AS PATNT_IDENTINO
+		FROM PATIENT
+		WHERE PATNT_NM LIKE  '%' || #{patntNm} || '%'
+</select>
+
+</mapper>

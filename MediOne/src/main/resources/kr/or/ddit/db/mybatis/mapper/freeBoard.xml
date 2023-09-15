@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.Free.dao.FreeDao">
+
+	<sql id="searchFrag">
+	<where>
+			<if	test="simpleCondition neq null and simpleCondition.searchWord neq null and not simpleCondition.searchWord.isEmpty()">
+				<choose>
+					<when test="simpleCondition.searchType eq 'writer'">
+						INSTR(BOARD_WRTR, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'title'">
+						INSTR(BOARD_TITLE, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'content'">
+						INSTR(BOARD_CONTENT, #{simpleCondition.searchWord}) > 0
+					</when>
+					<otherwise> <!-- 전체옵션을 줬을 때 -->
+						INSTR(BOARD_WRTR, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(BOARD_TITLE, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(BOARD_CONTENT, #{simpleCondition.searchWord}) > 0
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</sql>
+
+	<select id="selectTotalRecord" resultType="long" parameterType="PaginationInfo">
+		SELECT COUNT(*)
+		FROM FREE_BOARD
+		<include refid="searchFrag"></include>
+	</select>
+
+
+	<select id="selectFreeBoardList" resultType="FreeBoardVO" parameterType="PaginationInfo">
+		SELECT B.*
+		FROM (
+		SELECT ROWNUM RNUM, A.*
+		FROM(
+		
+		 SELECT
+            FREE_BOARD.BOARD_NO, FREE_BOARD.BOARD_TITLE, FREE_BOARD.BOARD_WRTR, FREE_BOARD.BOARD_REGIDATE,
+            FREE_BOARD.EMP_NO, FREE_BOARD.BOARD_READCOUNT, COALESCE(COM.BOARDCMTRECORD, 0) AS BOARDCMTRECORD
+        FROM FREE_BOARD 
+        LEFT JOIN (
+            SELECT COUNT(*) AS BOARDCMTRECORD, BOARD_NO
+            FROM "COMMENT"
+            GROUP BY BOARD_NO
+        ) COM ON FREE_BOARD.BOARD_NO = COM.BOARD_NO
+		<include refid="searchFrag" />
+		ORDER BY BOARD_REGIDATE DESC
+		) A
+		) B
+         <![CDATA[
+         WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+         ]]>
+	</select>
+
+
+
+	<resultMap type="FreeBoardVO" id="boardMap" autoMapping="true">
+		<id property="boardNo" column="BOARD_NO" />
+		<association property="fileGroup" javaType="AtchFileVO">
+			<id property="atchFileId" column="ATCH_FILE_ID" />	<!-- 2두개 수동바인딩 -->
+			<result property="creatDt" column="CREAT_DT"/>
+			<collection property="detailList" ofType="AtchFileDtlVO" autoMapping="true">
+				<id property="atchFileId" column="ATCH_FILE_ID"/>
+				<id property="fileSn" column="FILE_SN"/>
+			</collection>
+		</association>
+	</resultMap>
+
+	<select id="selectFreeBoard" parameterType="String" resultMap="boardMap">
+		WITH ATCH_FILE_VIEW AS( 
+        SELECT *
+        FROM ATCH_FILE
+        INNER JOIN ATCH_FILE_DTL USING(ATCH_FILE_ID)
+    	)
+        SELECT
+         BOARD_NO, BOARD_WRTR, BOARD_TITLE, BOARD_CONTENT,
+         BOARD_REGIDATE, BOARD_READCOUNT, BOARD_ATCHNUM, EMP_NO
+         
+       	, ATCH_FILE_ID
+        , FILE_SN, FILE_STRE_COURS, STRE_FILE_NM, ORIGNL_FILE_NM
+        , FILE_CN, FILE_SIZE, FILE_EXTSN, FILE_REGIDATE, FILE_MIME
+        , CREAT_DT
+        
+         FROM FREE_BOARD A 
+         LEFT OUTER JOIN ATCH_FILE_VIEW B ON A.BOARD_ATCHNUM = B.ATCH_FILE_ID
+		 WHERE A.BOARD_NO = #{boardNo}
+	</select>
+
+	 <insert id="insertFreeBoard" parameterType="FreeBoardVO">
+      <selectKey order="BEFORE" keyProperty="boardNo" resultType="String">
+         SELECT FREE_NO_SEQ.NEXTVAL FROM DUAL
+      </selectKey>
+      INSERT INTO FREE_BOARD (
+           BOARD_NO
+          ,BOARD_WRTR
+          ,BOARD_TITLE
+          ,BOARD_CONTENT
+          ,BOARD_REGIDATE
+          ,BOARD_READCOUNT
+          ,EMP_NO
+          ,BOARD_ATCHNUM
+      ) VALUES (
+          #{boardNo,jdbcType=VARCHAR}
+		, #{boardWrtr,jdbcType=VARCHAR}
+		, #{boardTitle,jdbcType=VARCHAR}
+		, #{boardContent,jdbcType=CLOB}
+		, sysdate
+		, #{boardReadcount,jdbcType=NUMERIC}
+		, #{empNo,jdbcType=VARCHAR}
+		, #{boardAtchnum,jdbcType=NUMERIC}
+      )
+   </insert>
+
+	<delete id="deleteFreeBoard" parameterType="String">
+		DELETE FROM FREE_BOARD
+		WHERE BOARD_NO = #{boardNo}
+		<!-- AND EMP_NO = #{empNo} -->
+	</delete>
+
+
+	<update id="updateFreeBoard" parameterType="FreeBoardVO">
+		UPDATE FREE_BOARD
+		SET
+		BOARD_TITLE = #{boardTitle,jdbcType=VARCHAR}
+		, BOARD_CONTENT = #{boardContent,jdbcType=CLOB}
+		, BOARD_ATCHNUM =  #{boardAtchnum,jdbcType=NUMERIC}
+		WHERE BOARD_NO = #{boardNo}
+	</update>
+	
+	
+	<update id="updateFreeBoardReadcount" parameterType="FreeBoardVO">
+	UPDATE FREE_BOARD
+	SET
+    BOARD_READCOUNT =  BOARD_READCOUNT+1
+	WHERE BOARD_NO =  #{boardNo}
+	</update>
+	
+	
+	
+	
+	<select id="selectViewBoardList" resultType="FreeBoardVO">
+	SELECT * FROM FREE_BOARD
+	</select>
+	
+	<!--통계자료 테스트용  -->
+<select id="selectStatFreeBoard" resultType="FreeBoardVO">
+	SELECT
+   		FREE_BOARD.EMP_NO AS empNo,
+    	COUNT(*) AS freeEmpCount
+	FROM
+    	FREE_BOARD JOIN EMPLOYEE ON (EMPLOYEE.EMP_NO = FREE_BOARD.EMP_NO)
+	GROUP BY FREE_BOARD.EMP_NO
+</select>
+	
+	
+	
+<!--특정게시글의 댓글 수  -->
+	<select id="freeBoardCmtRecord" resultType="long" parameterType="String">
+	SELECT COUNT(*)
+	FROM FREE_BOARD INNER JOIN "COMMENT" ON(FREE_BOARD.BOARD_NO = "COMMENT".BOARD_NO)
+ 	WHERE FREE_BOARD.BOARD_NO = #{boardNo}
+	</select>
+
+</mapper>

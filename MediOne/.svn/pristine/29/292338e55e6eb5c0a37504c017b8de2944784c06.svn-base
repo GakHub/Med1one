@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.notice.dao.NoticeDao">
+<sql id="searchFrag">
+	<where>
+		<if test="simpleCondition != null and simpleCondition.searchWord != null and !simpleCondition.searchWord.isEmpty()">
+			<choose>
+				<when test="simpleCondition.searchType eq 'title'">
+					AND INSTR(NOTICE_TITLE, #{simpleCondition.searchWord}) > 0
+				</when>
+				<when test="simpleCondition.searchType eq 'content'">
+					AND INSTR(NOTICE_CONTENT, #{simpleCondition.searchWord}) > 0
+				</when>
+				<when test="simpleCondition.searchType eq 'Number'">
+					AND INSTR(ADMIN_EMP_NO, #{simpleCondition.searchWord}) > 0
+				</when>
+				<otherwise>
+					AND (
+						INSTR(NOTICE_TITLE, #{simpleCondition.searchWord}) > 0
+						OR INSTR(NOTICE_CONTENT, #{simpleCondition.searchWord}) > 0
+						OR INSTR(ADMIN_EMP_NO, #{simpleCondition.searchWord}) > 0
+					)
+				</otherwise>
+			</choose>
+		</if>
+	</where>
+</sql>
+
+<select id="selectTotalRecord" resultType="long" parameterType="PaginationInfo">
+	SELECT COUNT(*)
+	FROM NOTICE_BOARD
+	<include refid="searchFrag" />
+</select>
+
+<select id="selectBoardList" resultType="NoticeBoardVO" parameterType="PaginationInfo">
+	SELECT B.*
+	FROM (
+		 SELECT ROWNUM RNUM, A.*
+	     FROM (
+			SELECT
+			   NOTICE_CODE, NOTICE_TITLE 
+    		  , NOTICE_REGIDATE, NOTICE_READCOUNT
+  	 	   	  , ADMIN_EMP_NO
+	 	   	  FROM NOTICE_BOARD
+  	 	   	  <include refid="searchFrag" />
+  	 	   	  ORDER BY NOTICE_CODE DESC
+		)A
+	)B
+	<![CDATA[   
+		WHERE RNUM >= #{startRow} AND RNUM <= #{endRow}
+		]]>
+</select>
+
+<resultMap type="noticeBoardVO" id="boardMap" autoMapping="true">
+		<id property="noticeCode" column="NOTICE_CODE"/>
+		<association property="fileGroup" javaType="AtchFileVO" >
+			<id property="atchFileId" column="ATCH_FILE_ID"/>
+			<result property="creatDt" column="CREAT_DT"/>
+			<collection property="detailList" ofType="AtchFileDtlVO" autoMapping="true">
+				<id property="atchFileId" column="ATCH_FILE_ID"/>
+				<id property="fileSn" column="FILE_SN"/>
+			</collection>
+		</association>
+	</resultMap>
+	
+	<select id="selectBoard" parameterType="String" resultMap="boardMap">
+   WITH ATCH_FILE_VIEW AS( 
+        SELECT *
+        FROM ATCH_FILE
+        INNER JOIN ATCH_FILE_DTL USING(ATCH_FILE_ID)
+    )
+    SELECT
+        NOTICE_CODE, NOTICE_TITLE, NOTICE_CONTENT,
+        NOTICE_REGIDATE, NOTICE_READCOUNT, ATCH_FILENUM, ADMIN_EMP_NO,
+      
+      	ATCH_FILE_ID,
+        FILE_SN, FILE_STRE_COURS, STRE_FILE_NM, ORIGNL_FILE_NM,
+        FILE_CN, FILE_SIZE, FILE_EXTSN, FILE_REGIDATE, FILE_MIME,
+        CREAT_DT
+    FROM NOTICE_BOARD A
+   LEFT OUTER JOIN ATCH_FILE_VIEW B ON A.ATCH_FILENUM = B.ATCH_FILE_ID
+    WHERE NOTICE_CODE = #{noticeCode}
+</select>
+
+	<insert id="insertBoard" parameterType="NoticeBoardVO">
+		<selectKey order="BEFORE" keyProperty="noticeCode" resultType="String">
+			SELECT 'NB'||LPAD(NOTICE_NO_SEQ.NEXTVAL,5,'0')
+			FROM DUAL
+		</selectKey>
+		  INSERT INTO NOTICE_BOARD (
+			    NOTICE_CODE,
+			    NOTICE_TITLE,
+			    NOTICE_CONTENT,
+			    NOTICE_REGIDATE,
+			    ADMIN_EMP_NO
+			    , ATCH_FILENUM
+		) VALUES (
+		      #{noticeCode,jdbcType=VARCHAR}
+			, #{noticeTitle,jdbcType=VARCHAR}
+			, #{noticeContent,jdbcType=CLOB}
+			, SYSDATE
+			, 'admin1'
+			, #{atchFilenum,jdbcType=NUMERIC}
+		)
+	</insert>
+	
+	<delete id="deleteBoard" parameterType="String" >
+		DELETE FROM NOTICE_BOARD
+
+		WHERE NOTICE_CODE = #{noticeCode}
+	</delete>
+	<update id="updateBoard" parameterType="NoticeBoardVO" >
+		UPDATE NOTICE_BOARD
+		SET
+			NOTICE_TITLE = #{noticeTitle,jdbcType=VARCHAR}
+			,  NOTICE_CONTENT = #{noticeContent,jdbcType=CLOB}
+			, ATCH_FILENUM = #{atchFilenum,jdbcType=NUMERIC}
+		WHERE NOTICE_CODE = #{noticeCode}
+	</update>
+	
+	<update id="updateNoticeBoardReadcount" parameterType="NoticeBoardVO">
+	UPDATE notice_board
+	SET
+	notice_readcount = notice_readcount+1
+	WHERE notice_code = #{noticeCode}
+	</update>
+	
+	
+
+
+</mapper>

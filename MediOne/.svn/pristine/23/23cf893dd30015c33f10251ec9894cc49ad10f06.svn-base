@@ -1,0 +1,26 @@
+package kr.or.ddit.Free.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.Free.vo.FreeBoardVO;
+import kr.or.ddit.Free.vo.FreePaginationInfo;
+
+@Mapper
+public interface FreeDao {
+	
+   public int insertFreeBoard(FreeBoardVO board);
+	   
+   public FreeBoardVO selectFreeboard(int boardNo);
+   public List<FreeBoardVO> selectFreeBoardList(FreePaginationInfo<FreeBoardVO> paging);
+   
+   public long selectTotalRecord(FreePaginationInfo<FreeBoardVO> paging);
+   
+   public FreeBoardVO selectFreeBoard(int boardNo);
+   public int updateFreeBoard(FreeDao board);
+   public int deleteFreeBoard(int boardNo);
+
+
+
+}

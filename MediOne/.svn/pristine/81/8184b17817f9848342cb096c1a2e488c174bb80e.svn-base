@@ -1,0 +1,170 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
+<style>
+.top-color {
+  border-top: 3px solid #6aab9c; 
+}
+</style>
+<h4>시스템 사용 신청</h4>
+<div>
+<select id="aprvSelect" style='margin-bottom: 10px;' title="선택">
+	<option value="">선택</option>
+	<option value="승인대기">승인대기</option>
+	<option value="반려목록">반려목록</option>
+</select>
+	<div class="top-color">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+				<th>신청번호</th>
+				<th>직원코드</th>
+				<th>직원명</th>
+				<th>주민번호</th>
+				<th>부서명</th>
+				<th>승인상태</th>
+				<th>승인신청일시</th>
+				<th>첨부파일</th>
+			</tr>
+		</thead>
+		<tbody id="aprvReqList"></tbody>
+	</table>
+	</div>
+</div>
+
+<div id="attachmentModal" class="modal fade" data-url="${viewURL}" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">첨부파일</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- 이미지를 표시할 공간 -->
+                <img id="attachmentImage" src="" alt="첨부 이미지" style="max-width: 100%;">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+	<!-- Modal -->
+	
+<!-- Jquery Core Js -->
+<%-- <script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/libscripts.bundle.js"></script> --%>
+
+<!-- Plugin Js-->
+<script src="<%=request.getContextPath() %>/resources/dist/assets/bundles/dataTables.bundle.js"></script>
+
+<!-- Jquery Page Js -->
+<script src="<%=request.getContextPath() %>/resources/js/template.js"></script>
+<script>
+
+function loadAuthRequestList(){
+	
+	$.getJSON("<c:url value='/admin/authAprvList.do' />").done(function(resp){ //list 출력 전 데이터 담아오기
+		//list 출력
+		let tbody=$("#aprvReqList");
+		tbody.empty();
+		console.log("resp", resp)
+		$(resp.dataList).each(function(index,list){
+			let tr = $("<tr>").append(
+					$("<td>").html(list.reqCode)
+					,$("<td>").html(list.empNo)
+					,$("<td>").html(list.empNm)
+					,$("<td>").html(list.empIdentino)
+					,$("<td>").html(list.dept.deptNm)
+					,$("<td>").html(list.reqStatus)
+					,$("<td>").html(list.authoreqDate)
+// 					,$("<td>").html(list.atchSn)
+					,$("<td>").append(
+							$("<button>").addClass("attachmentBtn").attr("type","button").text("첨부파일 보기")
+// 							$("<button>").addClass("apprvBtn").attr("type","button").text("승인")
+							,$("<button>").addClass("apprvBtn").attr("type","button").text("승인")
+							,$("<button>").addClass("cancelBtn").attr("type","button").text("반려")
+							)
+					);
+			tbody.append(tr);
+		});
+	});
+}
+
+//담아온 데이터
+
+$(document).ready(function(){
+	
+loadAuthRequestList();
+	
+	$(document).on("click", ".attachmentBtn", function(event) {
+        var currentRow = $(this).closest('tr');
+        let reqCode = currentRow.find("td:nth-child(1)").text();
+        
+        $.getJSON("<c:url value='/admin/fileNameSearch.do' />",{reqCode:reqCode}).done(function(resp){
+        	console.log("Resp", resp);
+        	let orignlFileNm = resp.orignlFileNm;
+        	let streFileNm = resp.streFileNm;
+        	
+//         	let attachmentUrl = "<c:url value='${appInfo.atchPath}/' />" + orignlFileNm;
+
+			// 첨부파일 가져오는 경로 
+        	let attachmentUrl = "${pageContext.request.contextPath}/resources/images/atch/" + streFileNm; 
+        	console.log(attachmentUrl);
+        	
+//         	/MediOne/src/main/webapp/resources/images/atch/TestPhoto.jpg
+            // 이미지를 보여주는 image 태그 생성
+//             const tempUrl = "${pageContext.request.contextPath}/resources/images/atch/6d7a4a55-1950-46c3-a2da-17d344e4208e";
+            var imgTag = $("<img>").attr("src", attachmentUrl).css("max-width", "100%");
+//             var imgTag = $("<img>").attr("src", tempUrl).css("max-width", "100%");
+            
+            // 모달 내용에 이미지 추가
+            $("#attachmentModal .modal-body").html(imgTag);
+
+            // 모달 열기
+            $("#attachmentModal").modal("show");
+        });
+        
+    });
+	 
+	//승인처리
+	$(document).on("click", ".apprvBtn" ,function(event){
+		
+		var currentRow = $(this).closest('tr');
+
+		var reqCode = currentRow.find('td:eq(0)').text();
+		var who = currentRow.find('td:eq(1)').text();
+		
+		$.getJSON("<c:url value='/admin/authReqApprv.do' />", {who:who, reqCode:reqCode}).done(function(resp){
+			//list 재출력
+			let tbody=$("#aprvReqList");
+			tbody.empty(); //이전 내용 지우기
+			$(resp.dataList).each(function(index,list){
+				let tr = $("<tr>").append(
+						$("<td>").html(list.reqCode)
+						,$("<td>").html(list.empNo)
+						,$("<td>").html(list.empNm)
+						,$("<td>").html(list.empIdentino)
+						,$("<td>").html(list.dept.deptNm)
+						,$("<td>").html(list.reqStatus)
+						,$("<td>").html(list.authoreqDate)
+						,$("<td>").append(
+								$("<button>").addClass("apprvBtn").attr("data-req-code",list.reqCode).attr("data-emp-no",list.empNo).attr("type","button")
+								)
+						);
+				tbody.append(tr);
+// 				console.log(tr);
+			});
+                loadAuthRequestList();
+		});
+	});
+	
+});
+
+
+</script>
+
+
+
+
+

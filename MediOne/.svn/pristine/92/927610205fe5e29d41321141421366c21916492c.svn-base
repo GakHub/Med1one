@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.File.dao.AtchFileDAO">
+	<select id="selectAtchFileDetail" parameterType="AtchFileDtlVO" resultType="AtchFileDtlVO">
+		SELECT ATCH_FILE_CODE
+		, ATCH_SN, FILE_STRE_COURS
+		, STRE_FILE_NM 
+		, ORIGNL_FILE_NM
+		, FILE_CN
+	    , FILE_SIZE, FILE_EXTSN
+	    , FILE_REGIDATE
+	    , FILE_MIME
+		FROM ATCH_FILE_DTL
+	</select>
+	
+	<resultMap type="AtchFileVO" id="atchFileMap">
+		<id property="atchSn" column="A_ID"/>
+		<collection property="detailList" ofType="AtchFileDtlVO" autoMapping="true">
+			<id property="atchFileCode" column="B_ID"/>
+			<id property="atchSn" column="FILE_SN"/>
+		</collection>
+	</resultMap>
+	
+	<select id="selectAtchFileGroup" parameterType="int" resultMap="atchFileMap">
+		
+SELECT A.ATCH_SN A_SN
+			, B.ATCH_SN B_SN
+            , ATCH_GROUP
+			, ATCH_FILE_CODE
+            , FILE_STRE_COURS
+            , STRE_FILE_NM
+            , ORIGNL_FILE_NM
+            , FILE_CN
+            , FILE_SIZE
+            , FILE_EXTSN
+            , FILE_REGIDATE
+            , FILE_MIME
+			
+		FROM ATCH_FILE A LEFT OUTER JOIN ATCH_FILE_DTL B 
+            ON (A.ATCH_SN = B.ATCH_SN)
+            WHERE A.ATCH_SN = #{atchSN}
+	</select>
+	
+	
+	<insert id="insertAtchFileGroup" parameterType="AtchFileVO">
+		<selectKey order="BEFORE" resultType="int" keyProperty="atchSn">
+			SELLECT ATCH_NO_SEQ.NEXTVAL
+			FROM DUAL
+		</selectKey>
+		INSERT ALL
+		INTO ATCH_FILE(ATCH_SN, ATCH_GROUP)
+		VALUES(#{atchSn}, SYSDATE, 'Y')
+		<foreach collection="detailList" item="atch" index="idx">
+			INSERT INTO ATCH_FILE_DTL (
+			    ATCH_FILE_CODE,
+			    ATCH_SN,
+			    FILE_STRE_COURS,
+			    STRE_FILE_NM,
+			    ORIGNL_FILE_NM,
+			    FILE_CN,
+			    FILE_SIZE,
+			    FILE_EXTSN,
+			    FILE_REGIDATE,
+			    FILE_MIME
+		) VALUES (
+			   #{ATCHFILECODE,JDBCTYPE=NUMERIC}
+			, #{ATCHSN,JDBCTYPE=NUMERIC}
+			, #{FILESTRECOURS,JDBCTYPE=VARCHAR}
+			, #{STREFILENM,JDBCTYPE=VARCHAR}
+			, #{ORIGNLFILENM,JDBCTYPE=VARCHAR}
+			, #{FILECN,JDBCTYPE=CLOB}
+			, #{FILESIZE,JDBCTYPE=NUMERIC}
+			, #{FILEEXTSN,JDBCTYPE=VARCHAR}
+			, SYSDATE
+			, #{FILEMIME,JDBCTYPE=VARCHAR}
+		)
+		</foreach>
+		SELECT * FROM DUAL
+	</insert>
+	
+	<delete id="deleteAtchFileGroup" parameterType="int">
+		DELETE FROM ATCH_FILE
+		WHERE ATCH_FILD_CODE = #{atchFileCode}
+	</delete>
+	
+	<delete id="deleteAtchFileDetails" parameterType="int">
+		DELETE FROM ATCH_FILE_DTL
+		WHERE ATCH_FILE_CODE = #{atchFileCode}
+	</delete>
+	
+	<delete id="deleteAtchFileDetail" parameterType="AtchFileDtlVO">
+		DELETE FROM ATCH_FILE_DTL
+		WHERE ATCH_FILE_CODE = #{atchFileCode} AND ATCH_SN = #{atchSn}
+	</delete>
+	
+	<insert id="insertAtchFileDetails">
+		<selectKey order="BEFORE" resultType="int" keyProperty="lastFileSN">
+			SELECT NVL(MAX(ATCH_SN), 0)+1
+			FROM ATCH_FILE_DTL
+			WHERE ATCH_FILE_CODE = #{atchFileGroup.atchFileCode}
+		</selectKey>
+		INSERT ALL
+			<foreach collection="atchFileGroup.detailList" item="atch" index="idx">
+				 INTO ATCH_FILE_DTL (
+			    ATCH_FILE_CODE,
+			    ATCH_SN,
+			    FILE_STRE_COURS,
+			    STRE_FILE_NM,
+			    ORIGNL_FILE_NM,
+			    FILE_CN,
+			    FILE_SIZE,
+			    FILE_EXTSN,
+			    FILE_REGIDATE,
+			    FILE_MIME
+		) VALUES (
+			  #{atchFileGroup.atchFileCode,jdbcType=NUMERIC}
+			, #{ATCHSN,jdbcType=NUMERIC}
+			, #{atch.fileStreCours,jdbcType=VARCHAR}
+			, #{atch.streFileNm,jdbcType=VARCHAR}
+			, #{atch.orignlFileNm,jdbcType=VARCHAR}
+			, #{atch.fileCn,jdbcType=CLOB}
+			, #{atch.fileSize,jdbcType=NUMERIC}
+			, #{atch.fileExtsn,jdbcType=VARCHAR}
+			, SYSDATE
+			, #{atch.fileMime,jdbcType=VARCHAR}
+			</foreach>
+			SELECT * FROM DUAL
+	</insert>
+
+</mapper>

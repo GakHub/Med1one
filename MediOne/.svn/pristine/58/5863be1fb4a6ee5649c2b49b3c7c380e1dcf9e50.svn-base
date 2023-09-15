@@ -1,0 +1,18 @@
+package kr.or.ddit.medical.examinate.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/examinate/")
+public class ExaminateResultController {
+
+	// 진료부 검진페이지 접근
+//	@GetMapping("examClinic.do")
+//	public String examResult() {
+//		return "examinate/examClinic"; 
+//	}
+//	
+	
+}

@@ -1,0 +1,53 @@
+package kr.or.ddit.medical.hospital.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.medical.hospital.vo.HospitalizationVO;
+import kr.or.ddit.medical.hospital.vo.SckbdVO;
+import kr.or.ddit.medical.vo.PatientVO;
+import kr.or.ddit.medical.vo.PatntStatVO;
+
+@Mapper
+public interface HospitalDao {
+
+	/**
+	 * 병동 환자 조회
+	 * @return
+	 */
+	public List<HospitalizationVO> hospitalPatientList();
+	
+	/**
+	 * 병동 병실 조회
+	 * @return
+	 */
+	public List<SckbdVO> sckbdList(String sckbdRo);
+	
+	/**
+	 * 입원대기 환자 조회
+	 * @return
+	 */
+	public List<PatientVO> waitPatnt(String word);
+	
+	/**
+	 * 입원과 관련된 병동 침상의 사용가능여부 update
+	 * @param sckbd
+	 * @return
+	 */
+	public int updateBed(SckbdVO sckbd);
+	
+	/**
+	 * 환자의 입원 처리
+	 * @param hsptl
+	 * @return
+	 */
+	public int insertHsptl(HospitalizationVO hsptl);
+	
+	/**
+	 * 입원 중(011)로 환자 위치상태 insert
+	 * @param patntSata
+	 * @return
+	 */
+	public int insertHspPatnt(String patntStat);
+}

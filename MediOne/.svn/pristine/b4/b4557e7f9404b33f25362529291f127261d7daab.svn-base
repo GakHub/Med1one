@@ -1,0 +1,56 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+	pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
+<div id="ihealth-layout" class="theme-tradewind">
+   <!-- main body area -->
+   <div class="main px-lg-4 px-md-4">
+      <!-- Body: Body -->
+      <div class="body d-flex py-3">
+
+         <div class="container-xxl">
+            <!-- 1행 3열 카드 시작 -->
+            <div class="row g-3 mb-3">
+               <div class="col-md-4 col-lg-4"
+                  style="width: 48%; margin-right: 1%;">
+                  <div class="card">
+                     <div
+                        class="card-header py-3 d-flex justify-content-between bg-transparent border-bottom-0">
+                        <h6 class="mb-0 fw-bold">환자 리스트</h6>
+                     </div>
+					<div class="card-body">
+                        <div id="#">
+                           <table class="table table-border">
+		<thead>
+			<tr>
+				<th>환자 성명</th>
+				<th>환자 연락처</th>
+			</tr>
+		</thead>
+		<tbody>
+			<c:if test="${empty patientList }">
+				<tr>
+					<td colspan="2">조건에 맞는 환자 없음.</td>
+				</tr>
+			</c:if>
+			<c:if test="${not empty patientList }">
+				<c:forEach items="${patientList}" var="patient">
+				<tr>
+					<td>${patient.patntNm }</td>
+					<td>${patient.patntTelno }</td>
+				</tr>
+				</c:forEach>
+			</c:if>
+		</tbody>
+	</table>
+</div>
+                     </div>
+                  </div>
+               </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+

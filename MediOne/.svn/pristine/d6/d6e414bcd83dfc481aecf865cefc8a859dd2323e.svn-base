@@ -1,0 +1,16 @@
+package kr.or.ddit.employee.fixtures.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/fixtures")
+public class FixturesReqController {
+
+	// 비품신청
+	@GetMapping("fixturesReqInsert.do")
+	public String fixturesReqInsert() {
+		return "fixtures/fixturesForm";
+	}
+}

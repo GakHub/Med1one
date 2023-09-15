@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-5.8.xsd">
+
+	<bean id="passwordEncoder"
+		class="org.springframework.security.crypto.factory.PasswordEncoderFactories"
+		factory-method="createDelegatingPasswordEncoder" />
+
+	<bean id="daoAuthenticationProvider" class="kr.or.ddit.otp.security.CustomDaoAuthenticationProvider" 
+		p:userDetailsService-ref="employeeServiceImpl"
+		p:passwordEncoder-ref="passwordEncoder"
+		p:hideUserNotFoundExceptions="false"
+	/>
+	<security:authentication-manager>
+		<security:authentication-provider ref="daoAuthenticationProvider" />
+	</security:authentication-manager>
+	 <!-- 웰컴페이지로 가기 -->
+	<bean id="authenticationSuccessHandler" class="kr.or.ddit.security.handler.CustomAuthenticationSuccessHandler" 
+		p:defaultTargetUrl="/index.do"
+		p:alwaysUseDefaultTargetUrl="true"
+	/>
+	
+<!-- 	authentication-details-source-ref="customWebAuthenticationDetailsSource" -> 를 위한 빈 등록 -->
+	<bean class="kr.or.ddit.otp.security.CustomWebAuthenticationDetailsSource" id="customWebAuthenticationDetailsSource" />
+	
+	<bean id="authenticationFailureHandler" class="kr.or.ddit.security.handler.LoginFailHandler" />
+	<security:http pattern="/resources/**" security="none"/>
+	<security:http pattern="/common/**" security="none"/>
+	<security:http pattern="/includee/**" security="none"/>
+	<security:http pattern="/auth/**" security="none"/>
+	<security:http pattern="/admin/PwSearch.do" security="none"/>
+	<security:http pattern="/admin/sendEmail.do" security="none"/>
+	<security:http pattern="/otp/insertOtp.do" security="none"/>
+	<security:http pattern="/employee/updateOtp.do" security="none"/>
+	<security:http auto-config="true">
+		<security:form-login
+			login-page="/login/loginForm.jsp" 
+			username-parameter="empNo"
+			password-parameter="empPw"
+			login-processing-url="/login/loginProcess" 
+			authentication-success-handler-ref="authenticationSuccessHandler"
+			authentication-failure-handler-ref="authenticationFailureHandler"
+			authentication-details-source-ref="customWebAuthenticationDetailsSource"
+			/>
+			
+		<security:logout logout-url="/login/logout"
+			logout-success-url="/login/loginForm.jsp" 
+			 invalidate-session="true" 
+			 
+			/> 
+			
+		<security:csrf disabled="true" />
+		
+		<security:remember-me remember-me-parameter="idSave" remember-me-cookie="idCookie" />
+		
+		<security:intercept-url pattern="/login/logout"
+			access="isAuthenticated()" />
+		<security:intercept-url pattern="/login/**"
+			access="isAnonymous()" />
+			
+		<security:intercept-url pattern="/auth/authSignup.do"
+			access="isAnonymous()" />
+		<security:intercept-url pattern="/admin/PwSearch.do"
+			access="isAnonymous()" />
+		<security:intercept-url pattern="/admin/sendEmail.do"
+			access="isAnonymous()" />
+			
+		<security:intercept-url pattern="/**"
+			access="isAuthenticated()" />
+
+	</security:http>
+</beans>

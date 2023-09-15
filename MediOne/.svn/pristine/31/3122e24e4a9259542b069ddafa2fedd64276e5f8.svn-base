@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.examinate.dao.CheckUpMailDao">
+
+<!-- 건강검진 환자 정보-->
+<select id="checkupPatientList" resultType="kr.or.ddit.medical.vo.PatientVO">
+	SELECT 
+		  PATNT_CODE
+		, PATNT_NM
+		, PATNT_ADDR1
+		, PATNT_TELNO
+		, PATNT_EMAIL
+	FROM
+		PATIENT
+</select>
+
+</mapper>

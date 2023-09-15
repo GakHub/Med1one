@@ -1,0 +1,90 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<style>
+.bi-arrow-down-square-fill{
+    font-size: 50px;
+    line-height: 22px;
+    flex: auto;
+    padding-right: 15px;
+    
+    
+}
+.bi-arrow-up-square-fill{
+   font-size: 50px;
+   padding-left: 15px;
+}   
+.select{
+	text-align: right;
+	margin-right: 3%;
+}
+
+</style>
+<h4>비품</h4>
+<br><br>
+
+
+<div>
+	진행상태 
+		<select>
+			<option>전체</option>
+			<option>지급완료</option>
+			<option>지급처리</option>
+		</select>
+</div>
+
+
+<div class="select"><input type="button" value="조회"></div>
+<br>
+<h6>전체3건</h6>
+ <body class="box">
+ 
+ <div>
+  <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">등록부서</th>
+      <th scope="col">등록자</th>
+      <th scope="col">신청일자</th>
+      <th scope="col">최종지급일자</th>
+      <th scope="col">비품종류</th>
+      <th scope="col">총신청수량</th>
+      <th scope="col">총지급수량</th>
+      <th scope="col">진행상태</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>간호부</td>
+      <td>김간호${emp_nm }</td>
+      <td>2023-07-31</td>
+      <td>2023-08-02</td>
+      <td>소독용 거즈</td>
+      <td>3</td>
+      <td>3</td>
+      <td>지급완료</td>
+    </tr>
+    <tr>
+      <td>간호부</td>
+      <td>이간호</td>
+      <td>2023-08-01</td>
+      <td>2023-08-03</td>
+      <td>압박붕대</td>
+      <td>2</td>
+      <td>2</td>
+      <td>지급완료</td>
+    </tr>
+    <tr>
+      <td>진료부</td>
+      <td>김진료</td>
+      <td>2023-08-05</td>
+      <td></td>
+      <td>의료용 가위</td>
+      <td>1</td>
+      <td>1</td>
+      <td><input type="button" value="지급처리"></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+ </body>

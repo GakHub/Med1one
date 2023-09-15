@@ -1,0 +1,188 @@
+<%-- <%@ page language="java" contentType="application/vnd.ms-excel; charset=UTF-8"
+	pageEncoding="UTF-8"%> --%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
+
+<table class="table table-hover align-middle mb-0">
+								<thead>
+									<tr>
+										<th>직군</th>
+										<th>직원수</th>
+									</tr>
+								</thead>
+								<tbody>
+									<c:set var="JopEmpList" value="${JopEmpList}" />
+									<c:if test="${empty JopEmpList }">
+										<tr>
+											<td colspan="6">데이터가 없습니다</td>
+										</tr>
+									</c:if>
+									<c:if test="${not empty JopEmpList }">
+										<c:forEach items="${JopEmpList }" var="JopEmpList">
+
+											<c:url value="/free/freeView.do" var="viewURL">
+												<c:param name="what" value="${JopEmpList.empType }"></c:param>
+											</c:url>
+											<tr>
+												<td>${JopEmpList.empType }</td>
+												<td>${JopEmpList.jobEmpCount }</td>
+												
+											</tr>
+										</c:forEach>
+										</c:if>
+											<tr>
+												<th>합계</th>
+												<td>${totalEmpCount}</td>
+											</tr>
+											
+								</tbody>
+								</table>
+
+
+
+
+
+<table class="table table-hover align-middle mb-0">
+								<thead>
+									<tr>
+										<th>No</th>
+										<th>부서명</th>
+										<th>직원수</th>
+									</tr>
+								</thead>
+								<tbody>
+									<c:set var="deptEmpList" value="${deptEmpList}" />
+									<c:if test="${empty deptEmpList }">
+										<tr>
+											<td colspan="6">데이터가 없습니다</td>
+										</tr>
+									</c:if>
+									<c:if test="${not empty deptEmpList }">
+										<c:forEach items="${deptEmpList }" var="deptEmpList">
+
+											<c:url value="/free/freeView.do" var="viewURL">
+												<c:param name="what" value="${deptEmpList.deptNm }"></c:param>
+											</c:url>
+											<tr>
+												<td>${deptEmpList.rnum }</td>
+												<td>${deptEmpList.deptNm }</td>
+												<td>${deptEmpList.empCount }</td>
+											</tr>
+										</c:forEach>
+										</c:if>
+											<tr>
+												<th>합계</th>
+												<td>${totalDeptCount}</td>
+												<td>${totalEmpCount}</td>
+											</tr>
+											
+								</tbody>
+								</table>
+								
+
+
+
+
+
+
+
+
+<table class="table table-hover align-middle mb-0">
+								<thead>
+									<tr>
+										<th>작성ID</th>
+										<th>작성글수</th>
+									</tr>
+								</thead>
+								<tbody>
+									<c:set var="boardList" value="${empFreeList}" />
+									<c:if test="${empty boardList }">
+										<tr>
+											<td colspan="6">데이터가 없습니다</td>
+										</tr>
+									</c:if>
+									<c:if test="${not empty boardList }">
+										<c:forEach items="${boardList }" var="boardList">
+
+											<c:url value="/free/freeView.do" var="viewURL">
+												<c:param name="what" value="${boardList.boardNo }"></c:param>
+											</c:url>
+
+											<tr>
+												<td>${boardList.empNo }</td>
+												<td>${boardList.freeEmpCount }</td>
+											</tr>
+										</c:forEach>
+										</c:if>
+											<tr>
+												<th>합계</th>
+												<td>${totalFreeEmpCount}</td>
+											</tr>
+											
+								</tbody>
+								</table>
+								
+								<br><br>
+								<button id="downloadButton" class=" btn btn-success">엑셀 다운로드</button>
+								
+<script>
+document.getElementById("downloadButton").addEventListener("click", function() {
+    // 다운로드 요청을 보내는 코드
+    window.location.href = "${pageContext.request.contextPath}/sales/downloadExcel.do";
+});
+</script>
+
+	<br><br>
+<h3>자료등록하기</h3>
+	
+<form action="${pageContext.request.contextPath}/sales/uploadExcel.do" method="post" enctype="multipart/form-data">
+  
+  <label for="formFileMultiple" class="form-label">Choose an Excel file:</label>
+    <input class="form-control" type="file" name="file" accept=".xlsx, .xls" required>
+
+    <br>
+    <button type="submit" class="btn btn-success">등록하기</button>
+</form>
+
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div style="width: 80%; margin: auto;">
+        <canvas id="growthChart"></canvas>
+    </div>
+
+    <script>
+        // Get data from model attribute
+        var growthDataList = ${growthDataList};
+
+        // Extract month and visitor count from data
+        var months = growthDataList.map(data => data.month);
+        var visitorCounts = growthDataList.map(data => data.visitorCount);
+
+        // Create a line chart
+        var ctx = document.getElementById('growthChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Monthly Visitor Count',
+                    data: visitorCounts,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+

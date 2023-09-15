@@ -1,0 +1,73 @@
+package kr.or.ddit.employee.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.File.vo.AtchFileDtlVO;
+import kr.or.ddit.common.controller.ServiceResult;
+import kr.or.ddit.employee.vo.DepartmentVO;
+import kr.or.ddit.employee.vo.EmployeeVO;
+import kr.or.ddit.exception.PKNotFoundException;
+
+@Service
+public interface EmployeeService extends UserDetailsService{
+
+	public List<DepartmentVO> retrieveDept();
+	
+	public List<EmployeeVO> retrieveDeptTreeList(String deptCode);
+	
+	/**
+	 * 직원 상세 조회
+	 * @param empNo
+	 * @return 존재하는 경우, 직원 정보 반환
+	 * @throws PKNotFoundException 사용자 존재하지 않을 때 예외발생
+	 */
+	public EmployeeVO retrieveEmployee(String empNo) throws PKNotFoundException;
+	
+	
+	
+	/**
+	 * 회원 정보 수정
+	 * @param employee
+	 * @return PW 인증 실패(INVALIDPASSWORD), 수정 성공(OK), 수정 실패(FAIL)
+	 */
+	public ServiceResult modifyEmp(EmployeeVO employee);
+	
+	
+	
+
+	/**
+	 * 통계자료용(부서별 직원수)
+	 * @return List<EmployeeVO>
+	 */
+	public List<EmployeeVO> retrieveDeptEmp();
+	
+	/**
+	 * 통계자료용(직군별 직원수)
+	 * @return List<EmployeeVO>
+	 */
+	public List<EmployeeVO> retrieveJobEmp();
+	/**
+	 * 통계자료용(전체직원리스트)
+	 * @return List<EmployeeVO>
+	 */
+	public List<EmployeeVO> retrieveEmpList();
+	
+	
+	/**
+	 * 첨부파일 조회
+	 * 
+	 * @return
+	 */
+	public AtchFileDtlVO retrieveAtch(String empNo);
+	
+	/**
+	 * otp 번호 업데이트
+	 * @param map
+	 * @return
+	 */
+	public boolean motifyOtpNum(Map<String, Object> map); 
+}

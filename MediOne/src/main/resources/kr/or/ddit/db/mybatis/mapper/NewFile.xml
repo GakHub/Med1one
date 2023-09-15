@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.newfile.dao.NewFileDAO">
+
+	<sql id="searchFrag">
+	<where>
+			<if	test="simpleCondition neq null and simpleCondition.searchWord neq null and not simpleCondition.searchWord.isEmpty()">
+				<choose>
+					<when test="simpleCondition.searchType eq 'empNo'">
+						INSTR(EMP_NO, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'fileTitle'">
+						INSTR(FILE_TITLE, #{simpleCondition.searchWord}) > 0
+					</when>
+					<when test="simpleCondition.searchType eq 'content'">
+						INSTR(FILE_COL1, #{simpleCondition.searchWord}) > 0
+					</when>
+					<otherwise> <!-- 전체옵션을 줬을 때 -->
+						INSTR(EMP_NO, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(FILE_TITLE, #{simpleCondition.searchWord}) > 0
+						OR
+						INSTR(FILE_COL1, #{simpleCondition.searchWord}) > 0
+					</otherwise>
+				</choose>
+			</if>
+		</where>
+	</sql>
+
+	<select id="selectNewFileMain" resultType="NewFileVO">
+	SELECT
+	ROW_NUMBER() OVER (ORDER BY FILE_TITLE) AS RNUM,
+	FILE_TITLE,
+	EMP_NO,
+	NEW_FILE_ID,
+	TO_CHAR(FILE_DATE,
+	'YYYY-MM-DD') AS FILEDATE
+	FROM (
+	SELECT
+	FILE_TITLE,
+	MAX(FILE_COL1) AS FILE_COL1,
+	MAX(FILE_COL2) AS FILE_COL2,
+	MAX(FILE_COL3) AS FILE_COL3,
+	MAX(FILE_COL4) AS FILE_COL4,
+	MAX(FILE_COL5) AS FILE_COL5,
+	MAX(FILE_COL6) AS FILE_COL6,
+	MAX(FILE_COL7) AS FILE_COL7,
+	MAX(FILE_COL8) AS FILE_COL8,
+	MAX(FILE_COL9) AS FILE_COL9,
+	MAX(FILE_COL10) AS FILE_COL10,
+	MAX(FILE_COL11) AS FILE_COL11,
+	MAX(EMP_NO) AS EMP_NO,
+	MAX(NEW_FILE_ID) AS NEW_FILE_ID,
+	MAX(FILE_DATE) AS FILE_DATE
+	FROM NEW_FILE
+	GROUP BY FILE_TITLE
+	)
+	ORDER BY FILE_TITLE
+	</select>
+
+	<select id="selectNewFile" parameterType="String" resultType="NewFileVO">
+         SELECT *
+         FROM NEW_FILE
+		 WHERE FILE_TITLE = #{FileTitle}
+		 ORDER BY NEW_FILE_ID
+	</select>
+
+	<select id="selectNewFileList"  resultType="NewFileVO">
+    SELECT
+    FILE_COL1,
+    FILE_COL2,
+    FILE_COL3,
+    FILE_COL4,
+    FILE_COL5,
+    FILE_COL6,
+    FILE_COL7,
+    FILE_COL8,
+    FILE_COL9,
+    FILE_COL10,
+    FILE_COL11,
+    NEW_FILE_ID
+	FROM NEW_FILE
+	</select>
+
+
+	<insert id="insertNewFile" parameterType="NewFileVO">
+		<selectKey order="BEFORE" keyProperty="newFileId" resultType="String">
+         SELECT NEW_FILE_ID_SEQ.NEXTVAL FROM DUAL
+      </selectKey>
+	INSERT INTO NEW_FILE (
+		FILE_TITLE,
+		FILE_COL1,
+		FILE_COL2,
+		FILE_COL3,
+		FILE_COL4,
+		FILE_COL5,
+		FILE_COL6,
+		FILE_COL7,
+		FILE_COL8,
+		FILE_COL9,
+		FILE_COL10,
+		FILE_COL11,
+		EMP_NO,
+		FILE_DATE,
+		NEW_FILE_ID
+		
+	) VALUES (
+	  #{fileTitle,jdbcType=VARCHAR}
+	, #{fileCol1,jdbcType=VARCHAR}
+	, #{fileCol2,jdbcType=VARCHAR}
+	, #{fileCol3,jdbcType=VARCHAR}
+	, #{fileCol4,jdbcType=VARCHAR}
+	, #{fileCol5,jdbcType=VARCHAR}
+	, #{fileCol6,jdbcType=VARCHAR}
+	, #{fileCol7,jdbcType=VARCHAR}
+	, #{fileCol8,jdbcType=VARCHAR}
+	, #{fileCol9,jdbcType=VARCHAR}
+	, #{fileCol10,jdbcType=VARCHAR}
+	, #{fileCol11,jdbcType=VARCHAR}
+	, #{empNo,jdbcType=VARCHAR}
+	, SYSDATE
+	, #{newFileId,jdbcType=VARCHAR}
+	)
+	</insert>
+	
+	
+	<delete id="deleteFile" parameterType="String">
+		DELETE FROM NEW_FILE
+		WHERE FILE_TITLE = #{fileTitle}
+	</delete>
+
+
+	<update id="updateFile" parameterType="NewFileVO">
+	UPDATE NEW_FILE
+	SET
+	FILE_TITLE = #{fileTitle,jdbcType=VARCHAR}
+	, FILE_COL1 = #{fileCol1, jdbcType=VARCHAR}
+	, FILE_COL2 = #{fileCol2, jdbcType=VARCHAR}
+	, FILE_COL3 = #{fileCol3, jdbcType=VARCHAR}
+	, FILE_COL4 = #{fileCol4, jdbcType=VARCHAR}
+	, FILE_COL5 = #{fileCol5, jdbcType=VARCHAR}
+	, FILE_COL6 = #{fileCol6, jdbcType=VARCHAR}
+	, FILE_COL7 = #{fileCol7, jdbcType=VARCHAR}
+	, FILE_COL8 = #{fileCol8, jdbcType=VARCHAR}
+	, FILE_COL9 = #{fileCol9, jdbcType=VARCHAR}
+	, FILE_COL10 = #{fileCol10, jdbcType=VARCHAR}
+	, FILE_COL11 = #{fileCol11, jdbcType=VARCHAR}
+	WHERE NEW_FILE_ID = #{newFileId}
+	
+	</update>
+	
+
+</mapper>
+
+
+
+
+

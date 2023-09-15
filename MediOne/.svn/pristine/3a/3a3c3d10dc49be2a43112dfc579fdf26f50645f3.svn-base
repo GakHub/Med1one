@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.medical.examinate.dao.MdexmnDao">
+
+	<select id="selectMdexmnList" resultType="kr.or.ddit.medical.examinate.vo.MdexmnPackVO" parameterType="string">
+
+		SELECT p.insp_nm, m.m_division "mdexmn.mDivision", m.mdexmn_code "mdexmn.mdexmnCode", p.insp_code, m.mdexmn_date "mdexmn.mdexmnDate"
+		FROM mdexmn_pack p 
+		INNER JOIN mdexmn m ON m.m_division LIKE '%' || p.pack_code || '%'
+		WHERE m.rec_code = #{recCode}
+		
+	</select>
+
+	<insert id="insertMdexmnDtl" parameterType="MdexmnDtl">
+	
+		INSERT INTO mdexmn_dtl (
+		    mdexmn_dtl_code
+		    , insp_code
+		    , mdexmn_re
+		    , mdexmn_yn
+		    , mdexmn_code
+		    
+		    
+			) VALUES (
+			    #{mdexmnDtlCode}
+			  , #{inspCode}
+			  , #{mdexmnRe}
+			  , #{mdexmnYn}
+			  , #{mdexmnCode}
+			)
+				
+	</insert>
+
+
+	
+	<select id="selectMdexDtl" parameterType="string" resultType="MdexmnDtl">
+		SELECT
+		    insp_code,
+		    mdexmn_re,
+		    mdexmn_yn
+		FROM
+		    mdexmn_dtl
+		where mdexmn_code = #{mdexmnCode}
+	</select>
+	
+	
+	<insert id="insertMdexmnRst" parameterType="MdexmnRstltVO">
+	<selectKey order="BEFORE" keyProperty="mdexRstCode" resultType="String">
+		SELECT 'MDRS' || LPAD(MDEX_RST_CODE_SEQ.NEXTVAL,3,'0') 
+		FROM DUAL
+	</selectKey>
+		 INSERT INTO mdexmn_rstlt (
+		    mdex_rst_code
+		    , mdexmn_date
+		    , mdexmn_rs
+		    , insp_nm
+		    , mdexmn_rsdate
+		    , mdexmn_code
+		) VALUES (
+		   #{mdexRstCode,jdbcType=VARCHAR}
+			, #{mdexmnDate,jdbcType=DATE}
+			, #{mdexmnRs,jdbcType=CLOB}
+			, #{inspNm,jdbcType=VARCHAR}
+			, #{mdexmnRsdate,jdbcType=DATE}
+			, #{mdexmnCode,jdbcType=VARCHAR}
+		) 
+	</insert>
+	
+	
+	<insert id="insertMdexmn" parameterType="MdexmnVO">
+	<selectKey order="BEFORE" resultType="String" keyProperty="mdexmnCode">
+		SELECT 'MED' || LPAD(MDEXMN_CODE_SEQ.NEXTVAL,4,'0') 
+		FROM DUAL
+	</selectKey>
+	INSERT INTO mdexmn (
+	    mdexmn_code
+	    , rec_code
+	    , mdexmn_date
+	    , receipt_doc
+	    , m_division
+	) VALUES (
+	     #{mdexmnCode,jdbcType=VARCHAR}
+		, #{recCode,jdbcType=VARCHAR}
+		, SYSDATE
+		, #{receiptDoc,jdbcType=CLOB}
+		, #{mDivision,jdbcType=VARCHAR}
+	)
+	
+	</insert>
+	
+	
+	<select id="selectDoneMdexmn" parameterType="string" resultType="MdexmnVO">
+		SELECT
+	    P.patnt_nm "recep.patnt.patntNm"
+	    ,P.HEIGHT "recep.patnt.height"
+	    ,P.WEIGHT "recep.patnt.weight"
+	    ,SUBSTR(P.patnt_identino, 1, 6) "recep.patnt.patntIdentino"
+	    ,M.mdexmn_date
+	    ,MR.mdexmn_rs "mdexmnRsVO.mdexmnRs"
+		FROM
+		    patient P
+		INNER JOIN
+		    reception R ON P.patnt_code = R.patnt_code
+		INNER JOIN
+		    mdexmn M ON R.rec_code = M.rec_code
+		LEFT JOIN
+		    mdexmn_rstlt MR ON M.mdexmn_code = MR.mdexmn_code
+		where M.mdexmn_code = #{mdexmnCode}
+	</select>
+</mapper>

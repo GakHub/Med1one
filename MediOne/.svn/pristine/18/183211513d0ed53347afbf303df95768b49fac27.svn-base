@@ -1,0 +1,57 @@
+package kr.or.ddit.employee.fixtures.dao;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import kr.or.ddit.employee.fixtures.vo.FixturesDTLVO;
+import kr.or.ddit.employee.fixtures.vo.FixturesReqVO;
+import kr.or.ddit.employee.fixtures.vo.FixturesVO;
+
+@Mapper
+public interface FixturesDao {
+	/**
+	 * 비품 리스트 조회
+	 * @return
+	 */
+	public List<FixturesVO> selectFixList(String fxtrsLclas);
+	
+	/**
+	 * 비품 분류 리스트 조회
+	 * @return
+	 */
+	public List<FixturesDTLVO> selectFixDtlList();
+	
+	/**
+	 * 분류별 비품리스트 조회
+	 * @return
+	 */
+	public List<FixturesVO> selectFixwhereDtlList(String fxtrsLclas);
+	
+	// 발주 insert
+	public int insertFixOrderList(FixturesReqVO fixturesReqVO);
+	
+	
+	// 발주 리스트 조회
+	public List<FixturesReqVO> selectFixOrdList();
+	
+	public List<FixturesVO> updateFixList();
+
+	public List<FixturesReqVO> updateFixSttus();
+	
+	/**
+	 * 비품 이름 검색
+	 * @param fxtrsNm
+	 * @return
+	 */
+	public List<FixturesVO> searchFixList(String fxtrsNm);
+	
+	/**
+	 *  나의 발주 신청내역
+	 * @param empNm
+	 * @return
+	 */
+	public List<FixturesReqVO> selectFixOrdWhereEmpNm(String empNo);
+	
+}

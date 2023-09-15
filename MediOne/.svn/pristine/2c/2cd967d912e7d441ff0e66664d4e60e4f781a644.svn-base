@@ -1,0 +1,8 @@
+imagePath=/resources/images
+
+atchPath=file:D:/0.tools/eGovFrameDev-4.1.0-64bit/final project/MediOne/src/main/webapp/resources/images/atch/
+atchPath=file:D:/0.tools/eGovFrameDev-4.1.0-64bit/workspace/MediOne/src/main/webapp/resources/images/atch
+atchPath=file:D:/0.tools/eGovFrameDev-4.1.0-64bit/workspace1/MediOne/src/main/webapp/resources/images/atch
+
+#imagePath=file:M:\\resources\\images
+#atchPath=file:M:\\resources\\images\\atch
